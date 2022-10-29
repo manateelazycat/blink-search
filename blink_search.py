@@ -29,6 +29,7 @@ from core.utils import *
 
 from backend.search_elisp_symbol import SearchElispSymbol
 from backend.search_recent_file import SearchRecentFile
+from backend.search_buffer_list import SearchBufferList
 
 class BlinkSearch:
     def __init__(self, args):
@@ -77,6 +78,7 @@ class BlinkSearch:
         # Init search backend.
         self.search_elisp_symbol = SearchElispSymbol("Elisp", self.message_queue)
         self.search_recent_file = SearchRecentFile("Recent File", self.message_queue)
+        self.search_buffer_list = SearchBufferList("Buffer List", self.message_queue)
         
         # Pass epc port and webengine codec information to Emacs when first start blink-search.
         eval_in_emacs('blink-search--first-start', self.server.server_address[1])
@@ -133,10 +135,14 @@ class BlinkSearch:
     def search_recent_file_update(self, files):
         self.search_recent_file.update(files)
         
+    def search_buffer_list_update(self, buffers):
+        self.search_buffer_list.update(buffers)
+        
     def search(self, input, row_number):
         self.search_row_number = row_number
         self.search_elisp_symbol.search(input)
         self.search_recent_file.search(input)
+        self.search_buffer_list.search(input)
         
     def cleanup(self):
         """Do some cleanup before exit python process."""

@@ -81,6 +81,8 @@
 
 (require 'recentf)
 
+(recentf-mode 1)
+
 (defgroup blink-search nil
   "Blink-Search group."
   :group 'applications)
@@ -241,6 +243,7 @@ Then Blink-Search will start by gdb, please send new issue with `*blink-search*'
 
   (blink-search-start-elisp-symbol-update)
   (blink-search-start-recent-file-update)
+  (blink-search-buffer-list-update)
   )
 
 (defvar blink-search-mode-map
@@ -318,6 +321,9 @@ Then Blink-Search will start by gdb, please send new issue with `*blink-search*'
 
   ;; Select input window.
   (select-window (get-buffer-window blink-search-input-buffer))
+
+  ;; Pass search values to Python side.
+  (blink-search-buffer-list-update)
 
   ;; Start process.
   (unless blink-search-is-starting
@@ -418,6 +424,10 @@ Then Blink-Search will start by gdb, please send new issue with `*blink-search*'
     (cancel-timer blink-search-recent-file-timer)
     (setq blink-search-recent-file-timer nil)
     (setq blink-search-recent-file-size 0)))
+
+(defun blink-search-buffer-list-update ()
+  (when (blink-search-epc-live-p blink-search-epc-process)
+    (blink-search-call-async "search_buffer_list_update" (mapcar #'buffer-name (buffer-list)))))
 
 (defun blink-search-update-items (candidate-items backend-items)
   (save-excursion
