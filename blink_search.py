@@ -118,7 +118,8 @@ class BlinkSearch:
                 if len(v) > 0:
                     candidate_items.append({
                         "backend": k,
-                        "candidate": v[0]
+                        "candidate": v[0],
+                        "number": len(v)
                     })
                     
             if len(candidate_items) > 0:

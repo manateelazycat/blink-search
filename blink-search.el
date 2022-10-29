@@ -152,7 +152,7 @@ Then Blink-Search will start by gdb, please send new issue with `*blink-search*'
 (defun blink-search-call-async (method &rest args)
   "Call Python EPC function METHOD and ARGS asynchronously."
   (blink-search-deferred-chain
-   (blink-search-epc-call-deferred blink-search-epc-process (read method) args)))
+    (blink-search-epc-call-deferred blink-search-epc-process (read method) args)))
 
 (defvar blink-search-is-starting nil)
 
@@ -436,7 +436,7 @@ Then Blink-Search will start by gdb, please send new issue with `*blink-search*'
 
       (when candidate-items
         (dolist (item candidate-items)
-          (insert (format "%s %s\n" (plist-get item :candidate) (plist-get item :backend))))))
+          (insert (format "%s [%s] %s\n" (plist-get item :candidate) (plist-get item :number) (plist-get item :backend))))))
     (with-current-buffer blink-search-backend-buffer
       (erase-buffer)
 
