@@ -28,39 +28,39 @@ import re
 from core.utils import get_emacs_vars, message_emacs, eval_in_emacs, logger    # type: ignore
 
 
-class SearchElispSymbols:
+class Search:
     
-    def __init__(self, message_queue) -> None:
+    def __init__(self, backend_name, message_queue) -> None:
+        self.backend_name = backend_name
         self.search_ticker = 0
         self.search_thread_queue = []
-        self.symbols = []
+        self.items = []
         
         self.message_queue = message_queue
-        
-    def update(self, symbols):
-        self.symbols = sorted(symbols, key=len)
         
     def search(self, prefix: str):
         ticker = self.search_ticker + 1
         self.search_ticker = ticker
         
-        search_thread = threading.Thread(target=lambda: self.search_symbols(prefix, ticker))
+        search_thread = threading.Thread(target=lambda: self.search_items(prefix, ticker))
         search_thread.start()
         self.search_thread_queue.append(search_thread)
         
-    def match_symbol(self, prefix, prefix_regexp, symbol):
-        return symbol.startswith(prefix) or symbol.replace("-", "").startswith(prefix) or prefix_regexp.match(symbol)
-        
-    def search_symbols(self, prefix: str, ticker: int):
-        if len(prefix.split()) > 0:
-            prefix_regexp = re.compile(re.sub(r'([a-zA-Z0-9-_])', r'\1.*', re.escape(prefix)))
-            candidates = list(filter(lambda symbol: self.match_symbol(prefix, prefix_regexp, symbol), self.symbols))
-        else:
-            candidates = []
-                    
+    def search_items(self, prefix: str, ticker: int):
+        candidates = self.search_match(prefix)
+            
         if ticker == self.search_ticker:
             self.message_queue.put({
                 "name": "update_backend_items",
-                "backend": "Elisp",
+                "backend": self.backend_name,
                 "items": candidates
             })
+            
+    def update(self, items):
+        self.items = sorted(items, key=len)
+        
+    def is_match(self, prefix, prefix_regexp, symbol):
+        return False
+    
+    def search_match(self, prefix):
+        pass

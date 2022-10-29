@@ -79,6 +79,8 @@
 
 (require 'blink-search-epc)
 
+(require 'recentf)
+
 (defgroup blink-search nil
   "Blink-Search group."
   :group 'applications)
@@ -148,7 +150,7 @@ Then Blink-Search will start by gdb, please send new issue with `*blink-search*'
 (defun blink-search-call-async (method &rest args)
   "Call Python EPC function METHOD and ARGS asynchronously."
   (blink-search-deferred-chain
-    (blink-search-epc-call-deferred blink-search-epc-process (read method) args)))
+   (blink-search-epc-call-deferred blink-search-epc-process (read method) args)))
 
 (defvar blink-search-is-starting nil)
 
@@ -205,7 +207,9 @@ Then Blink-Search will start by gdb, please send new issue with `*blink-search*'
   ;; Kill process after kill buffer, make application can save session data.
   (blink-search--kill-python-process)
 
-  (blink-search-stop-elisp-symbols-update))
+  (blink-search-stop-elisp-symbol-update)
+  (blink-search-stop-recent-file-update)
+  )
 
 (add-hook 'kill-emacs-hook #'blink-search-kill-process)
 
@@ -235,7 +239,9 @@ Then Blink-Search will start by gdb, please send new issue with `*blink-search*'
   (blink-search-epc-init-epc-layer blink-search-epc-process)
   (setq blink-search-is-starting nil)
 
-  (blink-search-start-elisp-symbols-update))
+  (blink-search-start-elisp-symbol-update)
+  (blink-search-start-recent-file-update)
+  )
 
 (defvar blink-search-mode-map
   (let ((map (make-sparse-keymap)))
@@ -354,34 +360,64 @@ Then Blink-Search will start by gdb, please send new issue with `*blink-search*'
       (blink-search-call-async "search" input row-number)
       )))
 
-(defvar blink-search-elisp-symbols-timer nil)
-(defvar blink-search-elisp-symbols-size 0)
-
-(defcustom blink-search-elisp-symbols-update-idle 5
+;; Elisp symbol.
+(defcustom blink-search-elisp-symbol-update-idle 5
   "The idle seconds to update elisp symbols."
   :type 'float
   :group 'blink-search)
 
-(defun blink-search-elisp-symbols-update ()
+(defvar blink-search-elisp-symbol-timer nil)
+(defvar blink-search-elisp-symbol-size 0)
+
+(defun blink-search-elisp-symbol-update ()
   "We need synchronize elisp symbols to Python side when idle."
   (let* ((symbols (all-completions "" obarray))
          (symbols-size (length symbols)))
     ;; Only synchronize when new symbol created.
-    (unless (equal blink-search-elisp-symbols-size symbols-size)
-      (blink-search-call-async "search_elisp_symbols_update" symbols)
-      (setq blink-search-elisp-symbols-size symbols-size))))
+    (unless (equal blink-search-elisp-symbol-size symbols-size)
+      (blink-search-call-async "search_elisp_symbol_update" symbols)
+      (setq blink-search-elisp-symbol-size symbols-size))))
 
-(defun blink-search-start-elisp-symbols-update ()
-  (blink-search-elisp-symbols-update)
+(defun blink-search-start-elisp-symbol-update ()
+  (blink-search-elisp-symbol-update)
 
-  (unless blink-search-elisp-symbols-timer
-    (setq blink-search-elisp-symbols-timer (run-with-idle-timer blink-search-elisp-symbols-update-idle t #'blink-search-elisp-symbols-update))))
+  (unless blink-search-elisp-symbol-timer
+    (setq blink-search-elisp-symbol-timer (run-with-idle-timer blink-search-elisp-symbol-update-idle t #'blink-search-elisp-symbol-update))))
 
-(defun blink-search-stop-elisp-symbols-update ()
-  (when blink-search-elisp-symbols-timer
-    (cancel-timer blink-search-elisp-symbols-timer)
-    (setq blink-search-elisp-symbols-timer nil)
-    (setq blink-search-elisp-symbols-size 0)))
+(defun blink-search-stop-elisp-symbol-update ()
+  (when blink-search-elisp-symbol-timer
+    (cancel-timer blink-search-elisp-symbol-timer)
+    (setq blink-search-elisp-symbol-timer nil)
+    (setq blink-search-elisp-symbol-size 0)))
+
+;; Recent files.
+(defcustom blink-search-recent-file-update-idle 4
+  "The idle seconds to update recent files."
+  :type 'float
+  :group 'blink-search)
+
+(defvar blink-search-recent-file-timer nil)
+(defvar blink-search-recent-file-size 0)
+
+(defun blink-search-recent-file-update ()
+  "We need synchronize recent files to Python side when idle."
+  (let* ((files-size (length recentf-list)))
+    ;; Only synchronize when new symbol created.
+    (unless (equal blink-search-recent-file-size files-size)
+      (blink-search-call-async "search_recent_file_update" recentf-list)
+      (setq blink-search-recent-file-size files-size))))
+
+(defun blink-search-start-recent-file-update ()
+  (blink-search-recent-file-update)
+
+  (unless blink-search-recent-file-timer
+    (setq blink-search-recent-file-timer (run-with-idle-timer blink-search-recent-file-update-idle t #'blink-search-recent-file-update))))
+
+(defun blink-search-stop-recent-file-update ()
+  (when blink-search-recent-file-timer
+    (cancel-timer blink-search-recent-file-timer)
+    (setq blink-search-recent-file-timer nil)
+    (setq blink-search-recent-file-size 0)))
 
 (defun blink-search-update-items (candidate-items backend-items)
   (save-excursion

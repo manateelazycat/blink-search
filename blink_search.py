@@ -27,7 +27,8 @@ import traceback
 from epc.server import ThreadingEPCServer
 from core.utils import *
 
-from backend.search_elisp_symbols import SearchElispSymbols
+from backend.search_elisp_symbol import SearchElispSymbol
+from backend.search_recent_file import SearchRecentFile
 
 class BlinkSearch:
     def __init__(self, args):
@@ -73,8 +74,9 @@ class BlinkSearch:
         self.search_candidate_items = []
         self.search_backend_items = []
         
-        # Init elisp symbols search backend.
-        self.search_elisp_symbols = SearchElispSymbols(self.message_queue)
+        # Init search backend.
+        self.search_elisp_symbol = SearchElispSymbol("Elisp", self.message_queue)
+        self.search_recent_file = SearchRecentFile("Recent File", self.message_queue)
         
         # Pass epc port and webengine codec information to Emacs when first start blink-search.
         eval_in_emacs('blink-search--first-start', self.server.server_address[1])
@@ -125,12 +127,16 @@ class BlinkSearch:
                 
             eval_in_emacs("blink-search-update-items", self.search_candidate_items, self.search_backend_items)
             
-    def search_elisp_symbols_update(self, symbols):
-        self.search_elisp_symbols.update(symbols)
+    def search_elisp_symbol_update(self, symbols):
+        self.search_elisp_symbol.update(symbols)
+        
+    def search_recent_file_update(self, files):
+        self.search_recent_file.update(files)
         
     def search(self, input, row_number):
         self.search_row_number = row_number
-        self.search_elisp_symbols.search(input)
+        self.search_elisp_symbol.search(input)
+        self.search_recent_file.search(input)
         
     def cleanup(self):
         """Do some cleanup before exit python process."""
