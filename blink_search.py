@@ -29,11 +29,11 @@ from core.utils import *
 
 from backend.search_elisp_symbols import SearchElispSymbols
 
-class PythonBridge:
+class BlinkSearch:
     def __init__(self, args):
         # Init EPC client port.
         init_epc_client(int(args[0]))
-
+        
         # Build EPC server.
         self.server = ThreadingEPCServer(('localhost', 0), log_traceback=True)
         # self.server.logger.setLevel(logging.DEBUG)
@@ -67,6 +67,12 @@ class PythonBridge:
         self.message_thread = threading.Thread(target=self.message_dispatcher)
         self.message_thread.start()
         
+        # Init search item dict.
+        self.search_dict = {}
+        self.search_row_number = 0
+        self.search_candidate_items = []
+        self.search_backend_items = []
+        
         # Init elisp symbols search backend.
         self.search_elisp_symbols = SearchElispSymbols(self.message_queue)
         
@@ -89,23 +95,46 @@ class PythonBridge:
         try:
             while True:
                 message = self.message_queue.get(True)
+                
+                self.message_handler(message)
             
                 self.message_queue.task_done()
         except:
             logger.error(traceback.format_exc())
             
     def message_handler(self, message):
-        pass
-    
+        if message["name"] == "update_backend_items":
+            self.search_dict[message["backend"]] = message["items"]
+            
+            self.search_candidate_items = []
+            self.search_backend_items = []
+            
+            candidate_items = []
+            for k, v in self.search_dict.items():
+                if len(v) > 0:
+                    candidate_items.append({
+                        "backend": k,
+                        "candidate": v[0]
+                    })
+                    
+            if len(candidate_items) > 0:
+                backend_items = self.search_dict[candidate_items[0]["backend"]]
+                
+                self.search_candidate_items = candidate_items
+                self.search_backend_items = backend_items[:min(self.search_row_number, len(backend_items))]
+                
+            eval_in_emacs("blink-search-update-items", self.search_candidate_items, self.search_backend_items)
+            
     def search_elisp_symbols_update(self, symbols):
         self.search_elisp_symbols.update(symbols)
         
-    def search(self, input):
-        print("************** ", input)
-
+    def search(self, input, row_number):
+        self.search_row_number = row_number
+        self.search_elisp_symbols.search(input)
+        
     def cleanup(self):
         """Do some cleanup before exit python process."""
         close_epc_client()
 
 if __name__ == "__main__":
-    PythonBridge(sys.argv[1:])
+    BlinkSearch(sys.argv[1:])

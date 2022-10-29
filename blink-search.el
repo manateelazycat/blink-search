@@ -278,18 +278,19 @@ Then Blink-Search will start by gdb, please send new issue with `*blink-search*'
   ;; Create buffers.
   (with-current-buffer (get-buffer-create blink-search-input-buffer)
     (erase-buffer)
-    (insert "input")
     (blink-search-mode)
     (run-hooks 'blink-search-mode-hook)
-    (add-hook 'after-change-functions 'blink-search-monitor-input nil t))
+    (add-hook 'after-change-functions 'blink-search-monitor-input nil t)
+
+    (blink-search-disable-options nil))
 
   (with-current-buffer (get-buffer-create blink-search-candidate-buffer)
     (erase-buffer)
-    (insert "candidate"))
+    (blink-search-disable-options t))
 
   (with-current-buffer (get-buffer-create blink-search-backend-buffer)
     (erase-buffer)
-    (insert "backend"))
+    (blink-search-disable-options t))
 
   ;; Clean layout.
   (delete-other-windows)
@@ -316,13 +317,42 @@ Then Blink-Search will start by gdb, please send new issue with `*blink-search*'
   (unless blink-search-is-starting
     (blink-search-start-process)))
 
+(defun blink-search-get-window-allocation (&optional window)
+  "Get WINDOW allocation."
+  (let* ((window-edges (window-pixel-edges window))
+         (x (nth 0 window-edges))
+         (y (+ (nth 1 window-edges)
+               (if (version< emacs-version "27.0")
+                   (window-header-line-height window)
+                 (window-tab-line-height window))))
+         (w (- (nth 2 window-edges) x))
+         (h (- (nth 3 window-edges) (window-mode-line-height window) y)))
+    (list x y w h)))
+
+(defun blink-search-disable-options (&optional disable-cursor)
+  "Disable many options for blink-search buffers."
+  ;; Disable line numbers mode.
+  (when display-line-numbers
+    (setq-local display-line-numbers nil))
+  ;; Disable tab-line.
+  (when (version< "27.0" emacs-version)
+    (setq-local tab-line-format nil))
+  ;; Disable hl-line, header-line and mode-line in input buffer.
+  (setq-local header-line-format nil)
+  (setq-local mode-line-format nil)
+  ;; Disable cursor type if option `disable-cursor' is non-nil.
+  (when disable-cursor
+    (setq-local cursor-type nil)))
+
 (defun blink-search-monitor-input (_begin _end _length)
   "This is input monitor callback to hook `after-change-functions'."
   ;; Send new input to all backends when user change input.
   (when (string-equal (buffer-name) blink-search-input-buffer)
     (let* ((input (with-current-buffer blink-search-input-buffer
-                    (buffer-substring-no-properties (point-min) (point-max)))))
-      (message "Blink search: %s" input))))
+                    (buffer-substring-no-properties (point-min) (point-max))))
+           (row-number (/ (nth 3 (blink-search-get-window-allocation (get-buffer-window blink-search-candidate-buffer))) (line-pixel-height))))
+      (blink-search-call-async "search" input row-number)
+      )))
 
 (defvar blink-search-elisp-symbols-timer nil)
 (defvar blink-search-elisp-symbols-size 0)
@@ -334,13 +364,12 @@ Then Blink-Search will start by gdb, please send new issue with `*blink-search*'
 
 (defun blink-search-elisp-symbols-update ()
   "We need synchronize elisp symbols to Python side when idle."
-  (when (blink-search-epc-live-p blink-search-epc-process)
-    (let* ((symbols (all-completions "" obarray))
-           (symbols-size (length symbols)))
-      ;; Only synchronize when new symbol created.
-      (unless (equal blink-search-elisp-symbols-size symbols-size)
-        (blink-search-call-async "search_elisp_symbols_update" symbols)
-        (setq blink-search-elisp-symbols-size symbols-size)))))
+  (let* ((symbols (all-completions "" obarray))
+         (symbols-size (length symbols)))
+    ;; Only synchronize when new symbol created.
+    (unless (equal blink-search-elisp-symbols-size symbols-size)
+      (blink-search-call-async "search_elisp_symbols_update" symbols)
+      (setq blink-search-elisp-symbols-size symbols-size))))
 
 (defun blink-search-start-elisp-symbols-update ()
   (blink-search-elisp-symbols-update)
@@ -351,7 +380,24 @@ Then Blink-Search will start by gdb, please send new issue with `*blink-search*'
 (defun blink-search-stop-elisp-symbols-update ()
   (when blink-search-elisp-symbols-timer
     (cancel-timer blink-search-elisp-symbols-timer)
-    (setq blink-search-elisp-symbols-timer nil)))
+    (setq blink-search-elisp-symbols-timer nil)
+    (setq blink-search-elisp-symbols-size 0)))
+
+(defun blink-search-update-items (candidate-items backend-items)
+  (save-excursion
+    (with-current-buffer blink-search-candidate-buffer
+      (erase-buffer)
+
+      (when candidate-items
+        (dolist (item candidate-items)
+          (insert (format "%s %s\n" (plist-get item :candidate) (plist-get item :backend))))))
+    (with-current-buffer blink-search-backend-buffer
+      (erase-buffer)
+
+      (when backend-items
+        (dolist (item backend-items)
+          (insert (format "%s\n" item)))))
+    ))
 
 (provide 'blink-search)
 

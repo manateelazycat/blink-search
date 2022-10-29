@@ -52,12 +52,15 @@ class SearchElispSymbols:
         return symbol.startswith(prefix) or symbol.replace("-", "").startswith(prefix) or prefix_regexp.match(symbol)
         
     def search_symbols(self, prefix: str, ticker: int):
-        prefix_regexp = re.compile(re.sub(r'([a-zA-Z0-9-_])', r'\1.*', re.escape(prefix)))
-        candidates = list(filter(lambda symbol: self.match_symbol(prefix, prefix_regexp, symbol), self.symbols))
+        if len(prefix.split()) > 0:
+            prefix_regexp = re.compile(re.sub(r'([a-zA-Z0-9-_])', r'\1.*', re.escape(prefix)))
+            candidates = list(filter(lambda symbol: self.match_symbol(prefix, prefix_regexp, symbol), self.symbols))
+        else:
+            candidates = []
                     
         if ticker == self.search_ticker:
             self.message_queue.put({
                 "name": "update_backend_items",
-                "backend": "elisp_symbols",
+                "backend": "Elisp",
                 "items": candidates
             })
