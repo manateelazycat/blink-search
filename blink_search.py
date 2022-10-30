@@ -76,7 +76,7 @@ class BlinkSearch:
         self.search_backend_items = []
         
         # Init search backend.
-        self.search_elisp_symbol = SearchElispSymbol("Elisp", self.message_queue)
+        self.search_elisp_symbol = SearchElispSymbol("Elisp Symbol", self.message_queue)
         self.search_recent_file = SearchRecentFile("Recent File", self.message_queue)
         self.search_buffer_list = SearchBufferList("Buffer List", self.message_queue)
         
