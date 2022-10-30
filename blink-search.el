@@ -295,11 +295,13 @@ Then Blink-Search will start by gdb, please send new issue with `*blink-search*'
 
   (with-current-buffer (get-buffer-create blink-search-candidate-buffer)
     (erase-buffer)
-    (blink-search-disable-options t))
+    (blink-search-disable-options t)
+    (setq-local truncate-lines t))
 
   (with-current-buffer (get-buffer-create blink-search-backend-buffer)
     (erase-buffer)
-    (blink-search-disable-options t))
+    (blink-search-disable-options t)
+    (setq-local truncate-lines t))
 
   ;; Clean layout.
   (delete-other-windows)
@@ -429,21 +431,48 @@ Then Blink-Search will start by gdb, please send new issue with `*blink-search*'
   (when (blink-search-epc-live-p blink-search-epc-process)
     (blink-search-call-async "search_buffer_list_update" (mapcar #'buffer-name (buffer-list)))))
 
+(defsubst blink-search-indent-pixel (xpos)
+  "Return a display property that aligns to XPOS."
+  `(space :align-to (,xpos)))
+
 (defun blink-search-update-items (candidate-items backend-items)
   (save-excursion
     (with-current-buffer blink-search-candidate-buffer
-      (erase-buffer)
+      (let* ((window-allocation (blink-search-get-window-allocation (get-buffer-window blink-search-candidate-buffer)))
+             (window-width (nth 2 window-allocation))
+             (candidate-max-length (ceiling (/ window-width (window-font-width) 2))))
+        (erase-buffer)
 
-      (when candidate-items
-        (dolist (item candidate-items)
-          (insert (format "%s [%s] %s\n" (plist-get item :candidate) (plist-get item :number) (plist-get item :backend))))))
-    (with-current-buffer blink-search-backend-buffer
-      (erase-buffer)
+        (when candidate-items
+          (dolist (item candidate-items)
+            (let* ((candidate (plist-get item :candidate))
+                   (candidate-length (length candidate))
+                   (display-candiate (if (<= candidate-length candidate-max-length)
+                                         candidate
+                                       (concat
+                                        (substring candidate 0 (ceiling (/ candidate-max-length 2)))
+                                        "..."
+                                        (substring candidate (- candidate-length (ceiling (/ candidate-max-length 2))) candidate-length))))
+                   (number (format "(%s)" (plist-get item :number)))
+                   (backend (plist-get item :backend))
+                   (padding-right 3))
+              (insert (concat
+                       (propertize (format "%s %s" display-candiate number) 'face 'font-lock-function-name-face)
+                       (propertize " " 'display
+                                   (blink-search-indent-pixel
+                                    (- window-width
+                                       (ceiling (* (window-font-width) (+ (string-width backend) padding-right))))))
+                       (propertize backend 'face 'font-lock-doc-face)
+                       "\n"
+                       ))
+              ))))
+      (with-current-buffer blink-search-backend-buffer
+        (erase-buffer)
 
-      (when backend-items
-        (dolist (item backend-items)
-          (insert (format "%s\n" item)))))
-    ))
+        (when backend-items
+          (dolist (item backend-items)
+            (insert (propertize (format "%s\n" item) 'face 'font-lock-string-face)))))
+      )))
 
 (provide 'blink-search)
 
