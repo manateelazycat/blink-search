@@ -157,7 +157,7 @@ Then Blink-Search will start by gdb, please send new issue with `*blink-search*'
 (defun blink-search-call-async (method &rest args)
   "Call Python EPC function METHOD and ARGS asynchronously."
   (blink-search-deferred-chain
-   (blink-search-epc-call-deferred blink-search-epc-process (read method) args)))
+    (blink-search-epc-call-deferred blink-search-epc-process (read method) args)))
 
 (defvar blink-search-is-starting nil)
 
@@ -279,6 +279,7 @@ influence of C1 on the result."
   (blink-search-start-recent-file-update)
   (blink-search-buffer-list-update)
   (blink-search-init-start-dir)
+  (blink-search-send-current-buffer-content)
   )
 
 (defvar blink-search-mode-map
@@ -313,13 +314,18 @@ influence of C1 on the result."
   (interactive)
   (when blink-search-window-configuration
     (set-window-configuration blink-search-window-configuration)
-    (setq blink-search-window-configuration nil)))
+    (setq blink-search-window-configuration nil)
 
+    (setq blink-search-start-buffer nil)))
+
+(defvar blink-search-start-buffer nil)
 (defvar blink-search-input-buffer " *blink search input*")
 (defvar blink-search-candidate-buffer " *blink search candidate*")
 (defvar blink-search-backend-buffer " *blink search backend*")
 
 (defun blink-search-init-layout ()
+  (setq blink-search-start-buffer (current-buffer))
+
   ;; Save window configuration.
   (unless blink-search-window-configuration
     (setq blink-search-window-configuration (current-window-configuration)))
@@ -369,6 +375,9 @@ influence of C1 on the result."
 
   ;; Pass search values to Python side.
   (blink-search-buffer-list-update)
+
+  ;; Send current buffer content to Python side.
+  (blink-search-send-current-buffer-content)
 
   ;; Start process.
   (unless blink-search-is-starting
@@ -474,6 +483,18 @@ influence of C1 on the result."
   (when (blink-search-epc-live-p blink-search-epc-process)
     (blink-search-call-async "search_buffer_list_update" (mapcar #'buffer-name (buffer-list)))))
 
+(defun blink-search-encode-string (str)
+  "Encode string STR with UTF-8 coding using Base64."
+  (base64-encode-string (encode-coding-string str 'utf-8)))
+
+(defun blink-search-send-current-buffer-content ()
+  (when (blink-search-epc-live-p blink-search-epc-process)
+    (blink-search-call-async "search_init_buffer"
+                             (buffer-name blink-search-start-buffer)
+                             (blink-search-encode-string
+                              (with-current-buffer blink-search-start-buffer
+                                (buffer-string))))))
+
 (defun blink-search-init-start-dir ()
   (blink-search-call-async "search_init_start_dir" default-directory))
 
@@ -574,6 +595,11 @@ influence of C1 on the result."
   (goto-line line)
   (blink-search-goto-column column))
 
+(defun blink-search-jump-to-buffer (buffer line column)
+  (switch-to-buffer buffer)
+  (goto-line line)
+  (blink-search-goto-column column))
+
 (defun blink-search-goto-column (column)
   "This function use for jump to correct column positions in multi-byte strings.
 Such as, mixed string of Chinese and English.
@@ -599,13 +625,12 @@ Function `move-to-column' can't handle mixed string of Chinese and English corre
         ("Recent File" (find-file candidate))
         ("Buffer List" (switch-to-buffer candidate))
         ("Find File" (blink-search-call-async "search_do" backend-name candidate))
+        ("Current Buffer" (blink-search-call-async "search_do" backend-name candidate))
         ("Grep File" (blink-search-call-async "search_do" backend-name candidate))
         ("Google Suggest" (blink-search-call-async "search_do" backend-name candidate))
         ("EAF Browser History" (eaf-open-browser (car (last (split-string candidate)))))))
     ))
 
-;; rg
-;; current-buffer
 ;; imenu
 ;; git log
 ;; rga
