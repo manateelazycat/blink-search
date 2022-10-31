@@ -50,12 +50,9 @@ class SearchCurrentBuffer(Search):
             tmp.close()
         
     def search_match(self, prefix):
-        if len(prefix.split()) > 0:
-            results = get_command_result("rg -S --column --max-columns 300 '{}' {}".format(prefix, self.buffer_temp_path)).splitlines()
+        results = get_command_result("rg -S --column --max-columns 300 '{}' {}".format(prefix, self.buffer_temp_path)).splitlines()
             
-            return results
-        else:
-            return []
+        return results
 
     def do(self, candidate):
         candidate_infos = candidate.split(":")

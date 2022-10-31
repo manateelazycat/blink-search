@@ -280,7 +280,7 @@ influence of C1 on the result."
   (blink-search-buffer-list-update)
   (blink-search-init-start-dir)
   (blink-search-send-current-buffer-content)
-  )
+  (blink-search-start))
 
 (defvar blink-search-mode-map
   (let ((map (make-sparse-keymap)))
@@ -379,6 +379,9 @@ influence of C1 on the result."
   ;; Send current buffer content to Python side.
   (blink-search-send-current-buffer-content)
 
+  ;; Start.
+  (blink-search-start)
+
   ;; Start process.
   (unless blink-search-is-starting
     (blink-search-start-process)))
@@ -415,10 +418,12 @@ influence of C1 on the result."
   ;; Send new input to all backends when user change input.
   (when (string-equal (buffer-name) blink-search-input-buffer)
     (let* ((input (with-current-buffer blink-search-input-buffer
-                    (buffer-substring-no-properties (point-min) (point-max))))
-           (row-number (/ (nth 3 (blink-search-get-window-allocation (get-buffer-window blink-search-candidate-buffer))) (line-pixel-height))))
-      (blink-search-call-async "search" input row-number)
+                    (buffer-substring-no-properties (point-min) (point-max)))))
+      (blink-search-call-async "search" input (blink-search-get-row-number))
       )))
+
+(defun blink-search-get-row-number ()
+  (/ (nth 3 (blink-search-get-window-allocation (get-buffer-window blink-search-candidate-buffer))) (line-pixel-height)))
 
 ;; Elisp symbol.
 (defcustom blink-search-elisp-symbol-update-idle 5
@@ -497,6 +502,10 @@ influence of C1 on the result."
 
 (defun blink-search-init-start-dir ()
   (blink-search-call-async "search_init_start_dir" default-directory))
+
+(defun blink-search-start ()
+  (when (blink-search-epc-live-p blink-search-epc-process)
+    (blink-search-call-async "search" "" (blink-search-get-row-number))))
 
 (defsubst blink-search-indent-pixel (xpos)
   "Return a display property that aligns to XPOS."
@@ -630,10 +639,6 @@ Function `move-to-column' can't handle mixed string of Chinese and English corre
         ("Google Suggest" (blink-search-call-async "search_do" backend-name candidate))
         ("EAF Browser History" (eaf-open-browser (car (last (split-string candidate)))))))
     ))
-
-;; imenu
-;; git log
-;; rga
 
 (provide 'blink-search)
 

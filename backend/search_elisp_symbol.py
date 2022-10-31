@@ -38,9 +38,6 @@ class SearchElispSymbol(Search):
         return symbol.startswith(prefix) or symbol.replace("-", "").startswith(prefix) or prefix_regexp.match(symbol)
     
     def search_match(self, prefix):
-        if len(prefix.split()) > 0:
-            prefix_regexp = re.compile(".*" + ".*".join(prefix.split()))
-            return list(filter(lambda symbol: self.is_match(prefix, prefix_regexp, symbol), self.items))
-        else:
-            return []
+        prefix_regexp = re.compile(".*" + ".*".join(prefix.split()))
+        return list(filter(lambda symbol: self.is_match(prefix, prefix_regexp, symbol), self.items))
     
