@@ -135,10 +135,10 @@ class BlinkSearch:
                     ["Find File", 5],
                     ["Recent File", 5],
                     ["EAF Browser History", 5],
-                    ["Google Suggest", 3],
                     ["Current Buffer", 5],
                     ["Grep File", 5],
-                    ["Elisp Symbol", 5]]:
+                    ["Elisp Symbol", 5],
+                    ["Google Suggest", 3]]:
                 [backend_name, candidate_show_number] = backend_info
                 if backend_name in self.search_dict and self.search_dict[backend_name] != None and len(self.search_dict[backend_name]) > 0:
                     candidates = self.search_dict[backend_name]
