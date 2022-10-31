@@ -8,3 +8,4 @@ test.log
 workspace/
 __pycache__
 backend/__pycache__
+core/__pycache__

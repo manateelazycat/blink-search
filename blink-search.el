@@ -117,10 +117,11 @@
 
 (defun blink-search--get-emacs-var-func (var-name)
   (let* ((var-symbol (intern var-name))
-         (var-value (symbol-value var-symbol))
+         (symbol-is-exist-p (boundp var-symbol))
+         (var-value (if symbol-is-exist-p (symbol-value var-symbol) nil))
          ;; We need convert result of booleanp to string.
          ;; Otherwise, python-epc will convert all `nil' to [] at Python side.
-         (var-is-bool (prin1-to-string (booleanp var-value))))
+         (var-is-bool (if symbol-is-exist-p (prin1-to-string (booleanp var-value)) "nil")))
     (list var-value var-is-bool)))
 
 (defun blink-search--get-emacs-vars-func (&rest vars)
@@ -156,7 +157,7 @@ Then Blink-Search will start by gdb, please send new issue with `*blink-search*'
 (defun blink-search-call-async (method &rest args)
   "Call Python EPC function METHOD and ARGS asynchronously."
   (blink-search-deferred-chain
-    (blink-search-epc-call-deferred blink-search-epc-process (read method) args)))
+   (blink-search-epc-call-deferred blink-search-epc-process (read method) args)))
 
 (defvar blink-search-is-starting nil)
 
@@ -507,7 +508,7 @@ influence of C1 on the result."
                                           (substring candidate (- candidate-length (ceiling (/ candidate-max-length 2))) candidate-length))))
                      (number (format "(%s)" (plist-get item :number)))
                      (backend (plist-get item :backend))
-                     (padding-right 3)
+                     (padding-right 5)
                      candidate-line)
                 (setq candidate-line (concat
                                       (format "%s %s" display-candiate number)
@@ -575,8 +576,21 @@ influence of C1 on the result."
       (pcase backend-name
         ("Elisp Symbol" (call-interactively (intern candidate)))
         ("Recent File" (find-file candidate))
-        ("Buffer List" (switch-to-buffer candidate)))
-      )))
+        ("Buffer List" (switch-to-buffer candidate))
+        ("EAF Browser History" (eaf-open-browser (car (last (split-string candidate)))))))
+    ))
+
+;; current-buffer
+;; directory-files
+;; open input url
+;; google search
+;; github search
+;; eaf pdf table
+;; fd
+;; google-suggestion
+;; imenu
+;; rg
+;; rga
 
 (provide 'blink-search)
 
