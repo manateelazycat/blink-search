@@ -27,7 +27,7 @@ import re
 import requests
 import json
 
-from core.utils import get_command_result, get_emacs_var, get_emacs_vars, message_emacs, eval_in_emacs, logger    # type: ignore
+from core.utils import get_command_result, get_emacs_var, get_emacs_vars, message_emacs, eval_in_emacs, logger, epc_client    # type: ignore
 from core.search import Search    # type: ignore
 
 class SearchGoogleSuggestion(Search):
@@ -35,10 +35,34 @@ class SearchGoogleSuggestion(Search):
     def __init__(self, backend_name, message_queue) -> None:
         Search.__init__(self, backend_name, message_queue)
         
+    def is_valid_url(self, url: str):
+        if len(url.split()) > 1:
+            return False
+        
+        if url.startswith('http://') or url.startswith('ftp://') or url.endswith(".html"):
+            return True
+        
+        import re
+        pattern = re.compile(
+            r'^(([a-zA-Z]{1})|([a-zA-Z]{1}[a-zA-Z]{1})|'
+            r'([a-zA-Z]{1}[0-9]{1})|([0-9]{1}[a-zA-Z]{1})|'
+            r'([a-zA-Z0-9][-_.a-zA-Z0-9]{0,61}[a-zA-Z0-9]))\.'
+            r'([a-zA-Z]{2,13}|[a-zA-Z0-9-]{2,30}.[a-zA-Z]{2,3})$'
+        )
+        
+        return pattern.match(url)
+        
     def search_match(self, prefix):
-        query = prefix.replace(" ", "%20")
-        response = requests.get('http://google.com/complete/search?client=chrome&q={}'.format(query), headers={
-            "User-Agent":
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.102 Safari/537.36 Edge/18.19582"
-        })
-        return json.loads(response.text)[1]
+        if len(prefix.split()) > 0:
+            query = prefix.replace(" ", "%20")
+            response = requests.get('http://google.com/complete/search?client=chrome&q={}'.format(query), headers={
+                "User-Agent":
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.102 Safari/537.36 Edge/18.19582"
+            })
+            
+            if self.is_valid_url(prefix) and (not (prefix.startswith("http://") or prefix.startswith("ftp://"))):
+                prefix = "http://" + prefix
+                
+            return [prefix] + json.loads(response.text)[1]
+        else:
+            return []
