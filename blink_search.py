@@ -31,6 +31,7 @@ from backend.search_elisp_symbol import SearchElispSymbol
 from backend.search_recent_file import SearchRecentFile
 from backend.search_buffer_list import SearchBufferList
 from backend.search_eaf_browser_history import SearchEAFBrowserHistory
+from backend.search_google_suggestion import SearchGoogleSuggestion
 
 class BlinkSearch:
     def __init__(self, args):
@@ -87,6 +88,7 @@ class BlinkSearch:
         self.search_recent_file = SearchRecentFile("Recent File", self.message_queue)
         self.search_buffer_list = SearchBufferList("Buffer List", self.message_queue)
         self.search_eaf_browser_history = SearchEAFBrowserHistory("EAF Browser History", self.message_queue)
+        self.search_google_suggestion = SearchGoogleSuggestion("Google Suggest", self.message_queue)
         
         # Pass epc port and webengine codec information to Emacs when first start blink-search.
         eval_in_emacs('blink-search--first-start', self.server.server_address[1])
@@ -159,7 +161,6 @@ class BlinkSearch:
                 self.render_backend_offset = 0
                 self.render_backend_index = 0
             elif self.render_candidate_offset + self.render_candidate_index == len(self.search_candidate_items) - 1:
-                message_emacs("[blink-search] Reach last candidate item")
                 need_update = False
             else:
                 self.render_candidate_offset += 1
@@ -190,7 +191,6 @@ class BlinkSearch:
                 self.render_backend_offset = 0
                 self.render_backend_index = 0
             elif self.render_candidate_offset == 0 and self.render_candidate_index == 0:
-                message_emacs("[blink-search] Reach first candidate item")
                 need_update = False
             else:
                 self.render_candidate_offset -= 1
@@ -215,7 +215,6 @@ class BlinkSearch:
             if self.render_backend_index < min(self.search_row_number, len(self.search_backend_items)) - 1:
                 self.render_backend_index += 1
             elif self.render_backend_offset + self.render_backend_index == len(self.search_backend_items) - 1:
-                message_emacs("[blink-search] Reach last backend item")
                 need_update = False
             else:
                 self.render_backend_offset += 1
@@ -235,7 +234,6 @@ class BlinkSearch:
             if self.render_backend_index > 0:
                 self.render_backend_index -= 1
             elif self.render_backend_offset == 0 and self.render_backend_index == 0:
-                message_emacs("[blink-search] Reach first backend item")
                 need_update = False
             else:
                 self.render_backend_offset -= 1
@@ -263,6 +261,7 @@ class BlinkSearch:
         self.search_recent_file.search(input)
         self.search_buffer_list.search(input)
         self.search_eaf_browser_history.search(input)
+        self.search_google_suggestion.search(input)
         
     def cleanup(self):
         """Do some cleanup before exit python process."""

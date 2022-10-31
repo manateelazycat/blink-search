@@ -157,7 +157,7 @@ Then Blink-Search will start by gdb, please send new issue with `*blink-search*'
 (defun blink-search-call-async (method &rest args)
   "Call Python EPC function METHOD and ARGS asynchronously."
   (blink-search-deferred-chain
-   (blink-search-epc-call-deferred blink-search-epc-process (read method) args)))
+    (blink-search-epc-call-deferred blink-search-epc-process (read method) args)))
 
 (defvar blink-search-is-starting nil)
 
@@ -515,7 +515,7 @@ influence of C1 on the result."
                                       (propertize " " 'display
                                                   (blink-search-indent-pixel
                                                    (- window-width
-                                                      (ceiling (* (window-font-width) (+ (string-width backend) padding-right))))))
+                                                      (* (window-font-width) (+ (string-width backend) padding-right)))))
                                       (propertize backend 'face (if (equal candidate-index candidate-select-index) 'blink-search-select-face 'font-lock-doc-face))
                                       "\n"
                                       ))
@@ -577,13 +577,13 @@ influence of C1 on the result."
         ("Elisp Symbol" (call-interactively (intern candidate)))
         ("Recent File" (find-file candidate))
         ("Buffer List" (switch-to-buffer candidate))
+        ("Google Suggest" (eaf-open-browser (concat "http://www.google.com/search?q=" (string-replace " " "%20" candidate))))
         ("EAF Browser History" (eaf-open-browser (car (last (split-string candidate)))))))
     ))
 
 ;; current-buffer
 ;; directory-files
 ;; open input url
-;; google search
 ;; github search
 ;; eaf pdf table
 ;; fd
