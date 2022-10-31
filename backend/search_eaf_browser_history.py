@@ -39,11 +39,16 @@ class SearchEAFBrowserHistory(Search):
         if type(eaf_config_path) is str and eaf_config_path != "":
             eaf_browser_history_path = os.path.join(eaf_config_path, "browser", "history", "log.txt")
             if os.path.exists(eaf_browser_history_path):
-                histories = get_command_result('''cat {} | fzf -e -f "{}"'''.format(eaf_browser_history_path, prefix)).splitlines()
+                histories = []
+                with open(eaf_browser_history_path) as f:
+                    histories = f.read().splitlines()
                 
                 match_histories = []
+                prefix_regexp = re.compile(".*" + ".*".join(prefix.split()))
                 for history in histories:
-                    match_histories.append(" ".join(history.split("ᛡ")[0].split("ᛝ")))
+                    history_infos = history.split("ᛡ")[0].split("ᛝ")
+                    if prefix_regexp.match(history_infos[0].lower()) or prefix_regexp.match(history_infos[1].lower()):
+                        match_histories.append(" ".join(history_infos))
                         
                 return match_histories
                 
