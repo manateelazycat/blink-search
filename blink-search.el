@@ -537,9 +537,9 @@ influence of C1 on the result."
                      (display-candiate (if (<= candidate-length candidate-max-length)
                                            candidate
                                          (concat
-                                          (substring candidate 0 (ceiling (/ candidate-max-length 2)))
+                                          (substring candidate 0 (ceiling (/ candidate-max-length 3)))
                                           "..."
-                                          (substring candidate (- candidate-length (ceiling (/ candidate-max-length 2))) candidate-length))))
+                                          (substring candidate (- candidate-length (ceiling (/ candidate-max-length 3))) candidate-length))))
                      (number (format "(%s)" (plist-get item :number)))
                      (backend (plist-get item :backend))
                      (padding-right 5)

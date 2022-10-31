@@ -130,13 +130,24 @@ class BlinkSearch:
             self.search_backend_items = []
             
             candidate_items = []
-            for k, v in self.search_dict.items():
-                if v != None and len(v) > 0:
-                    candidate_items.append({
-                        "backend": k,
-                        "candidate": v[0],
-                        "number": len(v)
-                    })
+            for backend_info in [
+                    ["Buffer List", 5],
+                    ["Find File", 5],
+                    ["Recent File", 5],
+                    ["EAF Browser History", 5],
+                    ["Google Suggest", 3],
+                    ["Current Buffer", 5],
+                    ["Grep File", 5],
+                    ["Elisp Symbol", 5]]:
+                [backend_name, candidate_show_number] = backend_info
+                if backend_name in self.search_dict and self.search_dict[backend_name] != None and len(self.search_dict[backend_name]) > 0:
+                    candidates = self.search_dict[backend_name]
+                    for candidate in candidates[:min(len(candidates), candidate_show_number)]:
+                        candidate_items.append({
+                            "backend": backend_name,
+                            "candidate": candidate,
+                            "number": len(candidates)
+                        })
                     
             if len(candidate_items) > 0:
                 backend_items = self.search_dict[candidate_items[0]["backend"]]

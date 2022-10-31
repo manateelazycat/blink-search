@@ -19,6 +19,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import functools
 import threading
 import os
 import traceback
@@ -33,6 +34,17 @@ class SearchBufferList(Search):
     
     def __init__(self, backend_name, message_queue) -> None:
         Search.__init__(self, backend_name, message_queue)
+        
+    def sort_buffer(self, a, b):
+        if (not a.startswith(" *")) and b.startswith(" *"):
+            return -1
+        elif a.startswith(" *") and (not b.startswith(" *")):
+            return 1
+        else:
+            return a < b
+        
+    def update(self, items):
+        self.items = sorted(items, key=functools.cmp_to_key(self.sort_buffer))
         
     def is_match(self, prefix, prefix_regexp, symbol):
         return symbol.startswith(prefix) or symbol.replace("-", "").startswith(prefix) or prefix_regexp.match(symbol)
