@@ -33,6 +33,7 @@ from backend.search_buffer_list import SearchBufferList
 from backend.search_eaf_browser_history import SearchEAFBrowserHistory
 from backend.search_google_suggestion import SearchGoogleSuggestion
 from backend.search_fd import SearchFd
+from backend.search_rg import SearchRg
 
 class BlinkSearch:
     def __init__(self, args):
@@ -91,6 +92,7 @@ class BlinkSearch:
         self.search_eaf_browser_history = SearchEAFBrowserHistory("EAF Browser History", self.message_queue)
         self.search_google_suggestion = SearchGoogleSuggestion("Google Suggest", self.message_queue)
         self.search_fd = SearchFd("Find File", self.message_queue)
+        self.search_rg = SearchRg("Grep File", self.message_queue)
         
         # Pass epc port and webengine codec information to Emacs when first start blink-search.
         eval_in_emacs('blink-search--first-start', self.server.server_address[1])
@@ -259,10 +261,13 @@ class BlinkSearch:
         
     def search_init_start_dir(self, start_dir):
         self.search_fd.init_dir(start_dir)
+        self.search_rg.init_dir(start_dir)
         
     def search_do(self, backend, candidate):
         if backend == "Find File":
             self.search_fd.do(candidate)
+        if backend == "Grep File":
+            self.search_rg.do(candidate)
         elif backend == "Google Suggest":
             self.search_google_suggestion.do(candidate)
         
@@ -274,6 +279,7 @@ class BlinkSearch:
         self.search_eaf_browser_history.search(input)
         self.search_google_suggestion.search(input)
         self.search_fd.search(input)
+        self.search_rg.search(input)
         
     def cleanup(self):
         """Do some cleanup before exit python process."""

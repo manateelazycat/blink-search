@@ -157,7 +157,7 @@ Then Blink-Search will start by gdb, please send new issue with `*blink-search*'
 (defun blink-search-call-async (method &rest args)
   "Call Python EPC function METHOD and ARGS asynchronously."
   (blink-search-deferred-chain
-    (blink-search-epc-call-deferred blink-search-epc-process (read method) args)))
+   (blink-search-epc-call-deferred blink-search-epc-process (read method) args)))
 
 (defvar blink-search-is-starting nil)
 
@@ -569,6 +569,23 @@ influence of C1 on the result."
   (interactive)
   (blink-search-call-async "select_prev_backend_item"))
 
+(defun blink-search-jump-to-file (file line column)
+  (find-file file)
+  (goto-line line)
+  (blink-search-goto-column column))
+
+(defun blink-search-goto-column (column)
+  "This function use for jump to correct column positions in multi-byte strings.
+Such as, mixed string of Chinese and English.
+
+Function `move-to-column' can't handle mixed string of Chinese and English correctly."
+  (let ((scan-column 0)
+        (first-char-point (point)))
+
+    (while (> column scan-column)
+      (forward-char 1)
+      (setq scan-column (string-bytes (buffer-substring first-char-point (point)))))))
+
 (defun blink-search-do ()
   (interactive)
   (when (and (> (length blink-search-candidate-items) 0)
@@ -581,7 +598,8 @@ influence of C1 on the result."
         ("Elisp Symbol" (call-interactively (intern candidate)))
         ("Recent File" (find-file candidate))
         ("Buffer List" (switch-to-buffer candidate))
-        ("Find file" (blink-search-call-async "search_do" backend-name candidate))
+        ("Find File" (blink-search-call-async "search_do" backend-name candidate))
+        ("Grep File" (blink-search-call-async "search_do" backend-name candidate))
         ("Google Suggest" (blink-search-call-async "search_do" backend-name candidate))
         ("EAF Browser History" (eaf-open-browser (car (last (split-string candidate)))))))
     ))

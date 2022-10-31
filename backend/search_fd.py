@@ -44,7 +44,7 @@ class SearchFd(Search):
         
     def search_match(self, prefix):
         if len(prefix.split()) > 0:
-            results = get_command_result("fd -a -p {} --search-path {}".format(".*".join(prefix.split()), self.search_dir)).splitlines()
+            results = get_command_result("fd -p {} --search-path {}".format(".*".join(prefix.split()), self.search_dir)).splitlines()
             
             return list(map(lambda p: os.path.relpath(p, self.search_path), results))
         else:
