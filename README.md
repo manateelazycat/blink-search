@@ -6,7 +6,7 @@ English | [简体中文](./README.zh-CN.md)
   <h3>In the blink of an eye, the search is complete!</h3>
 </p>
 
-blink-search's global is to become the fastest search framework in Emacs.
+blink-search's goal is to become the fastest search framework in Emacs.
 
 blink-search use python multi-thread technology to search and filter candidates, Emacs only render result and do action.
 
