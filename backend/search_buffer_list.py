@@ -38,6 +38,5 @@ class SearchBufferList(Search):
         return symbol.startswith(prefix) or symbol.replace("-", "").startswith(prefix) or prefix_regexp.match(symbol)
     
     def search_match(self, prefix):
-        prefix_regexp = re.compile(".*" + ".*".join(prefix.split()))
+        prefix_regexp = re.compile(".*" + ".*".join(prefix.split()), re.IGNORECASE)
         return list(filter(lambda symbol: self.is_match(prefix, prefix_regexp, symbol), self.items))
-    
