@@ -476,7 +476,17 @@ influence of C1 on the result."
   "Return a display property that aligns to XPOS."
   `(space :align-to (,xpos)))
 
+(defvar blink-search-candidate-items nil)
+(defvar blink-search-candidate-select-index nil)
+(defvar blink-search-backend-items nil)
+(defvar blink-search-backend-select-index nil)
+
 (defun blink-search-update-items (candidate-items candidate-select-index backend-items backend-select-index)
+  (setq blink-search-candidate-items candidate-items)
+  (setq blink-search-candidate-select-index candidate-select-index)
+  (setq blink-search-backend-items backend-items)
+  (setq blink-search-backend-select-index backend-select-index)
+
   (save-excursion
     (let* ((window-allocation (blink-search-get-window-allocation (get-buffer-window blink-search-candidate-buffer)))
            (window-width (nth 2 window-allocation)))
@@ -555,7 +565,18 @@ influence of C1 on the result."
   (blink-search-call-async "select_prev_backend_item"))
 
 (defun blink-search-do ()
-  (interactive))
+  (interactive)
+  (when (and (> (length blink-search-candidate-items) 0)
+             (> (length blink-search-backend-items) 0))
+    (let* ((backend-name (plist-get (nth blink-search-candidate-select-index blink-search-candidate-items) :backend))
+           (candidate (nth blink-search-backend-select-index blink-search-backend-items)))
+      (blink-search-quit)
+
+      (pcase backend-name
+        ("Elisp Symbol" (call-interactively (intern candidate)))
+        ("Recent File" (find-file candidate))
+        ("Buffer List" (switch-to-buffer candidate)))
+      )))
 
 (provide 'blink-search)
 
