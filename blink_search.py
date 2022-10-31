@@ -74,6 +74,12 @@ class BlinkSearch:
         self.search_row_number = 0
         self.search_candidate_items = []
         self.search_backend_items = []
+        self.render_candidate_index = 0
+        self.render_backend_index = 0
+        self.render_candidate_items = []
+        self.render_backend_items = []
+        self.render_candidate_offset = 0
+        self.render_backend_offset = 0
         
         # Init search backend.
         self.search_elisp_symbol = SearchElispSymbol("Elisp Symbol", self.message_queue)
@@ -126,10 +132,120 @@ class BlinkSearch:
                 backend_items = self.search_dict[candidate_items[0]["backend"]]
                 
                 self.search_candidate_items = candidate_items
-                self.search_backend_items = backend_items[:min(self.search_row_number, len(backend_items))]
+                self.search_backend_items = backend_items
                 
-            eval_in_emacs("blink-search-update-items", self.search_candidate_items, self.search_backend_items)
+                self.render_candidate_items = candidate_items[:min(self.search_row_number, len(candidate_items))]
+                self.render_backend_items = backend_items[:min(self.search_row_number, len(backend_items))]
+                self.render_candidate_offset = 0
+                self.render_candidate_index = 0
+                self.render_backend_offset = 0
+                self.render_backend_index = 0
+                
+                eval_in_emacs("blink-search-update-items", 
+                              self.render_candidate_items, self.render_candidate_index, 
+                              self.render_backend_items, self.render_backend_index)
             
+    def select_next_candidate_item(self):
+        need_update = True
+        
+        if len(self.search_candidate_items) > 0:
+            if self.render_candidate_index < min(self.search_row_number, len(self.search_candidate_items)) - 1:
+                self.render_candidate_index += 1
+                self.search_backend_items = self.search_dict[self.render_candidate_items[self.render_candidate_index]["backend"]]
+                self.render_backend_items = self.search_backend_items[:min(self.search_row_number, len(self.search_backend_items))]
+                
+                self.render_backend_offset = 0
+                self.render_backend_index = 0
+            elif self.render_candidate_offset + self.render_candidate_index == len(self.search_candidate_items) - 1:
+                message_emacs("[blink-search] Reach last candidate item")
+                need_update = False
+            else:
+                self.render_candidate_offset += 1
+                self.render_candidate_items = self.search_candidate_items[self.render_candidate_offset:self.render_candidate_offset + self.search_row_number]
+                self.search_backend_items = self.search_dict[self.render_candidate_items[self.render_candidate_index]["backend"]]
+                self.render_backend_items = self.search_backend_items[:min(self.search_row_number, len(self.search_backend_items))]
+                
+                self.render_backend_offset = 0
+                self.render_backend_index = 0
+        else:
+            need_update = False
+        
+        if need_update:
+            eval_in_emacs("blink-search-update-items", 
+                          self.render_candidate_items, self.render_candidate_index, 
+                          self.render_backend_items, self.render_backend_index)
+
+    def select_prev_candidate_item(self):
+        need_update = True
+        
+        if len(self.search_candidate_items) > 0:
+            if self.render_candidate_index > 0:
+                self.render_candidate_index -= 1
+                self.render_candidate_items = self.search_candidate_items[self.render_candidate_offset:self.render_candidate_offset + self.search_row_number]
+                self.search_backend_items = self.search_dict[self.render_candidate_items[self.render_candidate_index]["backend"]]
+                self.render_backend_items = self.search_backend_items[:min(self.search_row_number, len(self.search_backend_items))]
+                
+                self.render_backend_offset = 0
+                self.render_backend_index = 0
+            elif self.render_candidate_offset == 0 and self.render_candidate_index == 0:
+                message_emacs("[blink-search] Reach first candidate item")
+                need_update = False
+            else:
+                self.render_candidate_offset -= 1
+                self.render_candidate_items = self.search_candidate_items[self.render_candidate_offset:self.render_candidate_offset + self.search_row_number]
+                self.search_backend_items = self.search_dict[self.render_candidate_items[self.render_candidate_index]["backend"]]
+                self.render_backend_items = self.search_backend_items[:min(self.search_row_number, len(self.search_backend_items))]
+                
+                self.render_backend_offset = 0
+                self.render_backend_index = 0
+        else:
+            need_update = False
+        
+        if need_update:
+            eval_in_emacs("blink-search-update-items", 
+                          self.render_candidate_items, self.render_candidate_index, 
+                          self.render_backend_items, self.render_backend_index)
+    
+    def select_next_backend_item(self):
+        need_update = True
+        
+        if len(self.search_backend_items) > 0:
+            if self.render_backend_index < min(self.search_row_number, len(self.search_backend_items)) - 1:
+                self.render_backend_index += 1
+            elif self.render_backend_offset + self.render_backend_index == len(self.search_backend_items) - 1:
+                message_emacs("[blink-search] Reach last backend item")
+                need_update = False
+            else:
+                self.render_backend_offset += 1
+                self.render_backend_items = self.search_backend_items[self.render_backend_offset:self.render_backend_offset + self.search_row_number]
+        else:
+            need_update = False
+        
+        if need_update:
+            eval_in_emacs("blink-search-update-items", 
+                          self.render_candidate_items, self.render_candidate_index, 
+                          self.render_backend_items, self.render_backend_index)
+
+    def select_prev_backend_item(self):
+        need_update = True
+        
+        if len(self.search_backend_items) > 0:
+            if self.render_backend_index > 0:
+                self.render_backend_index -= 1
+            elif self.render_backend_offset == 0 and self.render_backend_index == 0:
+                message_emacs("[blink-search] Reach first backend item")
+                need_update = False
+            else:
+                self.render_backend_offset -= 1
+                self.render_backend_items = self.search_backend_items[self.render_backend_offset:self.render_backend_offset + self.search_row_number]
+        else:
+            need_update = False
+        
+        if need_update:
+            eval_in_emacs("blink-search-update-items", 
+                          self.render_candidate_items, self.render_candidate_index, 
+                          self.render_backend_items, self.render_backend_index)
+    
     def search_elisp_symbol_update(self, symbols):
         self.search_elisp_symbol.update(symbols)
         

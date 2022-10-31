@@ -149,12 +149,45 @@ Then Blink-Search will start by gdb, please send new issue with `*blink-search*'
   "Enable this option to print log message in `*blink-search*' buffer, default only print message header."
   :type 'boolean)
 
+(defface blink-search-select-face
+  '()
+  "Face used to highlight the currently selected candidate.")
+
 (defun blink-search-call-async (method &rest args)
   "Call Python EPC function METHOD and ARGS asynchronously."
   (blink-search-deferred-chain
     (blink-search-epc-call-deferred blink-search-epc-process (read method) args)))
 
 (defvar blink-search-is-starting nil)
+
+(defun blink-search-get-theme-mode ()
+  "Get theme mode, dark or light."
+  (prin1-to-string (frame-parameter nil 'background-mode)))
+
+(defun blink-search-color-blend (c1 c2 alpha)
+  "Blend two colors C1 and C2 with ALPHA.
+C1 and C2 are hexidecimal strings.
+ALPHA is a number between 0.0 and 1.0 which corresponds to the
+influence of C1 on the result."
+  (apply (lambda (r g b)
+           (format "#%02x%02x%02x"
+                   (ash r -8)
+                   (ash g -8)
+                   (ash b -8)))
+         (cl-mapcar
+          (lambda (x y)
+            (round (+ (* x alpha) (* y (- 1 alpha)))))
+          (color-values c1) (color-values c2))))
+
+(defun blink-search-init-colors (&optional force)
+  (let* ((is-dark-mode (string-equal (blink-search-get-theme-mode) "dark"))
+         (blend-background (if is-dark-mode "#000000" "#AAAAAA"))
+         (default-background (face-attribute 'default :background)))
+    ;; Make sure menu follow the theme of Emacs.
+    (when (or force (equal (face-attribute 'blink-search-select-face :background) 'unspecified))
+      (set-face-background 'blink-search-select-face (blink-search-color-blend default-background blend-background 0.6)))
+    (when (or force (equal (face-attribute 'blink-search-select-face :foreground) 'unspecified))
+      (set-face-foreground 'blink-search-select-face (face-attribute 'font-lock-function-name-face :foreground)))))
 
 (defun blink-search-restart-process ()
   "Stop and restart Blink-Search process."
@@ -251,6 +284,11 @@ Then Blink-Search will start by gdb, please send new issue with `*blink-search*'
     (define-key map (kbd "C-g") 'blink-search-quit)
     (define-key map (kbd "ESC ESC ESC") 'blink-search-quit)
     (define-key map (kbd "M-h") 'blink-search-quit)
+    (define-key map (kbd "C-n") 'blink-search-select-next-candidate-item)
+    (define-key map (kbd "C-p") 'blink-search-select-prev-candidate-item)
+    (define-key map (kbd "M-n") 'blink-search-select-next-backend-item)
+    (define-key map (kbd "M-p") 'blink-search-select-prev-backend-item)
+    (define-key map (kbd "C-m") 'blink-search-do)
     map)
   "Keymap used by `blink-search-mode'.")
 
@@ -283,6 +321,9 @@ Then Blink-Search will start by gdb, please send new issue with `*blink-search*'
   ;; Save window configuration.
   (unless blink-search-window-configuration
     (setq blink-search-window-configuration (current-window-configuration)))
+
+  ;; Init color.
+  (blink-search-init-colors)
 
   ;; Create buffers.
   (with-current-buffer (get-buffer-create blink-search-input-buffer)
@@ -435,44 +476,86 @@ Then Blink-Search will start by gdb, please send new issue with `*blink-search*'
   "Return a display property that aligns to XPOS."
   `(space :align-to (,xpos)))
 
-(defun blink-search-update-items (candidate-items backend-items)
+(defun blink-search-update-items (candidate-items candidate-select-index backend-items backend-select-index)
   (save-excursion
-    (with-current-buffer blink-search-candidate-buffer
-      (let* ((window-allocation (blink-search-get-window-allocation (get-buffer-window blink-search-candidate-buffer)))
-             (window-width (nth 2 window-allocation))
-             (candidate-max-length (ceiling (/ window-width (window-font-width) 2))))
-        (erase-buffer)
+    (let* ((window-allocation (blink-search-get-window-allocation (get-buffer-window blink-search-candidate-buffer)))
+           (window-width (nth 2 window-allocation)))
+      (with-current-buffer blink-search-candidate-buffer
+        (let* ((candidate-max-length (ceiling (/ window-width (window-font-width) 2)))
+               (candidate-index 0))
+          (erase-buffer)
 
-        (when candidate-items
-          (dolist (item candidate-items)
-            (let* ((candidate (plist-get item :candidate))
-                   (candidate-length (length candidate))
-                   (display-candiate (if (<= candidate-length candidate-max-length)
-                                         candidate
-                                       (concat
-                                        (substring candidate 0 (ceiling (/ candidate-max-length 2)))
-                                        "..."
-                                        (substring candidate (- candidate-length (ceiling (/ candidate-max-length 2))) candidate-length))))
-                   (number (format "(%s)" (plist-get item :number)))
-                   (backend (plist-get item :backend))
-                   (padding-right 3))
-              (insert (concat
-                       (propertize (format "%s %s" display-candiate number) 'face 'font-lock-function-name-face)
-                       (propertize " " 'display
-                                   (blink-search-indent-pixel
-                                    (- window-width
-                                       (ceiling (* (window-font-width) (+ (string-width backend) padding-right))))))
-                       (propertize backend 'face 'font-lock-doc-face)
-                       "\n"
-                       ))
-              ))))
-      (with-current-buffer blink-search-backend-buffer
-        (erase-buffer)
+          (when candidate-items
+            (dolist (item candidate-items)
+              (let* ((candidate (plist-get item :candidate))
+                     (candidate-length (length candidate))
+                     (display-candiate (if (<= candidate-length candidate-max-length)
+                                           candidate
+                                         (concat
+                                          (substring candidate 0 (ceiling (/ candidate-max-length 2)))
+                                          "..."
+                                          (substring candidate (- candidate-length (ceiling (/ candidate-max-length 2))) candidate-length))))
+                     (number (format "(%s)" (plist-get item :number)))
+                     (backend (plist-get item :backend))
+                     (padding-right 3)
+                     candidate-line)
+                (setq candidate-line (concat
+                                      (format "%s %s" display-candiate number)
+                                      (propertize " " 'display
+                                                  (blink-search-indent-pixel
+                                                   (- window-width
+                                                      (ceiling (* (window-font-width) (+ (string-width backend) padding-right))))))
+                                      (propertize backend 'face (if (equal candidate-index candidate-select-index) 'blink-search-select-face 'font-lock-doc-face))
+                                      "\n"
+                                      ))
 
-        (when backend-items
-          (dolist (item backend-items)
-            (insert (propertize (format "%s\n" item) 'face 'font-lock-string-face)))))
-      )))
+                (when (equal candidate-index candidate-select-index)
+                  (add-face-text-property 0 (length candidate-line) 'blink-search-select-face 'append candidate-line))
+
+                (insert candidate-line)
+
+                (setq candidate-index (1+ candidate-index))
+                ))))
+        (with-current-buffer blink-search-backend-buffer
+          (let ((backend-index 0))
+            (erase-buffer)
+
+            (when backend-items
+              (dolist (item backend-items)
+                (let* (backend-line)
+                  (setq backend-line
+                        (concat
+                         (propertize (format "%s" item) 'face 'font-lock-doc-face)
+                         (propertize " " 'display (blink-search-indent-pixel window-width))
+                         "\n"
+                         ))
+
+                  (when (equal backend-index backend-select-index)
+                    (add-face-text-property 0 (length backend-line) 'blink-search-select-face 'append backend-line))
+
+                  (insert backend-line)
+
+                  (setq backend-index (1+ backend-index)))))))
+        ))))
+
+(defun blink-search-select-next-candidate-item ()
+  (interactive)
+  (blink-search-call-async "select_next_candidate_item"))
+
+(defun blink-search-select-prev-candidate-item ()
+  (interactive)
+  (blink-search-call-async "select_prev_candidate_item"))
+
+(defun blink-search-select-next-backend-item ()
+  (interactive)
+  (blink-search-call-async "select_next_backend_item"))
+
+(defun blink-search-select-prev-backend-item ()
+  (interactive)
+  (blink-search-call-async "select_prev_backend_item"))
+
+(defun blink-search-do ()
+  (interactive))
 
 (provide 'blink-search)
 
