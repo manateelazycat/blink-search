@@ -157,7 +157,7 @@ Then Blink-Search will start by gdb, please send new issue with `*blink-search*'
 (defun blink-search-call-async (method &rest args)
   "Call Python EPC function METHOD and ARGS asynchronously."
   (blink-search-deferred-chain
-   (blink-search-epc-call-deferred blink-search-epc-process (read method) args)))
+    (blink-search-epc-call-deferred blink-search-epc-process (read method) args)))
 
 (defvar blink-search-is-starting nil)
 
@@ -278,6 +278,7 @@ influence of C1 on the result."
   (blink-search-start-elisp-symbol-update)
   (blink-search-start-recent-file-update)
   (blink-search-buffer-list-update)
+  (blink-search-init-start-dir)
   )
 
 (defvar blink-search-mode-map
@@ -473,6 +474,9 @@ influence of C1 on the result."
   (when (blink-search-epc-live-p blink-search-epc-process)
     (blink-search-call-async "search_buffer_list_update" (mapcar #'buffer-name (buffer-list)))))
 
+(defun blink-search-init-start-dir ()
+  (blink-search-call-async "search_init_start_dir" default-directory))
+
 (defsubst blink-search-indent-pixel (xpos)
   "Return a display property that aligns to XPOS."
   `(space :align-to (,xpos)))
@@ -565,21 +569,6 @@ influence of C1 on the result."
   (interactive)
   (blink-search-call-async "select_prev_backend_item"))
 
-(defun blink-search-is-valid-web-url (url)
-  "Return the same URL if it is valid."
-  (when (and url
-             ;; URL should not include blank char.
-             (< (length (split-string url)) 2)
-             ;; Use regexp matching URL.
-             (or (and
-                  (string-prefix-p "file://" url)
-                  (string-suffix-p ".html" url))
-                 ;; Normal url address.
-                 (string-match "^\\(https?://\\)?[a-z0-9]+\\([-.][a-z0-9]+\\)*.+\\..+[a-z0-9.]\\{1,6\\}\\(:[0-9]{1,5}\\)?\\(/.*\\)?$" url)
-                 ;; Localhost url.
-                 (string-match "^\\(https?://\\)?\\(localhost\\|127.0.0.1\\):[0-9]+/?" url)))
-    url))
-
 (defun blink-search-do ()
   (interactive)
   (when (and (> (length blink-search-candidate-items) 0)
@@ -592,21 +581,15 @@ influence of C1 on the result."
         ("Elisp Symbol" (call-interactively (intern candidate)))
         ("Recent File" (find-file candidate))
         ("Buffer List" (switch-to-buffer candidate))
-        ("Google Suggest" (eaf-open-browser (if (blink-search-is-valid-web-url candidate)
-                                                candidate
-                                              (concat "http://www.google.com/search?q=" (string-replace " " "%20" candidate)))))
+        ("Find file" (blink-search-call-async "search_do" backend-name candidate))
+        ("Google Suggest" (blink-search-call-async "search_do" backend-name candidate))
         ("EAF Browser History" (eaf-open-browser (car (last (split-string candidate)))))))
     ))
 
-;; current-buffer
-;; directory-files
-;; open input url
-;; github search
-;; eaf pdf table
-;; fd
-;; google-suggestion
-;; imenu
 ;; rg
+;; current-buffer
+;; imenu
+;; git log
 ;; rga
 
 (provide 'blink-search)

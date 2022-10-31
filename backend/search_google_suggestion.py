@@ -66,3 +66,9 @@ class SearchGoogleSuggestion(Search):
             return [prefix] + json.loads(response.text)[1]
         else:
             return []
+
+    def do(self, candidate):
+        if self.is_valid_url(candidate):
+            eval_in_emacs("eaf-open-browser", candidate)
+        else:
+            eval_in_emacs("eaf-open-browser", "http://www.google.com/search?q={}".format(candidate.replace(" ", "%20")))

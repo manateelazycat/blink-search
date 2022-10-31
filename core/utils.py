@@ -125,9 +125,9 @@ def get_emacs_func_result(method_name, *args):
     return result
 
 
-def get_command_result(command_string):
+def get_command_result(command_string, cwd=None):
     import subprocess
-    process = subprocess.Popen(command_string, shell=True, text=True,
+    process = subprocess.Popen(command_string, cwd=cwd, shell=True, text=True,
                                stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                                encoding="utf-8")
     ret = process.wait()
