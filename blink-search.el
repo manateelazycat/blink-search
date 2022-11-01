@@ -118,7 +118,7 @@
 (defun blink-search--get-emacs-var-func (var-name)
   (let* ((var-symbol (intern var-name))
          (symbol-is-exist-p (boundp var-symbol))
-         (var-value (if symbol-is-exist-p (symbol-value var-symbol) nil))
+         (var-value (if symbol-is-exist-p (symbol-value var-symbol) ""))
          ;; We need convert result of booleanp to string.
          ;; Otherwise, python-epc will convert all `nil' to [] at Python side.
          (var-is-bool (if symbol-is-exist-p (prin1-to-string (booleanp var-value)) "nil")))
@@ -157,7 +157,7 @@ Then Blink-Search will start by gdb, please send new issue with `*blink-search*'
 (defun blink-search-call-async (method &rest args)
   "Call Python EPC function METHOD and ARGS asynchronously."
   (blink-search-deferred-chain
-    (blink-search-epc-call-deferred blink-search-epc-process (read method) args)))
+   (blink-search-epc-call-deferred blink-search-epc-process (read method) args)))
 
 (defvar blink-search-is-starting nil)
 
