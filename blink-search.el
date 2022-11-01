@@ -542,7 +542,11 @@ influence of C1 on the result."
                candidate
              (concat (substring candidate 0 candidate-max-length) "...")))
           (t
-           candidate))))
+           (if (<= candidate-length candidate-max-length)
+               candidate
+             (concat (substring candidate 0 candidate-max-length)
+                     "..."
+                     (substring candidate candidate-max-length (len candidate))))))))
 
 (defun blink-search-update-items (candidate-items candidate-select-index backend-items backend-select-index)
   (setq blink-search-candidate-items candidate-items)
