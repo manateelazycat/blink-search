@@ -157,7 +157,7 @@ Then Blink-Search will start by gdb, please send new issue with `*blink-search*'
 (defun blink-search-call-async (method &rest args)
   "Call Python EPC function METHOD and ARGS asynchronously."
   (blink-search-deferred-chain
-   (blink-search-epc-call-deferred blink-search-epc-process (read method) args)))
+    (blink-search-epc-call-deferred blink-search-epc-process (read method) args)))
 
 (defvar blink-search-is-starting nil)
 
@@ -604,12 +604,16 @@ influence of C1 on the result."
 (defun blink-search-jump-to-file (file line column)
   (find-file file)
   (goto-line line)
-  (blink-search-goto-column column))
+  (blink-search-goto-column column)
+  (recenter)
+  (blink-search-flash-line))
 
 (defun blink-search-jump-to-buffer (buffer line column)
   (switch-to-buffer buffer)
   (goto-line line)
-  (blink-search-goto-column column))
+  (blink-search-goto-column column)
+  (recenter)
+  (blink-search-flash-line))
 
 (defun blink-search-goto-column (column)
   "This function use for jump to correct column positions in multi-byte strings.
@@ -622,6 +626,25 @@ Function `move-to-column' can't handle mixed string of Chinese and English corre
     (while (> column scan-column)
       (forward-char 1)
       (setq scan-column (string-bytes (buffer-substring first-char-point (point)))))))
+
+(defcustom blink-search-flash-line-delay .3
+  "How many seconds to flash `blink-search-font-lock-flash' after navigation.
+
+Setting this to nil or 0 will turn off the indicator."
+  :type 'number
+  :group 'blink-search)
+
+(defface blink-search-font-lock-flash
+  '((t (:inherit highlight)))
+  "Face to flash the current line."
+  :group 'blink-search)
+
+(defun blink-search-flash-line ()
+  (let ((pulse-iterations 1)
+        (pulse-delay blink-search-flash-line-delay))
+    ;; Flash match line.
+    (pulse-momentary-highlight-one-line (point) 'blink-search-font-lock-flash)
+    ))
 
 (defun blink-search-do ()
   (interactive)
