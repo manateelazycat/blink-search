@@ -647,9 +647,18 @@ Setting this to nil or 0 will turn off the indicator."
     ))
 
 (defun blink-search-elisp-symbol-do (candidate)
-  (if (boundp (intern candidate))
-      (call-interactively (intern candidate))
-    (message "[blink-search] %s is not valid command" candidate)))
+  (let* ((symbol (intern candidate)))
+    (cond ((commandp symbol)
+           (call-interactively symbol))
+          ((or (functionp symbol)
+               (macrop symbol))
+           (describe-function symbol))
+          ((facep symbol)
+           (customize-face symbol))
+          ((custom-variable-p symbol)
+           (customize-option symbol))
+          (t
+           (describe-variable symbol)))))
 
 (defun blink-search-do ()
   (interactive)
