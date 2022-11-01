@@ -137,9 +137,9 @@ class BlinkSearch:
                     ["Find File", 5],
                     ["Recent File", 5],
                     ["EAF Browser History", 5],
-                    ["IMenu", 5],
                     ["Current Buffer", 5],
                     ["Grep File", 10],
+                    ["IMenu", 5],
                     ["Elisp Symbol", 5],
                     ["Google Suggest", 3]]:
                 [backend_name, candidate_show_number] = backend_info
