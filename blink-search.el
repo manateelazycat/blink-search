@@ -314,7 +314,7 @@ influence of C1 on the result."
   (blink-search-start-elisp-symbol-update)
   (blink-search-start-recent-file-update)
   (blink-search-buffer-list-update)
-  
+
   (blink-search-init-search-dir)
   (blink-search-init-current-buffer)
   (blink-search-init-imenu)
@@ -533,6 +533,17 @@ influence of C1 on the result."
   "Return a display property that aligns to XPOS."
   `(space :align-to (,xpos)))
 
+(defun blink-search-render-candidate (backend-name candidate candidate-max-length)
+  (let ((candidate-length (string-width candidate)))
+    (cond ((string-equal backend-name "Recent File")
+           (file-name-base candidate))
+          ((member backend-name '("Current Buffer" "EAF Browser History" "Grep File"))
+           (if (<= candidate-length candidate-max-length)
+               candidate
+             (concat (substring candidate 0 candidate-max-length) "...")))
+          (t
+           candidate))))
+
 (defun blink-search-update-items (candidate-items candidate-select-index backend-items backend-select-index)
   (setq blink-search-candidate-items candidate-items)
   (setq blink-search-candidate-select-index candidate-select-index)
@@ -543,7 +554,7 @@ influence of C1 on the result."
     (let* ((window-allocation (blink-search-get-window-allocation (get-buffer-window blink-search-candidate-buffer)))
            (window-width (nth 2 window-allocation)))
       (with-current-buffer blink-search-candidate-buffer
-        (let* ((candidate-max-length (ceiling (/ window-width (window-font-width) 2)))
+        (let* ((candidate-max-length (ceiling (* (/ window-width (window-font-width)) 0.45)))
                (candidate-index 0))
           (erase-buffer)
 
@@ -551,18 +562,12 @@ influence of C1 on the result."
             (dolist (item candidate-items)
               (let* ((candidate (plist-get item :candidate))
                      (candidate-length (length candidate))
-                     (display-candiate (if (<= candidate-length candidate-max-length)
-                                           candidate
-                                         (concat
-                                          (substring candidate 0 (ceiling (* candidate-max-length 0.4)))
-                                          "..."
-                                          (substring candidate (- candidate-length (ceiling (* candidate-max-length 0.4))) candidate-length))))
-                     (number (format "(%s)" (plist-get item :number)))
                      (backend (plist-get item :backend))
+                     (display-candiate (blink-search-render-candidate backend candidate candidate-max-length))
                      (padding-right 5)
                      candidate-line)
                 (setq candidate-line (concat
-                                      (format " %s %s" display-candiate number)
+                                      (format " %s " display-candiate)
                                       (propertize " " 'display
                                                   (blink-search-indent-pixel
                                                    (- window-width

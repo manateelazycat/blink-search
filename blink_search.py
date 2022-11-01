@@ -151,8 +151,7 @@ class BlinkSearch:
                     for candidate in candidates[:min(len(candidates), candidate_show_number)]:
                         candidate_items.append({
                             "backend": backend_name,
-                            "candidate": candidate,
-                            "number": len(candidates)
+                            "candidate": candidate
                         })
                     
             if len(candidate_items) > 0:
