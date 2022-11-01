@@ -172,7 +172,7 @@ class BlinkSearch:
                               self.render_candidate_items, self.render_candidate_index, 
                               self.render_backend_items, self.render_backend_index)
             
-    def adjust_backend_item_with_candidate_status(self):
+    def update_render_index_and_offset(self):
         try:
             candiate = self.search_candidate_items[self.render_candidate_offset + self.render_candidate_index]
             backend_index = self.search_backend_items.index(candiate["candidate"])
@@ -194,24 +194,30 @@ class BlinkSearch:
             
             self.render_backend_items = self.search_backend_items[:min(self.search_row_number, len(self.search_backend_items))]
             
+    def update_render_candidate_items(self):
+        self.render_candidate_items = self.search_candidate_items[self.render_candidate_offset:self.render_candidate_offset + self.search_row_number]
+        self.search_backend_items = self.search_dict[self.render_candidate_items[self.render_candidate_index]["backend"]]
+            
+    def update_render_backend_items(self):
+        self.render_backend_items = self.search_backend_items[self.render_backend_offset:self.render_backend_offset + self.search_row_number]
+            
     def select_next_candidate_item(self):
         need_update = True
         
         if len(self.search_candidate_items) > 0:
             if self.render_candidate_index < min(self.search_row_number, len(self.search_candidate_items)) - 1:
                 self.render_candidate_index += 1
-                self.search_backend_items = self.search_dict[self.render_candidate_items[self.render_candidate_index]["backend"]]
+                self.update_render_candidate_items()
             elif self.render_candidate_offset + self.render_candidate_index == len(self.search_candidate_items) - 1:
                 need_update = False
             else:
                 self.render_candidate_offset += 1
-                self.render_candidate_items = self.search_candidate_items[self.render_candidate_offset:self.render_candidate_offset + self.search_row_number]
-                self.search_backend_items = self.search_dict[self.render_candidate_items[self.render_candidate_index]["backend"]]
+                self.update_render_candidate_items()
         else:
             need_update = False
         
         if need_update:
-            self.adjust_backend_item_with_candidate_status()
+            self.update_render_index_and_offset()
             
             eval_in_emacs("blink-search-update-items", 
                           self.render_candidate_items, self.render_candidate_index, 
@@ -223,19 +229,17 @@ class BlinkSearch:
         if len(self.search_candidate_items) > 0:
             if self.render_candidate_index > 0:
                 self.render_candidate_index -= 1
-                self.render_candidate_items = self.search_candidate_items[self.render_candidate_offset:self.render_candidate_offset + self.search_row_number]
-                self.search_backend_items = self.search_dict[self.render_candidate_items[self.render_candidate_index]["backend"]]
+                self.update_render_candidate_items()
             elif self.render_candidate_offset == 0 and self.render_candidate_index == 0:
                 need_update = False
             else:
                 self.render_candidate_offset -= 1
-                self.render_candidate_items = self.search_candidate_items[self.render_candidate_offset:self.render_candidate_offset + self.search_row_number]
-                self.search_backend_items = self.search_dict[self.render_candidate_items[self.render_candidate_index]["backend"]]
+                self.update_render_candidate_items()
         else:
             need_update = False
         
         if need_update:
-            self.adjust_backend_item_with_candidate_status()
+            self.update_render_index_and_offset()
             
             eval_in_emacs("blink-search-update-items", 
                           self.render_candidate_items, self.render_candidate_index, 
@@ -251,7 +255,7 @@ class BlinkSearch:
                 need_update = False
             else:
                 self.render_backend_offset += 1
-                self.render_backend_items = self.search_backend_items[self.render_backend_offset:self.render_backend_offset + self.search_row_number]
+                self.update_render_backend_items()
         else:
             need_update = False
         
@@ -270,7 +274,7 @@ class BlinkSearch:
                 need_update = False
             else:
                 self.render_backend_offset -= 1
-                self.render_backend_items = self.search_backend_items[self.render_backend_offset:self.render_backend_offset + self.search_row_number]
+                self.update_render_backend_items()
         else:
             need_update = False
         
