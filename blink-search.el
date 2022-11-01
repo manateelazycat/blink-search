@@ -277,6 +277,7 @@ influence of C1 on the result."
 
   (blink-search-start-elisp-symbol-update)
   (blink-search-start-recent-file-update)
+
   (blink-search-buffer-list-update)
   (blink-search-init-start-dir)
   (blink-search-send-current-buffer-content)
@@ -373,13 +374,9 @@ influence of C1 on the result."
   ;; Select input window.
   (select-window (get-buffer-window blink-search-input-buffer))
 
-  ;; Pass search values to Python side.
   (blink-search-buffer-list-update)
-
-  ;; Send current buffer content to Python side.
+  (blink-search-init-start-dir)
   (blink-search-send-current-buffer-content)
-
-  ;; Start.
   (blink-search-start)
 
   ;; Start process.
@@ -503,7 +500,10 @@ influence of C1 on the result."
                                 (buffer-string))))))
 
 (defun blink-search-init-start-dir ()
-  (blink-search-call-async "search_init_start_dir" default-directory))
+  (when (blink-search-epc-live-p blink-search-epc-process)
+    (blink-search-call-async "search_init_start_dir"
+                             (with-current-buffer blink-search-start-buffer
+                               default-directory))))
 
 (defun blink-search-start ()
   (when (blink-search-epc-live-p blink-search-epc-process)
