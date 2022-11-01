@@ -19,15 +19,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import threading
-import os
-import traceback
-import sexpdata
 import re
 import requests
 import json
 
-from core.utils import get_command_result, get_emacs_var, get_emacs_vars, message_emacs, eval_in_emacs, logger, epc_client    # type: ignore
+from core.utils import eval_in_emacs    # type: ignore
 from core.search import Search    # type: ignore
 
 class SearchGoogleSuggestion(Search):

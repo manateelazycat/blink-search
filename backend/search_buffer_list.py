@@ -20,13 +20,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import functools
-import threading
-import os
-import traceback
-import sexpdata
 import re
 
-from core.utils import get_emacs_vars, message_emacs, eval_in_emacs, logger    # type: ignore
 from core.search import Search    # type: ignore
 
 
