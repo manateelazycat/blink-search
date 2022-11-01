@@ -72,7 +72,7 @@ class Search:
     def get_process_result(self, command_string, cwd=None):
         if self.sub_process != None:
             try:
-                os.killpg(os.getpgid(self.sub_process.pid), signal.SIGTERM)
+                os.killpg(self.sub_process.pid, signal.SIGTERM)
             except:
                 pass
             
