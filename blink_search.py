@@ -136,9 +136,9 @@ class BlinkSearch:
             candidate_items = []
             for backend_info in [
                     ["Buffer List", 5],
+                    ["Common Directory", 5],
                     ["Find File", 5],
                     ["Recent File", 5],
-                    ["Common Directory", 5],
                     ["EAF Browser History", 5],
                     ["Current Buffer", 5],
                     ["Grep File", 10],
