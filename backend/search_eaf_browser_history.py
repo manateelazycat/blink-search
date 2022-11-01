@@ -32,6 +32,7 @@ class SearchEAFBrowserHistory(Search):
         Search.__init__(self, backend_name, message_queue)
         
     def search_match(self, prefix):
+        prefix = prefix.replace("*", "")
         eaf_config_path = get_emacs_var("eaf-config-location")
         if type(eaf_config_path) is str and eaf_config_path != "":
             eaf_browser_history_path = os.path.join(eaf_config_path, "browser", "history", "log.txt")

@@ -47,6 +47,16 @@ class SearchBufferList(Search):
     def is_match(self, prefix, prefix_regexp, symbol):
         return symbol.startswith(prefix) or symbol.replace("-", "").startswith(prefix) or prefix in symbol or prefix_regexp.match(symbol)
     
-    def search_match(self, prefix):
-        prefix_regexp = re.compile(".*" + ".*".join(prefix.split()), re.IGNORECASE)
-        return list(filter(lambda symbol: self.is_match(prefix, prefix_regexp, symbol), self.items))
+    def search_match(self, prefix: str):
+        prefix_regexp = re.compile(".*" + ".*".join(prefix.replace("*", "").split()), re.IGNORECASE)
+        match_items = list(filter(lambda symbol: self.is_match(prefix, prefix_regexp, symbol), self.items))
+        
+        if prefix.startswith("*"):
+            return list(filter(lambda i: i.startswith("*"), match_items))
+        elif prefix.startswith(" *"):
+            return list(filter(lambda i: i.startswith(" *"), match_items))
+        elif prefix.endswith("*"):
+            return list(filter(lambda i: i.endswith("*"), match_items))
+        else:
+            return match_items
+        
