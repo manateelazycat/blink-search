@@ -24,6 +24,8 @@ import os
 import traceback
 import sexpdata
 import re
+import subprocess
+import signal
 
 from core.utils import get_emacs_vars, message_emacs, eval_in_emacs, logger    # type: ignore
 
@@ -37,6 +39,8 @@ class Search:
         self.items = []
         
         self.message_queue = message_queue
+        
+        self.sub_process = None
         
     def search(self, prefix: str):
         ticker = self.search_ticker + 1
@@ -64,3 +68,22 @@ class Search:
     
     def search_match(self, prefix):
         pass
+    
+    def get_process_result(self, command_string, cwd=None):
+        if self.sub_process != None:
+            try:
+                os.killpg(os.getpgid(self.sub_process.pid), signal.SIGTERM)
+            except:
+                pass
+            
+        self.sub_process = subprocess.Popen(command_string, cwd=cwd, shell=True, text=True,
+                                            stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                            encoding="utf-8")
+        ret = self.sub_process.wait()
+        results = []
+        if ret == 0:
+            results = list(map(lambda p: p.strip(), self.sub_process.stdout.readlines()))    # type: ignore
+        
+        return results
+            
+        
