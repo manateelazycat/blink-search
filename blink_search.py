@@ -36,6 +36,7 @@ from backend.search_fd import SearchFd
 from backend.search_rg import SearchRg
 from backend.search_current_buffer import SearchCurrentBuffer
 from backend.search_imenu import SearchIMenu
+from backend.search_common_directory import SearchCommonDirectory
 
 class BlinkSearch:
     def __init__(self, args):
@@ -97,6 +98,7 @@ class BlinkSearch:
         self.search_rg = SearchRg("Grep File", self.message_queue)
         self.search_current_buffer = SearchCurrentBuffer("Current Buffer", self.message_queue)
         self.search_imenu = SearchIMenu("IMenu", self.message_queue)
+        self.search_common_directory = SearchCommonDirectory("Common Directory", self.message_queue)
         
         # Pass epc port and webengine codec information to Emacs when first start blink-search.
         eval_in_emacs('blink-search--first-start', self.server.server_address[1])
@@ -136,6 +138,7 @@ class BlinkSearch:
                     ["Buffer List", 5],
                     ["Find File", 5],
                     ["Recent File", 5],
+                    ["Common Directory", 5],
                     ["EAF Browser History", 5],
                     ["Current Buffer", 5],
                     ["Grep File", 10],
@@ -309,6 +312,8 @@ class BlinkSearch:
             self.search_current_buffer.do(candidate)
         elif backend == "IMenu":
             self.search_imenu.do(candidate)
+        elif backend == "Common Directory":
+            self.search_common_directory.do(candidate)
         
     def search(self, input, row_number):
         self.search_row_number = row_number
@@ -322,6 +327,7 @@ class BlinkSearch:
         self.search_rg.search(input)
         self.search_current_buffer.search(input)
         self.search_imenu.search(input)
+        self.search_common_directory.search(input)
         
     def cleanup(self):
         """Do some cleanup before exit python process."""

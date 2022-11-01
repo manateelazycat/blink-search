@@ -134,6 +134,10 @@
 (defvar blink-search-internal-process-prog nil)
 (defvar blink-search-internal-process-args nil)
 
+(defcustom blink-search-common-directory '(("HOME" "~/"))
+  "Common directory to search and open."
+  :type 'cons)
+
 (defcustom blink-search-name "*blink-search*"
   "Name of Blink-Search buffer."
   :type 'string)
@@ -630,6 +634,11 @@ influence of C1 on the result."
   (goto-char point)
   (recenter)
   (blink-search-flash-line))
+
+(defun blink-search-open-dir (dir)
+  (if (featurep 'eaf-file-manager)
+      (eaf-open-in-file-manager dir)
+    (find-file dir)))
 
 (defun blink-search-goto-column (column)
   "This function use for jump to correct column positions in multi-byte strings.
