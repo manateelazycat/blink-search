@@ -36,10 +36,10 @@ M-x blink-search
 ## Keymap
 | Key      | Command                   | Description                                                                  |
 | :---     | :---                      | :---                                                                         |
-| C + n    | blink-search-select-next-candidate-item           | Select next candidate item                                                        |
-| C + p  | blink-search-select-prev-candidate-item           | Select previous candidate item                                                    |
-| M + n    | blink-search-select-next-backend-item           | Select next backend item                                                        |
-| M + p  | blink-search-select-prev-backend-item           | Select previous backend item                                                    |
+| C + n    | blink-search-candidate-select-next           | Select next candidate item                                                        |
+| C + p  | blink-search-candidate-select-prev           | Select previous candidate item                                                    |
+| M + n    | blink-search-backend-select-next           | Select next backend item                                                        |
+| M + p  | blink-search-backend-select-prev           | Select previous backend item                                                    |
 | C + m  | blink-search-do           | Do action for select backend item                                                    |
 | C + g  | blink-search-quit           | Quit 
 

@@ -45,7 +45,7 @@ class SearchRg(Search):
 
     def do(self, candidate):
         candidate_infos = candidate.split(":")
-        eval_in_emacs("blink-search-jump-to-file", 
+        eval_in_emacs("blink-search-rg-do", 
                       os.path.join(self.search_path, candidate_infos[0]),
                       int(candidate_infos[1]),
                       int(candidate_infos[2]) - 1)

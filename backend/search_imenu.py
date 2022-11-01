@@ -46,6 +46,6 @@ class SearchIMenu(Search):
     
     def do(self, candidate):
         if candidate in self.item_dict:
-            eval_in_emacs("blink-search-jump-imenu", self.item_dict[candidate])
+            eval_in_emacs("blink-search-imenu-do", self.item_dict[candidate])
         
         

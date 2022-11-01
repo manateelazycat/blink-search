@@ -291,11 +291,11 @@ class BlinkSearch:
     def search_buffer_list_update(self, buffers):
         self.search_buffer_list.update(buffers)
         
-    def search_init_start_dir(self, start_dir):
+    def search_init_search_dir(self, start_dir):
         self.search_fd.init_dir(start_dir)
         self.search_rg.init_dir(start_dir)
         
-    def search_init_buffer(self, buffer_name, buffer_content):
+    def search_init_current_buffer(self, buffer_name, buffer_content):
         self.search_current_buffer.init_buffer(buffer_name, buffer_content)
         
     def search_init_imenu(self, candidates):

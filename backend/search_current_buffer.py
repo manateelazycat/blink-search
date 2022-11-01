@@ -54,7 +54,7 @@ class SearchCurrentBuffer(Search):
 
     def do(self, candidate):
         candidate_infos = candidate.split(":")
-        eval_in_emacs("blink-search-jump-to-buffer", 
+        eval_in_emacs("blink-search-current-buffer-do", 
                       self.buffer_name,
                       int(candidate_infos[0]),
                       int(candidate_infos[1]) - 1)

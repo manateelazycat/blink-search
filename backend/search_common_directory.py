@@ -65,4 +65,4 @@ class SearchCommonDirectory(Search):
                 directory = os.path.expanduser(directory_info[1])
                 
                 if prefix == alias:
-                    eval_in_emacs("blink-search-open-dir", os.path.join(directory, candidate.replace(prefix, "").strip()))
+                    eval_in_emacs("blink-search-common-directory-do", os.path.join(directory, candidate.replace(prefix, "").strip()))

@@ -313,11 +313,11 @@ influence of C1 on the result."
 
   (blink-search-start-elisp-symbol-update)
   (blink-search-start-recent-file-update)
-
   (blink-search-buffer-list-update)
-  (blink-search-init-start-dir)
-  (blink-search-send-current-buffer-content)
-  (blink-search-send-imenu-candidates)
+  
+  (blink-search-init-search-dir)
+  (blink-search-init-current-buffer)
+  (blink-search-init-imenu)
   (blink-search-start))
 
 (defvar blink-search-mode-map
@@ -325,10 +325,10 @@ influence of C1 on the result."
     (define-key map (kbd "C-g") 'blink-search-quit)
     (define-key map (kbd "ESC ESC ESC") 'blink-search-quit)
     (define-key map (kbd "M-h") 'blink-search-quit)
-    (define-key map (kbd "C-n") 'blink-search-select-next-candidate-item)
-    (define-key map (kbd "C-p") 'blink-search-select-prev-candidate-item)
-    (define-key map (kbd "M-n") 'blink-search-select-next-backend-item)
-    (define-key map (kbd "M-p") 'blink-search-select-prev-backend-item)
+    (define-key map (kbd "C-n") 'blink-search-candidate-select-next)
+    (define-key map (kbd "C-p") 'blink-search-candidate-select-prev)
+    (define-key map (kbd "M-n") 'blink-search-backend-select-next)
+    (define-key map (kbd "M-p") 'blink-search-backend-select-prev)
     (define-key map (kbd "C-m") 'blink-search-do)
     map)
   "Keymap used by `blink-search-mode'.")
@@ -412,9 +412,9 @@ influence of C1 on the result."
   (select-window (get-buffer-window blink-search-input-buffer))
 
   (blink-search-buffer-list-update)
-  (blink-search-init-start-dir)
-  (blink-search-send-current-buffer-content)
-  (blink-search-send-imenu-candidates)
+  (blink-search-init-search-dir)
+  (blink-search-init-current-buffer)
+  (blink-search-init-imenu)
   (blink-search-start)
 
   ;; Start process.
@@ -511,17 +511,17 @@ influence of C1 on the result."
   "Encode string STR with UTF-8 coding using Base64."
   (base64-encode-string (encode-coding-string str 'utf-8)))
 
-(defun blink-search-send-current-buffer-content ()
+(defun blink-search-init-current-buffer ()
   (when (blink-search-epc-live-p blink-search-epc-process)
-    (blink-search-call-async "search_init_buffer"
+    (blink-search-call-async "search_init_current_buffer"
                              (buffer-name blink-search-start-buffer)
                              (blink-search-encode-string
                               (with-current-buffer blink-search-start-buffer
                                 (buffer-string))))))
 
-(defun blink-search-init-start-dir ()
+(defun blink-search-init-search-dir ()
   (when (blink-search-epc-live-p blink-search-epc-process)
-    (blink-search-call-async "search_init_start_dir"
+    (blink-search-call-async "search_init_search_dir"
                              (with-current-buffer blink-search-start-buffer
                                default-directory))))
 
@@ -601,45 +601,59 @@ influence of C1 on the result."
                   (setq backend-index (1+ backend-index)))))))
         ))))
 
-(defun blink-search-select-next-candidate-item ()
+(defun blink-search-candidate-select-next ()
   (interactive)
   (blink-search-call-async "select_next_candidate_item"))
 
-(defun blink-search-select-prev-candidate-item ()
+(defun blink-search-candidate-select-prev ()
   (interactive)
   (blink-search-call-async "select_prev_candidate_item"))
 
-(defun blink-search-select-next-backend-item ()
+(defun blink-search-backend-select-next ()
   (interactive)
   (blink-search-call-async "select_next_backend_item"))
 
-(defun blink-search-select-prev-backend-item ()
+(defun blink-search-backend-select-prev ()
   (interactive)
   (blink-search-call-async "select_prev_backend_item"))
 
-(defun blink-search-jump-to-file (file line column)
+(defun blink-search-rg-do (file line column)
   (find-file file)
   (goto-line line)
   (blink-search-goto-column column)
   (recenter)
   (blink-search-flash-line))
 
-(defun blink-search-jump-to-buffer (buffer line column)
+(defun blink-search-current-buffer-do (buffer line column)
   (switch-to-buffer buffer)
   (goto-line line)
   (blink-search-goto-column column)
   (recenter)
   (blink-search-flash-line))
 
-(defun blink-search-jump-imenu (point)
+(defun blink-search-imenu-do (point)
   (goto-char point)
   (recenter)
   (blink-search-flash-line))
 
-(defun blink-search-open-dir (dir)
+(defun blink-search-common-directory-do (dir)
   (if (featurep 'eaf-file-manager)
       (eaf-open-in-file-manager dir)
     (find-file dir)))
+
+(defun blink-search-elisp-symbol-do (candidate)
+  (let* ((symbol (intern candidate)))
+    (cond ((commandp symbol)
+           (call-interactively symbol))
+          ((or (functionp symbol)
+               (macrop symbol))
+           (describe-function symbol))
+          ((facep symbol)
+           (customize-face symbol))
+          ((custom-variable-p symbol)
+           (customize-option symbol))
+          (t
+           (describe-variable symbol)))))
 
 (defun blink-search-goto-column (column)
   "This function use for jump to correct column positions in multi-byte strings.
@@ -660,21 +674,7 @@ Function `move-to-column' can't handle mixed string of Chinese and English corre
     (pulse-momentary-highlight-one-line (point) 'blink-search-font-lock-flash)
     ))
 
-(defun blink-search-elisp-symbol-do (candidate)
-  (let* ((symbol (intern candidate)))
-    (cond ((commandp symbol)
-           (call-interactively symbol))
-          ((or (functionp symbol)
-               (macrop symbol))
-           (describe-function symbol))
-          ((facep symbol)
-           (customize-face symbol))
-          ((custom-variable-p symbol)
-           (customize-option symbol))
-          (t
-           (describe-variable symbol)))))
-
-(defun blink-search-send-imenu-candidates ()
+(defun blink-search-init-imenu ()
   (when (blink-search-epc-live-p blink-search-epc-process)
     (blink-search-call-async "search_init_imenu"
                              (with-current-buffer blink-search-start-buffer
