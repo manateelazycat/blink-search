@@ -20,8 +20,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
-import subprocess
-import signal
 import re
 
 from core.utils import get_command_result, eval_in_emacs    # type: ignore
@@ -42,20 +40,8 @@ class SearchFd(Search):
         
     def search_match(self, prefix):
         if len(prefix.split()) > 0:
-            if self.sub_process != None:
-                try:
-                    os.killpg(os.getpgid(self.sub_process.pid), signal.SIGTERM)
-                except:
-                    pass
-                
-            command_string = "fd -p {} --search-path {}".format(".*".join(prefix.split()), self.search_dir)
-            self.sub_process = subprocess.Popen(command_string, cwd=None, shell=True, text=True,
-                                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                                                 encoding="utf-8")
-            ret = self.sub_process.wait()
-            results = []
-            if ret == 0:
-                results = list(map(lambda p: p.strip(), self.sub_process.stdout.readlines()))    # type: ignore
+            command_string = "fd -p --regex '{}' --search-path {}".format(".*".join(prefix.split()), self.search_dir)
+            results = self.get_process_result(command_string)
             
             return list(map(lambda p: os.path.relpath(p, self.search_path), results))
         else:
