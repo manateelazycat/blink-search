@@ -245,7 +245,7 @@ class BlinkSearch:
         need_update = True
         
         if len(self.search_backend_items) > 0:
-            if self.render_backend_index < min(self.search_row_number, len(self.search_backend_items)) - 1:
+            if self.render_backend_index < min(self.search_row_number - 1, len(self.search_backend_items)) - 1:
                 self.render_backend_index += 1
             elif self.render_backend_offset + self.render_backend_index == len(self.search_backend_items) - 1:
                 need_update = False
