@@ -341,7 +341,14 @@ influence of C1 on the result."
     (run-hooks 'blink-search-mode-hook)
     (add-hook 'after-change-functions 'blink-search-monitor-input nil t)
 
-    (blink-search-disable-options nil))
+    (blink-search-disable-options nil)
+
+    ;; Avoid background around input string.
+    (face-remap-add-relative 'hl-line :background (face-background 'default))
+
+    ;; Set window margin.
+    (setq-local left-margin-width 1)
+    (setq-local right-margin-width 1))
 
   (with-current-buffer (get-buffer-create blink-search-candidate-buffer)
     (erase-buffer)
@@ -547,12 +554,13 @@ influence of C1 on the result."
                      (padding-right 5)
                      candidate-line)
                 (setq candidate-line (concat
-                                      (format "%s %s" display-candiate number)
+                                      (format " %s %s" display-candiate number)
                                       (propertize " " 'display
                                                   (blink-search-indent-pixel
                                                    (- window-width
                                                       (* (window-font-width) (+ (string-width backend) padding-right)))))
-                                      (propertize backend 'face (if (equal candidate-index candidate-select-index) 'blink-search-select-face 'font-lock-doc-face))
+                                      (propertize (format "%s " backend)
+                                                  'face (if (equal candidate-index candidate-select-index) 'blink-search-select-face 'font-lock-doc-face))
                                       "\n"
                                       ))
 
@@ -572,7 +580,7 @@ influence of C1 on the result."
                 (let* (backend-line)
                   (setq backend-line
                         (concat
-                         (propertize (format "%s" item) 'face (if (equal backend-index backend-select-index) 'blink-search-select-face 'font-lock-doc-face))
+                         (propertize (format " %s " item) 'face (if (equal backend-index backend-select-index) 'blink-search-select-face 'font-lock-doc-face))
                          (propertize " " 'display (blink-search-indent-pixel window-width))
                          "\n"
                          ))
