@@ -42,12 +42,9 @@ class SearchCurrentBuffer(Search):
         self.buffer_name = buffer_name
         self.buffer_content = base64.b64decode(buffer_content).decode("utf-8")
         
-        tmp = tempfile.NamedTemporaryFile(mode="w", delete=False)
-        try:
+        with tempfile.NamedTemporaryFile(mode="w", delete=False) as tmp:
             self.buffer_temp_path = tmp.name
             tmp.write(self.buffer_content)
-        finally:
-            tmp.close()
         
     def search_match(self, prefix):
         results = get_command_result("rg -S --column --max-columns 300 '{}' {}".format(prefix, self.buffer_temp_path)).splitlines()

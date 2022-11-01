@@ -50,7 +50,7 @@ class SearchBufferList(Search):
         self.items = list(dict.fromkeys(items))
         
     def is_match(self, prefix, prefix_regexp, symbol):
-        return symbol.startswith(prefix) or symbol.replace("-", "").startswith(prefix) or prefix_regexp.match(symbol)
+        return symbol.startswith(prefix) or symbol.replace("-", "").startswith(prefix) or prefix in symbol or prefix_regexp.match(symbol)
     
     def search_match(self, prefix):
         prefix_regexp = re.compile(".*" + ".*".join(prefix.split()), re.IGNORECASE)
