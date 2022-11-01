@@ -80,6 +80,7 @@
 (require 'blink-search-epc)
 
 (require 'recentf)
+(require 'imenu)
 
 (recentf-mode 1)
 
@@ -281,6 +282,7 @@ influence of C1 on the result."
   (blink-search-buffer-list-update)
   (blink-search-init-start-dir)
   (blink-search-send-current-buffer-content)
+  (blink-search-send-imenu-candidates)
   (blink-search-start))
 
 (defvar blink-search-mode-map
@@ -384,6 +386,7 @@ influence of C1 on the result."
   (blink-search-buffer-list-update)
   (blink-search-init-start-dir)
   (blink-search-send-current-buffer-content)
+  (blink-search-send-imenu-candidates)
   (blink-search-start)
 
   ;; Start process.
@@ -623,6 +626,11 @@ influence of C1 on the result."
   (recenter)
   (blink-search-flash-line))
 
+(defun blink-search-jump-imenu (point)
+  (goto-char point)
+  (recenter)
+  (blink-search-flash-line))
+
 (defun blink-search-goto-column (column)
   "This function use for jump to correct column positions in multi-byte strings.
 Such as, mixed string of Chinese and English.
@@ -668,6 +676,45 @@ Setting this to nil or 0 will turn off the indicator."
           (t
            (describe-variable symbol)))))
 
+(defun blink-search-send-imenu-candidates ()
+  (when (blink-search-epc-live-p blink-search-epc-process)
+    (blink-search-call-async "search_init_imenu"
+                             (with-current-buffer blink-search-start-buffer
+                               (blink-search-imenu-get-candidates)))))
+
+(defun blink-search-imenu-get-candidates ()
+  (mapcar (lambda (info) (list (car info) (marker-position (cdr info))))
+          (let* ((index (ignore-errors (imenu--make-index-alist t))))
+            (when index
+              (blink-search-imenu-build-candidates
+               (delete (assoc "*Rescan*" index) index))))))
+
+(defun blink-search-imenu-build-candidates (alist)
+  (cl-remove-if
+   (lambda (c)
+     (or (string-equal (car c) "Types")
+         (string-equal (car c) "Variables")
+         ))
+   (cl-loop for elm in alist
+            nconc (cond
+                   ((imenu--subalist-p elm)
+                    (blink-search-imenu-build-candidates
+                     (cl-loop for (e . v) in (cdr elm) collect
+                              (cons
+                               e
+                               (if (integerp v) (copy-marker v) v)))))
+                   ((listp (cdr elm))
+                    (and elm (list elm)))
+                   (t
+                    (and (cdr elm)
+                         (setcdr elm (pcase (cdr elm)
+                                       ((and ov (pred overlayp))
+                                        (copy-overlay ov))
+                                       ((and mk (or (pred markerp)
+                                                    (pred integerp)))
+                                        (copy-marker mk))))
+                         (list elm)))))))
+
 (defun blink-search-do ()
   (interactive)
   (when (and (> (length blink-search-candidate-items) 0)
@@ -680,12 +727,9 @@ Setting this to nil or 0 will turn off the indicator."
         ("Elisp Symbol" (blink-search-elisp-symbol-do candidate))
         ("Recent File" (find-file candidate))
         ("Buffer List" (switch-to-buffer candidate))
-        ("Find File" (blink-search-call-async "search_do" backend-name candidate))
-        ("Current Buffer" (blink-search-call-async "search_do" backend-name candidate))
-        ("Grep File" (blink-search-call-async "search_do" backend-name candidate))
-        ("Google Suggest" (blink-search-call-async "search_do" backend-name candidate))
-        ("EAF Browser History" (eaf-open-browser (car (last (split-string candidate)))))))
-    ))
+        ("EAF Browser History" (eaf-open-browser (car (last (split-string candidate)))))
+        (t (blink-search-call-async "search_do" backend-name candidate))
+        ))))
 
 (provide 'blink-search)
 

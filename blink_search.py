@@ -35,6 +35,7 @@ from backend.search_google_suggestion import SearchGoogleSuggestion
 from backend.search_fd import SearchFd
 from backend.search_rg import SearchRg
 from backend.search_current_buffer import SearchCurrentBuffer
+from backend.search_imenu import SearchIMenu
 
 class BlinkSearch:
     def __init__(self, args):
@@ -95,6 +96,7 @@ class BlinkSearch:
         self.search_fd = SearchFd("Find File", self.message_queue)
         self.search_rg = SearchRg("Grep File", self.message_queue)
         self.search_current_buffer = SearchCurrentBuffer("Current Buffer", self.message_queue)
+        self.search_imenu = SearchIMenu("IMenu", self.message_queue)
         
         # Pass epc port and webengine codec information to Emacs when first start blink-search.
         eval_in_emacs('blink-search--first-start', self.server.server_address[1])
@@ -135,6 +137,7 @@ class BlinkSearch:
                     ["Find File", 5],
                     ["Recent File", 5],
                     ["EAF Browser History", 5],
+                    ["IMenu", 5],
                     ["Current Buffer", 5],
                     ["Grep File", 10],
                     ["Elisp Symbol", 5],
@@ -292,6 +295,9 @@ class BlinkSearch:
     def search_init_buffer(self, buffer_name, buffer_content):
         self.search_current_buffer.init_buffer(buffer_name, buffer_content)
         
+    def search_init_imenu(self, candidates):
+        self.search_imenu.update(candidates)
+        
     def search_do(self, backend, candidate):
         if backend == "Find File":
             self.search_fd.do(candidate)
@@ -301,6 +307,8 @@ class BlinkSearch:
             self.search_google_suggestion.do(candidate)
         elif backend == "Current Buffer":
             self.search_current_buffer.do(candidate)
+        elif backend == "IMenu":
+            self.search_imenu.do(candidate)
         
     def search(self, input, row_number):
         self.search_row_number = row_number
@@ -313,6 +321,7 @@ class BlinkSearch:
         self.search_fd.search(input)
         self.search_rg.search(input)
         self.search_current_buffer.search(input)
+        self.search_imenu.search(input)
         
     def cleanup(self):
         """Do some cleanup before exit python process."""
