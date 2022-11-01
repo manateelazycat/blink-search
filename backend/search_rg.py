@@ -21,7 +21,7 @@
 
 import os
 
-from core.utils import get_command_result, eval_in_emacs    # type: ignore
+from core.utils import get_command_result, eval_in_emacs, get_project_path    # type: ignore
 from core.search import Search    # type: ignore
 
 class SearchRg(Search):
@@ -31,16 +31,12 @@ class SearchRg(Search):
         self.sub_process = None
         
     def init_dir(self, search_dir):
-        self.search_dir = search_dir
-        self.search_path = self.search_dir
-        git_project_path = get_command_result("git rev-parse --show-toplevel", self.search_dir)
-        if os.path.exists(git_project_path):
-            self.search_path = git_project_path
+        self.search_path = get_project_path(search_dir)
         
     def search_match(self, prefix):
         prefix = prefix.replace("*", "")
         if len(prefix.split()) > 0:
-            command_string = "rg -S --no-heading --column --max-columns 300 '{}' {}".format(".*".join(prefix.split()), self.search_dir)
+            command_string = "rg -S --no-heading --column --max-columns 300 '{}' {}".format(".*".join(prefix.split()), self.search_path)
             results = self.get_process_result(command_string)
             
             return list(map(lambda p: os.path.relpath(p, self.search_path), results))

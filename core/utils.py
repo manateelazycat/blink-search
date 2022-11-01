@@ -107,6 +107,13 @@ def convert_emacs_bool(symbol_value, symbol_is_boolean):
     else:
         return symbol_value
 
+def get_project_path(search_dir):
+    search_path = os.path.expanduser(search_dir)
+    git_project_path = get_command_result("git rev-parse --show-toplevel", search_path)
+    if os.path.exists(git_project_path):
+        return git_project_path
+    else:
+        return search_path
 
 def get_emacs_vars(args):
     return list(map(lambda result: convert_emacs_bool(result[0], result[1]) if result != [] else False,
