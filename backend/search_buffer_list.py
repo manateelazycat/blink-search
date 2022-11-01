@@ -46,6 +46,9 @@ class SearchBufferList(Search):
     def update(self, items):
         self.items = sorted(items, key=functools.cmp_to_key(self.sort_buffer))
         
+    def update_sort_buffers(self, items):
+        self.items = list(dict.fromkeys(items))
+        
     def is_match(self, prefix, prefix_regexp, symbol):
         return symbol.startswith(prefix) or symbol.replace("-", "").startswith(prefix) or prefix_regexp.match(symbol)
     

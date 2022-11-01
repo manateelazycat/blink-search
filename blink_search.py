@@ -269,6 +269,9 @@ class BlinkSearch:
     def search_recent_file_update(self, files):
         self.search_recent_file.update(files)
         
+    def search_sort_buffer_list_update(self, buffers):
+        self.search_buffer_list.update_sort_buffers(buffers)
+
     def search_buffer_list_update(self, buffers):
         self.search_buffer_list.update(buffers)
         

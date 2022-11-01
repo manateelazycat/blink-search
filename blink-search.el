@@ -157,7 +157,7 @@ Then Blink-Search will start by gdb, please send new issue with `*blink-search*'
 (defun blink-search-call-async (method &rest args)
   "Call Python EPC function METHOD and ARGS asynchronously."
   (blink-search-deferred-chain
-   (blink-search-epc-call-deferred blink-search-epc-process (read method) args)))
+    (blink-search-epc-call-deferred blink-search-epc-process (read method) args)))
 
 (defvar blink-search-is-starting nil)
 
@@ -486,7 +486,9 @@ influence of C1 on the result."
 
 (defun blink-search-buffer-list-update ()
   (when (blink-search-epc-live-p blink-search-epc-process)
-    (blink-search-call-async "search_buffer_list_update" (mapcar #'buffer-name (buffer-list)))))
+    (if (featurep 'sort-tab)
+        (blink-search-call-async "search_sort_buffer_list_update" (mapcar #'buffer-name (append sort-tab-visible-buffers (buffer-list))))
+      (blink-search-call-async "search_buffer_list_update" (mapcar #'buffer-name (buffer-list))))))
 
 (defun blink-search-encode-string (str)
   "Encode string STR with UTF-8 coding using Base64."
