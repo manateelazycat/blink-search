@@ -15,7 +15,7 @@ blink-search will provide smooth completion experience without compromise to slo
 ## Installation
 
 1. Install Emacs 28 and above versions
-2. Install Python dependencies: `pip3 install epc`
+2. Install Python dependencies: `pip3 install epc requests`
 3. Install search tools: 
 + [fd](https://github.com/sharkdp/fd)
 + [ripgrep](https://github.com/BurntSushi/ripgrep)
