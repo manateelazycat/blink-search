@@ -131,11 +131,11 @@ def get_command_result(command_string, cwd=None):
                                stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                                encoding="utf-8")
     
-    if process.returncode != 0:
-        return ""
+    ret = process.wait()
+    if ret == 0:
+        return "".join(process.stdout.readlines()).strip()    # type: ignore
     else:
-        ret = process.wait()
-        return "".join((process.stdout if ret == 0 else process.stderr).readlines()).strip()    # type: ignore
+        return ""
 
 # modified from Lib/pathlib.py
 def _make_uri_win32(path):
