@@ -646,6 +646,11 @@ Setting this to nil or 0 will turn off the indicator."
     (pulse-momentary-highlight-one-line (point) 'blink-search-font-lock-flash)
     ))
 
+(defun blink-search-elisp-symbol-do (candidate)
+  (if (boundp (intern candidate))
+      (call-interactively (intern candidate))
+    (message "[blink-search] %s is not valid command" candidate)))
+
 (defun blink-search-do ()
   (interactive)
   (when (and (> (length blink-search-candidate-items) 0)
@@ -655,7 +660,7 @@ Setting this to nil or 0 will turn off the indicator."
       (blink-search-quit)
 
       (pcase backend-name
-        ("Elisp Symbol" (call-interactively (intern candidate)))
+        ("Elisp Symbol" (blink-search-elisp-symbol-do candidate))
         ("Recent File" (find-file candidate))
         ("Buffer List" (switch-to-buffer candidate))
         ("Find File" (blink-search-call-async "search_do" backend-name candidate))
