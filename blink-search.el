@@ -88,12 +88,78 @@
   "Blink-Search group."
   :group 'applications)
 
-(defvar blink-search-server nil
-  "The Blink-Search Server.")
-
+(defvar blink-search-server nil)
 (defvar blink-search-python-file (expand-file-name "blink_search.py" (file-name-directory load-file-name)))
-
 (defvar blink-search-server-port nil)
+(defvar blink-search-epc-process nil)
+(defvar blink-search-internal-process nil)
+(defvar blink-search-internal-process-prog nil)
+(defvar blink-search-internal-process-args nil)
+(defvar blink-search-is-starting nil)
+(defvar blink-search-stop-process-hook nil)
+(defvar blink-search-window-configuration nil)
+(defvar blink-search-start-buffer nil)
+(defvar blink-search-input-buffer " *blink search input*")
+(defvar blink-search-candidate-buffer " *blink search candidate*")
+(defvar blink-search-backend-buffer " *blink search backend*")
+
+(defvar blink-search-elisp-symbol-timer nil)
+(defvar blink-search-elisp-symbol-size 0)
+
+(defvar blink-search-recent-file-timer nil)
+(defvar blink-search-recent-file-size 0)
+
+(defvar blink-search-candidate-items nil)
+(defvar blink-search-candidate-select-index nil)
+(defvar blink-search-backend-items nil)
+(defvar blink-search-backend-select-index nil)
+
+(defcustom blink-search-common-directory '(("HOME" "~/"))
+  "Common directory to search and open."
+  :type 'cons)
+
+(defcustom blink-search-name "*blink-search*"
+  "Name of Blink-Search buffer."
+  :type 'string)
+
+(defcustom blink-search-python-command (if (memq system-type '(cygwin windows-nt ms-dos)) "python.exe" "python3")
+  "The Python interpreter used to run lsp_bridge.py."
+  :type 'string)
+
+(defcustom blink-search-enable-debug nil
+  "If you got segfault error, please turn this option.
+Then Blink-Search will start by gdb, please send new issue with `*blink-search*' buffer content when next crash."
+  :type 'boolean)
+
+(defcustom blink-search-enable-log nil
+  "Enable this option to print log message in `*blink-search*' buffer, default only print message header."
+  :type 'boolean)
+
+(defcustom blink-search-elisp-symbol-update-idle 5
+  "The idle seconds to update elisp symbols."
+  :type 'float
+  :group 'blink-search)
+
+(defcustom blink-search-recent-file-update-idle 4
+  "The idle seconds to update recent files."
+  :type 'float
+  :group 'blink-search)
+
+(defcustom blink-search-flash-line-delay .3
+  "How many seconds to flash `blink-search-font-lock-flash' after navigation.
+
+Setting this to nil or 0 will turn off the indicator."
+  :type 'number
+  :group 'blink-search)
+
+(defface blink-search-select-face
+  '()
+  "Face used to highlight the currently selected candidate.")
+
+(defface blink-search-font-lock-flash
+  '((t (:inherit highlight)))
+  "Face to flash the current line."
+  :group 'blink-search)
 
 (defun blink-search--start-epc-server ()
   "Function to start the EPC server."
@@ -128,43 +194,10 @@
 (defun blink-search--get-emacs-vars-func (&rest vars)
   (mapcar #'blink-search--get-emacs-var-func vars))
 
-(defvar blink-search-epc-process nil)
-
-(defvar blink-search-internal-process nil)
-(defvar blink-search-internal-process-prog nil)
-(defvar blink-search-internal-process-args nil)
-
-(defcustom blink-search-common-directory '(("HOME" "~/"))
-  "Common directory to search and open."
-  :type 'cons)
-
-(defcustom blink-search-name "*blink-search*"
-  "Name of Blink-Search buffer."
-  :type 'string)
-
-(defcustom blink-search-python-command (if (memq system-type '(cygwin windows-nt ms-dos)) "python.exe" "python3")
-  "The Python interpreter used to run lsp_bridge.py."
-  :type 'string)
-
-(defcustom blink-search-enable-debug nil
-  "If you got segfault error, please turn this option.
-Then Blink-Search will start by gdb, please send new issue with `*blink-search*' buffer content when next crash."
-  :type 'boolean)
-
-(defcustom blink-search-enable-log nil
-  "Enable this option to print log message in `*blink-search*' buffer, default only print message header."
-  :type 'boolean)
-
-(defface blink-search-select-face
-  '()
-  "Face used to highlight the currently selected candidate.")
-
 (defun blink-search-call-async (method &rest args)
   "Call Python EPC function METHOD and ARGS asynchronously."
   (blink-search-deferred-chain
     (blink-search-epc-call-deferred blink-search-epc-process (read method) args)))
-
-(defvar blink-search-is-starting nil)
 
 (defun blink-search-get-theme-mode ()
   "Get theme mode, dark or light."
@@ -235,8 +268,6 @@ influence of C1 on the result."
   "Check whether blink-search is called by Emacs on WSL and is running on Windows."
   (and (eq system-type 'gnu/linux)
        (string-match-p ".exe" blink-search-python-command)))
-
-(defvar blink-search-stop-process-hook nil)
 
 (defun blink-search-kill-process ()
   "Stop Blink-Search process and kill all Blink-Search buffers."
@@ -311,8 +342,6 @@ influence of C1 on the result."
   ;; Injection keymap.
   (use-local-map blink-search-mode-map))
 
-(defvar blink-search-window-configuration nil)
-
 (defun blink-search ()
   (interactive)
   (blink-search-init-layout))
@@ -324,11 +353,6 @@ influence of C1 on the result."
     (setq blink-search-window-configuration nil)
 
     (setq blink-search-start-buffer nil)))
-
-(defvar blink-search-start-buffer nil)
-(defvar blink-search-input-buffer " *blink search input*")
-(defvar blink-search-candidate-buffer " *blink search candidate*")
-(defvar blink-search-backend-buffer " *blink search backend*")
 
 (defun blink-search-init-layout ()
   (setq blink-search-start-buffer (current-buffer))
@@ -436,15 +460,6 @@ influence of C1 on the result."
 (defun blink-search-get-row-number ()
   (/ (nth 3 (blink-search-get-window-allocation (get-buffer-window blink-search-candidate-buffer))) (line-pixel-height)))
 
-;; Elisp symbol.
-(defcustom blink-search-elisp-symbol-update-idle 5
-  "The idle seconds to update elisp symbols."
-  :type 'float
-  :group 'blink-search)
-
-(defvar blink-search-elisp-symbol-timer nil)
-(defvar blink-search-elisp-symbol-size 0)
-
 (defun blink-search-elisp-symbol-update ()
   "We need synchronize elisp symbols to Python side when idle."
   (let* ((symbols (all-completions "" obarray))
@@ -465,15 +480,6 @@ influence of C1 on the result."
     (cancel-timer blink-search-elisp-symbol-timer)
     (setq blink-search-elisp-symbol-timer nil)
     (setq blink-search-elisp-symbol-size 0)))
-
-;; Recent files.
-(defcustom blink-search-recent-file-update-idle 4
-  "The idle seconds to update recent files."
-  :type 'float
-  :group 'blink-search)
-
-(defvar blink-search-recent-file-timer nil)
-(defvar blink-search-recent-file-size 0)
 
 (defun blink-search-recent-file-update ()
   "We need synchronize recent files to Python side when idle."
@@ -526,11 +532,6 @@ influence of C1 on the result."
 (defsubst blink-search-indent-pixel (xpos)
   "Return a display property that aligns to XPOS."
   `(space :align-to (,xpos)))
-
-(defvar blink-search-candidate-items nil)
-(defvar blink-search-candidate-select-index nil)
-(defvar blink-search-backend-items nil)
-(defvar blink-search-backend-select-index nil)
 
 (defun blink-search-update-items (candidate-items candidate-select-index backend-items backend-select-index)
   (setq blink-search-candidate-items candidate-items)
@@ -651,18 +652,6 @@ Function `move-to-column' can't handle mixed string of Chinese and English corre
     (while (> column scan-column)
       (forward-char 1)
       (setq scan-column (string-bytes (buffer-substring first-char-point (point)))))))
-
-(defcustom blink-search-flash-line-delay .3
-  "How many seconds to flash `blink-search-font-lock-flash' after navigation.
-
-Setting this to nil or 0 will turn off the indicator."
-  :type 'number
-  :group 'blink-search)
-
-(defface blink-search-font-lock-flash
-  '((t (:inherit highlight)))
-  "Face to flash the current line."
-  :group 'blink-search)
 
 (defun blink-search-flash-line ()
   (let ((pulse-iterations 1)
