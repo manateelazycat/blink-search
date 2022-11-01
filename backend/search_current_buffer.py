@@ -27,14 +27,16 @@ import re
 import requests
 import json
 import tempfile
+import hashlib
 
-from core.utils import get_command_result, get_emacs_var, get_emacs_vars, message_emacs, eval_in_emacs, logger    # type: ignore
+from core.utils import get_command_result, get_emacs_var, get_emacs_vars, message_emacs, eval_in_emacs, logger, touch    # type: ignore
 from core.search import Search    # type: ignore
 
 class SearchCurrentBuffer(Search):
     
     def __init__(self, backend_name, message_queue) -> None:
         Search.__init__(self, backend_name, message_queue)
+        self.buffer_temp_path = ""
         
     def init_buffer(self, buffer_name, buffer_content):
         import base64
@@ -42,14 +44,19 @@ class SearchCurrentBuffer(Search):
         self.buffer_name = buffer_name
         self.buffer_content = base64.b64decode(buffer_content).decode("utf-8")
         
-        with tempfile.NamedTemporaryFile(mode="w", delete=False) as tmp:
-            self.buffer_temp_path = tmp.name
-            tmp.write(self.buffer_content)
+        md5 = hashlib.md5()
+        md5.update(buffer_name.encode("utf-8"))
+        self.buffer_temp_path = os.path.join(tempfile.gettempdir(), "blink-search-temp-buffer-{}".format(md5.hexdigest()))
+        touch(self.buffer_temp_path)
+        with open(self.buffer_temp_path, "w") as f:
+            f.write(self.buffer_content)
         
     def search_match(self, prefix):
-        results = get_command_result("rg -S --column --max-columns 300 '{}' {}".format(prefix, self.buffer_temp_path)).splitlines()
-            
-        return results
+        if os.path.exists(self.buffer_temp_path):
+            results = get_command_result("rg -S --column --max-columns 300 '{}' {}".format(prefix, self.buffer_temp_path)).splitlines()
+            return results
+        else:
+            return []
 
     def do(self, candidate):
         candidate_infos = candidate.split(":")

@@ -216,3 +216,16 @@ def windows_get_env_value(var_name: str) -> str:
 
 def windows_parse_path(path: str) -> str:
     return path.replace("%USERPROFILE%", windows_get_env_value("USERPROFILE"))
+
+def touch(path):
+    import os
+
+    if not os.path.exists(path):
+        basedir = os.path.dirname(path)
+
+        if not os.path.exists(basedir):
+            os.makedirs(basedir)
+
+        with open(path, 'a'):
+            os.utime(path)
+
