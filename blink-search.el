@@ -572,7 +572,7 @@ influence of C1 on the result."
                 (let* (backend-line)
                   (setq backend-line
                         (concat
-                         (propertize (format "%s" item) 'face 'font-lock-doc-face)
+                         (propertize (format "%s" item) 'face (if (equal backend-index backend-select-index) 'blink-search-select-face 'font-lock-doc-face))
                          (propertize " " 'display (blink-search-indent-pixel window-width))
                          "\n"
                          ))
