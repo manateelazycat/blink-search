@@ -602,23 +602,26 @@ influence of C1 on the result."
                      (display-candiate (blink-search-render-candidate backend candidate candidate-max-length))
                      (padding-right 5)
                      candidate-line)
-                (setq candidate-line (concat
-                                      (if (> backend-number 1)
-                                          (format " %s " display-candiate)
-                                        (format " %s " candidate))
-                                      (if (> backend-number 1)
-                                          (propertize " " 'display
-                                                      (blink-search-indent-pixel
-                                                       (- window-width
-                                                          (* (window-font-width) (+ (string-width backend) padding-right)))))
-                                        (propertize " " 'display (blink-search-indent-pixel window-width)))
-                                      (when (> backend-number 1)
-                                        (propertize (format "%s " backend)
-                                                    'face (if (equal candidate-index candidate-select-index) 'blink-search-select-face 'font-lock-doc-face)))
-                                      "\n"
-                                      ))
 
-                (when matches
+                (setq candidate-line
+                      (concat
+                       (if (> backend-number 1)
+                           (format " %s " display-candiate)
+                         (format " %s " candidate))
+                       (if (> backend-number 1)
+                           (propertize " " 'display
+                                       (blink-search-indent-pixel
+                                        (- window-width
+                                           (* (window-font-width) (+ (string-width backend) padding-right)))))
+                         (propertize " " 'display (blink-search-indent-pixel window-width)))
+                       (when (> backend-number 1)
+                         (propertize (format "%s " backend)
+                                     'face (if (equal candidate-index candidate-select-index) 'blink-search-select-face 'font-lock-doc-face)))
+                       "\n"
+                       ))
+
+                (when (and matches
+                           (equal backend-number 1))
                   (dolist (match matches)
                     (add-face-text-property (nth 0 match) (nth 1 match) 'font-lock-type-face 'append candidate-line)
                     ))
@@ -639,11 +642,14 @@ influence of C1 on the result."
             (let ((backend-index 0))
 
               (when backend-items
-                (dolist (item backend-items)
-                  (let* (backend-line)
+                (dolist (candidate-info backend-items)
+                  (let* ((candidate (if (stringp candidate-info) candidate-info (plist-get candidate-info :text)))
+                         (matches (unless (stringp candidate-info) (plist-get candidate-info :matches)))
+                         backend-line)
+
                     (setq backend-line
                           (concat
-                           (propertize (format " %s " item) 'face (if (equal backend-index backend-select-index) 'blink-search-select-face 'font-lock-doc-face))
+                           (propertize (format " %s " candidate) 'face (if (equal backend-index backend-select-index) 'blink-search-select-face 'font-lock-doc-face))
                            (propertize " " 'display (blink-search-indent-pixel window-width))
                            "\n"
                            ))
