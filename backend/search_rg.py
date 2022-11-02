@@ -21,7 +21,7 @@
 
 import os
 
-from core.utils import get_command_result, eval_in_emacs, get_project_path    # type: ignore
+from core.utils import eval_in_emacs, get_project_path    # type: ignore
 from core.search import Search    # type: ignore
 
 class SearchRg(Search):
@@ -36,8 +36,8 @@ class SearchRg(Search):
     def search_match(self, prefix):
         prefix = prefix.replace("*", "")
         if len(prefix.split()) > 0:
-            command_string = "rg -S --no-heading --column --max-columns 300 '{}' {}".format(".*".join(prefix.split()), self.search_path)
-            results = self.get_process_result(command_string)
+            command_string = "rg -S --no-heading --column --max-columns 300 '{}'".format(".*".join(prefix.split()))
+            results = self.get_process_result(command_string, self.search_path)
             
             return list(map(lambda p: os.path.relpath(p, self.search_path), results))
         else:

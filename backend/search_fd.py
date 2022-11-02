@@ -22,7 +22,7 @@
 import os
 import re
 
-from core.utils import get_command_result, eval_in_emacs, get_project_path    # type: ignore
+from core.utils import eval_in_emacs, get_project_path    # type: ignore
 from core.search import Search    # type: ignore
 
 class SearchFd(Search):

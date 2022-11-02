@@ -23,7 +23,7 @@ import os
 import tempfile
 import hashlib
 
-from core.utils import get_command_result, eval_in_emacs, touch    # type: ignore
+from core.utils import eval_in_emacs, touch    # type: ignore
 from core.search import Search    # type: ignore
 
 class SearchCurrentBuffer(Search):
@@ -47,7 +47,8 @@ class SearchCurrentBuffer(Search):
         
     def search_match(self, prefix):
         if os.path.exists(self.buffer_temp_path):
-            results = get_command_result("rg -S --column --max-columns 300 '{}' {}".format(prefix, self.buffer_temp_path)).splitlines()
+            command_string = "rg -S --column --max-columns 300 '{}' {}".format(prefix, self.buffer_temp_path)
+            results = self.get_process_result(command_string)
             return results
         else:
             return []
