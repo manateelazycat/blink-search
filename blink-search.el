@@ -594,8 +594,10 @@ influence of C1 on the result."
 
           (when candidate-items
             (dolist (item candidate-items)
-              (let* ((candidate (plist-get item :candidate))
+              (let* ((candidate-info (plist-get item :candidate))
+                     (candidate (if (stringp candidate-info) candidate-info (plist-get candidate-info :text)))
                      (candidate-length (length candidate))
+                     (matches (unless (stringp candidate-info) (plist-get candidate-info :matches)))
                      (backend (plist-get item :backend))
                      (display-candiate (blink-search-render-candidate backend candidate candidate-max-length))
                      (padding-right 5)
@@ -615,6 +617,11 @@ influence of C1 on the result."
                                                     'face (if (equal candidate-index candidate-select-index) 'blink-search-select-face 'font-lock-doc-face)))
                                       "\n"
                                       ))
+
+                (when matches
+                  (dolist (match matches)
+                    (add-face-text-property (nth 0 match) (nth 1 match) 'font-lock-type-face 'append candidate-line)
+                    ))
 
                 (when (equal candidate-index candidate-select-index)
                   (add-face-text-property 0 (length candidate-line) 'blink-search-select-face 'append candidate-line))
@@ -766,10 +773,11 @@ Function `move-to-column' can't handle mixed string of Chinese and English corre
   (when (and (> (length blink-search-candidate-items) 0)
              (> (length blink-search-backend-items) 0))
     (let* ((backend-name (plist-get (nth blink-search-candidate-select-index blink-search-candidate-items) :backend))
-           (candidate
+           (candidate-info
             (if (get-buffer-window blink-search-backend-buffer)
                 (nth blink-search-backend-select-index blink-search-backend-items)
-              (format "%s" (plist-get (nth blink-search-candidate-select-index blink-search-candidate-items) :candidate)))))
+              (plist-get (nth blink-search-candidate-select-index blink-search-candidate-items) :candidate)))
+           (candidate (format "%s" (if (stringp candidate-info) candidate-info (plist-get candidate-info :text)))))
       (blink-search-quit)
 
       (pcase backend-name

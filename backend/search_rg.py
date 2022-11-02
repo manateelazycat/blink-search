@@ -20,6 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
+import json
 
 from core.utils import eval_in_emacs, get_project_path    # type: ignore
 from core.search import Search    # type: ignore
@@ -36,10 +37,25 @@ class SearchRg(Search):
     def search_match(self, prefix):
         prefix = prefix.replace("*", "")
         if len(prefix.split()) > 0:
-            command_string = "rg -S --no-heading --column --max-columns 300 '{}'".format(".*".join(prefix.split()))
-            results = self.get_process_result(command_string, self.search_path)
+            command_string = "rg -S --json --max-columns 300 '{}'".format(".*".join(prefix.split()))
+            lines = self.get_process_result(command_string, self.search_path)
             
-            return list(map(lambda p: os.path.relpath(p, self.search_path), results))
+            results = []
+            for line in lines:
+                info = json.loads(line)
+                if info["type"] == "match":
+                    prefix = "{}:{}:{}: ".format(
+                        info["data"]["path"]["text"],
+                        info["data"]["line_number"], 
+                        info["data"]["submatches"][0]["start"])
+                    candidate = "{}{}".format(prefix, info["data"]["lines"]["text"][:-1])
+                    matches = list(map(lambda match: [match["start"] + len(prefix) + 1, match["end"] + len(prefix) + 1], info["data"]["submatches"]))
+                    results.append({
+                        "text": candidate,
+                        "matches": matches
+                    })
+            
+            return results
         else:
             return []
 
@@ -48,4 +64,4 @@ class SearchRg(Search):
         eval_in_emacs("blink-search-rg-do", 
                       os.path.join(self.search_path, candidate_infos[0]),
                       int(candidate_infos[1]),
-                      int(candidate_infos[2]) - 1)
+                      int(candidate_infos[2]))

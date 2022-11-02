@@ -22,6 +22,7 @@
 import os
 import tempfile
 import hashlib
+import json
 
 from core.utils import eval_in_emacs, touch    # type: ignore
 from core.search import Search    # type: ignore
@@ -47,8 +48,21 @@ class SearchCurrentBuffer(Search):
         
     def search_match(self, prefix):
         if os.path.exists(self.buffer_temp_path):
-            command_string = "rg -S --column --max-columns 300 '{}' {}".format(prefix, self.buffer_temp_path)
-            results = self.get_process_result(command_string)
+            command_string = "rg -S --json --max-columns 300 '{}' {}".format(prefix, self.buffer_temp_path)
+            lines = self.get_process_result(command_string)
+            
+            results = []
+            for line in lines:
+                info = json.loads(line)
+                if info["type"] == "match":
+                    prefix = "{}:{}: ".format(info["data"]["line_number"], info["data"]["submatches"][0]["start"])
+                    candidate = "{}{}".format(prefix, info["data"]["lines"]["text"][:-1])
+                    matches = list(map(lambda match: [match["start"] + len(prefix) + 1, match["end"] + len(prefix) + 1], info["data"]["submatches"]))
+                    results.append({
+                        "text": candidate,
+                        "matches": matches
+                    })
+            
             return results
         else:
             return []
@@ -58,6 +72,6 @@ class SearchCurrentBuffer(Search):
         eval_in_emacs("blink-search-current-buffer-do", 
                       self.buffer_name,
                       int(candidate_infos[0]),
-                      int(candidate_infos[1]) - 1)
+                      int(candidate_infos[1]))
         
         os.unlink(self.buffer_temp_path)
