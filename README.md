@@ -29,9 +29,10 @@ blink-search will provide smooth completion experience without compromise to slo
 ```
 
 ## Usage
-M-x blink-search 
-
-**That's all!**
+1. Start blink-search: M-x blink-search 
+2. Type keyword to search from multiple backend
+3. Type keyword that prefix with `#` to search current buffer
+4. Type keyword that prefix with `!` to grep current directory
 
 ## Keymap
 | Key      | Command                   | Description                                                                  |
@@ -46,9 +47,6 @@ M-x blink-search
 * `blink-search-restart-process`: restart blink-search process (only used for development)
 
 ## Todo List
-* # prefix: only search current buffer, use single column layout
-* ! prefix: only grep current directory, use single column layout
-* Support customize backend list
 * Show current candidate number and select index in input buffer
 * Refactory `Search` class, remove duplciate code
 
