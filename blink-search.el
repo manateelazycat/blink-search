@@ -553,22 +553,26 @@ influence of C1 on the result."
                      "..."
                      (substring candidate candidate-max-length (length candidate))))))))
 
+(defun blink-search-select-window (window)
+  (when (window-live-p window)
+    (select-window window)))
+
 (defun blink-search-show-backend-window ()
   (unless (get-buffer-window blink-search-backend-buffer)
     (save-excursion
-      (select-window (get-buffer-window blink-search-candidate-buffer))
+      (blink-search-select-window (get-buffer-window blink-search-candidate-buffer))
       (split-window (selected-window) nil 'right t)
       (other-window 1)
       (switch-to-buffer blink-search-backend-buffer)
 
-      (select-window (get-buffer-window blink-search-input-buffer)))))
+      (blink-search-select-window (get-buffer-window blink-search-input-buffer)))))
 
 (defun blink-search-hide-backend-window ()
   (when (get-buffer-window blink-search-backend-buffer)
     (save-excursion
       (delete-window (get-buffer-window blink-search-backend-buffer))
 
-      (select-window (get-buffer-window blink-search-input-buffer)))))
+      (blink-search-select-window (get-buffer-window blink-search-input-buffer)))))
 
 (defun blink-search-update-items (candidate-items candidate-select-index backend-items backend-select-index backend-number)
   (setq blink-search-candidate-items candidate-items)
