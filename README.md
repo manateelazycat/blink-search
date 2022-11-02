@@ -46,10 +46,6 @@ blink-search will provide smooth completion experience without compromise to slo
 
 * `blink-search-restart-process`: restart blink-search process (only used for development)
 
-## Todo List
-* Show current candidate number and select index in input buffer
-* Refactory `Search` class, remove duplciate code
-
 ## Report bug
 
 Please use `emacs -q` and load a minimal setup with only blink-search to verify that the bug is reproducible. If `emacs -q` works fine, probably something is wrong with your Emacs config.

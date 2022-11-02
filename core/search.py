@@ -64,10 +64,12 @@ class Search:
         self.items = sorted(items, key=len)
         
     def is_match(self, prefix, prefix_regexp, symbol):
-        return False
+        return symbol.startswith(prefix) or symbol.replace("-", "").startswith(prefix) or prefix in symbol or prefix_regexp.match(symbol)
     
     def search_match(self, prefix):
-        pass
+        prefix = prefix.replace("*", "")
+        prefix_regexp = re.compile(".*" + ".*".join(prefix.split()), re.IGNORECASE)
+        return list(filter(lambda symbol: self.is_match(prefix, prefix_regexp, symbol), self.items))
     
     def get_process_result(self, command_string, cwd=None):
         if self.sub_process != None:

@@ -31,9 +31,6 @@ class SearchCommonDirectory(Search):
     def __init__(self, backend_name, message_queue) -> None:
         Search.__init__(self, backend_name, message_queue)
         
-    def is_match(self, prefix, prefix_regexp, symbol):
-        return symbol.startswith(prefix) or symbol.replace("-", "").startswith(prefix) or prefix_regexp.match(symbol)
-    
     def search_match(self, prefix):
         prefix = prefix.replace("*", "")
         prefix_regexp = re.compile(".*" + ".*".join(prefix.split()))

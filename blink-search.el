@@ -574,6 +574,17 @@ influence of C1 on the result."
 
       (blink-search-select-window (get-buffer-window blink-search-input-buffer)))))
 
+(defun blink-search-get-candidate-text (candidate-info)
+  (format
+   "%s"
+   (if (stringp candidate-info)
+       candidate-info
+     (plist-get candidate-info :text))))
+
+(defun blink-search-get-candidate-matches (candidate-info)
+  (unless (stringp candidate-info)
+    (plist-get candidate-info :matches)))
+
 (defun blink-search-update-items (candidate-items candidate-select-index backend-items backend-select-index backend-number)
   (setq blink-search-candidate-items candidate-items)
   (setq blink-search-candidate-select-index candidate-select-index)
@@ -595,9 +606,9 @@ influence of C1 on the result."
           (when candidate-items
             (dolist (item candidate-items)
               (let* ((candidate-info (plist-get item :candidate))
-                     (candidate (if (stringp candidate-info) candidate-info (plist-get candidate-info :text)))
+                     (candidate (blink-search-get-candidate-text candidate-info))
                      (candidate-length (length candidate))
-                     (matches (unless (stringp candidate-info) (plist-get candidate-info :matches)))
+                     (matches (blink-search-get-candidate-matches candidate-info))
                      (backend (plist-get item :backend))
                      (display-candiate (blink-search-render-candidate backend candidate candidate-max-length))
                      (padding-right 5)
@@ -783,7 +794,7 @@ Function `move-to-column' can't handle mixed string of Chinese and English corre
             (if (get-buffer-window blink-search-backend-buffer)
                 (nth blink-search-backend-select-index blink-search-backend-items)
               (plist-get (nth blink-search-candidate-select-index blink-search-candidate-items) :candidate)))
-           (candidate (format "%s" (if (stringp candidate-info) candidate-info (plist-get candidate-info :text)))))
+           (candidate (blink-search-get-candidate-text candidate-info)))
       (blink-search-quit)
 
       (pcase backend-name

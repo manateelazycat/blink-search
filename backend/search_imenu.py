@@ -37,9 +37,6 @@ class SearchIMenu(Search):
         for item in items:
             self.item_dict[item[0]] = item[1]
         
-    def is_match(self, prefix, prefix_regexp, symbol):
-        return symbol.startswith(prefix) or symbol.replace("-", "").startswith(prefix) or prefix in symbol or prefix_regexp.match(symbol)
-    
     def search_match(self, prefix: str):
         prefix_regexp = re.compile(".*" + ".*".join(prefix.replace("*", "").split()), re.IGNORECASE)
         return list(filter(lambda symbol: self.is_match(prefix, prefix_regexp, symbol), self.item_dict.keys()))

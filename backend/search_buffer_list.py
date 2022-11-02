@@ -44,9 +44,6 @@ class SearchBufferList(Search):
     def update_sort_buffers(self, items):
         self.items = list(dict.fromkeys(items))
         
-    def is_match(self, prefix, prefix_regexp, symbol):
-        return symbol.startswith(prefix) or symbol.replace("-", "").startswith(prefix) or prefix in symbol or prefix_regexp.match(symbol)
-    
     def search_match(self, prefix: str):
         prefix_regexp = re.compile(".*" + ".*".join(prefix.replace("*", "").split()), re.IGNORECASE)
         match_items = list(filter(lambda symbol: self.is_match(prefix, prefix_regexp, symbol), self.items))
