@@ -448,15 +448,6 @@ influence of C1 on the result."
   (when disable-cursor
     (setq-local cursor-type nil)))
 
-(defun blink-search-monitor-input (_begin _end _length)
-  "This is input monitor callback to hook `after-change-functions'."
-  ;; Send new input to all backends when user change input.
-  (when (string-equal (buffer-name) blink-search-input-buffer)
-    (let* ((input (with-current-buffer blink-search-input-buffer
-                    (buffer-substring-no-properties (point-min) (point-max)))))
-      (blink-search-call-async "search" input (blink-search-get-row-number))
-      )))
-
 (defun blink-search-get-row-number ()
   (/ (nth 3 (blink-search-get-window-allocation (get-buffer-window blink-search-candidate-buffer))) (line-pixel-height)))
 
@@ -525,9 +516,23 @@ influence of C1 on the result."
                              (with-current-buffer blink-search-start-buffer
                                default-directory))))
 
+(defun blink-search-monitor-input (_begin _end _length)
+  "This is input monitor callback to hook `after-change-functions'."
+  ;; Send new input to all backends when user change input.
+  (when (string-equal (buffer-name) blink-search-input-buffer)
+    (let* ((input (string-trim
+                   (with-current-buffer blink-search-input-buffer
+                     (buffer-substring-no-properties (point-min) (point-max))))))
+      (cond ((string-prefix-p "#" input)
+             (blink-search-call-async "search" (substring input 1) (blink-search-get-row-number) (list "Current Buffer")))
+            ((string-prefix-p "!" input)
+             (blink-search-call-async "search" (substring input 1) (blink-search-get-row-number) (list "Grep File")))
+            (t
+             (blink-search-call-async "search" input (blink-search-get-row-number) (list)))))))
+
 (defun blink-search-start ()
   (when (blink-search-epc-live-p blink-search-epc-process)
-    (blink-search-call-async "search" "" (blink-search-get-row-number))))
+    (blink-search-call-async "search" "" (blink-search-get-row-number) (list))))
 
 (defsubst blink-search-indent-pixel (xpos)
   "Return a display property that aligns to XPOS."
@@ -546,13 +551,34 @@ influence of C1 on the result."
                candidate
              (concat (substring candidate 0 candidate-max-length)
                      "..."
-                     (substring candidate candidate-max-length (len candidate))))))))
+                     (substring candidate candidate-max-length (length candidate))))))))
 
-(defun blink-search-update-items (candidate-items candidate-select-index backend-items backend-select-index)
+(defun blink-search-show-backend-window ()
+  (unless (get-buffer-window blink-search-backend-buffer)
+    (save-excursion
+      (select-window (get-buffer-window blink-search-candidate-buffer))
+      (split-window (selected-window) nil 'right t)
+      (other-window 1)
+      (switch-to-buffer blink-search-backend-buffer)
+
+      (select-window (get-buffer-window blink-search-input-buffer)))))
+
+(defun blink-search-hide-backend-window ()
+  (when (get-buffer-window blink-search-backend-buffer)
+    (save-excursion
+      (delete-window (get-buffer-window blink-search-backend-buffer))
+
+      (select-window (get-buffer-window blink-search-input-buffer)))))
+
+(defun blink-search-update-items (candidate-items candidate-select-index backend-items backend-select-index backend-number)
   (setq blink-search-candidate-items candidate-items)
   (setq blink-search-candidate-select-index candidate-select-index)
   (setq blink-search-backend-items backend-items)
   (setq blink-search-backend-select-index backend-select-index)
+
+  (if (> backend-number 1)
+      (blink-search-show-backend-window)
+    (blink-search-hide-backend-window))
 
   (save-excursion
     (let* ((window-allocation (blink-search-get-window-allocation (get-buffer-window blink-search-candidate-buffer)))
@@ -571,13 +597,17 @@ influence of C1 on the result."
                      (padding-right 5)
                      candidate-line)
                 (setq candidate-line (concat
-                                      (format " %s " display-candiate)
-                                      (propertize " " 'display
-                                                  (blink-search-indent-pixel
-                                                   (- window-width
-                                                      (* (window-font-width) (+ (string-width backend) padding-right)))))
-                                      (propertize (format "%s " backend)
-                                                  'face (if (equal candidate-index candidate-select-index) 'blink-search-select-face 'font-lock-doc-face))
+                                      (if (> backend-number 1)
+                                          (format " %s " display-candiate)
+                                        (format " %s " candidate))
+                                      (when (> backend-number 1)
+                                        (propertize " " 'display
+                                                    (blink-search-indent-pixel
+                                                     (- window-width
+                                                        (* (window-font-width) (+ (string-width backend) padding-right))))))
+                                      (when (> backend-number 1)
+                                        (propertize (format "%s " backend)
+                                                    'face (if (equal candidate-index candidate-select-index) 'blink-search-select-face 'font-lock-doc-face)))
                                       "\n"
                                       ))
 
@@ -588,26 +618,30 @@ influence of C1 on the result."
 
                 (setq candidate-index (1+ candidate-index))
                 ))))
+
+
         (with-current-buffer blink-search-backend-buffer
-          (let ((backend-index 0))
-            (erase-buffer)
+          (erase-buffer)
 
-            (when backend-items
-              (dolist (item backend-items)
-                (let* (backend-line)
-                  (setq backend-line
-                        (concat
-                         (propertize (format " %s " item) 'face (if (equal backend-index backend-select-index) 'blink-search-select-face 'font-lock-doc-face))
-                         (propertize " " 'display (blink-search-indent-pixel window-width))
-                         "\n"
-                         ))
+          (when (> backend-number 1)
+            (let ((backend-index 0))
 
-                  (when (equal backend-index backend-select-index)
-                    (add-face-text-property 0 (length backend-line) 'blink-search-select-face 'append backend-line))
+              (when backend-items
+                (dolist (item backend-items)
+                  (let* (backend-line)
+                    (setq backend-line
+                          (concat
+                           (propertize (format " %s " item) 'face (if (equal backend-index backend-select-index) 'blink-search-select-face 'font-lock-doc-face))
+                           (propertize " " 'display (blink-search-indent-pixel window-width))
+                           "\n"
+                           ))
 
-                  (insert backend-line)
+                    (when (equal backend-index backend-select-index)
+                      (add-face-text-property 0 (length backend-line) 'blink-search-select-face 'append backend-line))
 
-                  (setq backend-index (1+ backend-index)))))))
+                    (insert backend-line)
+
+                    (setq backend-index (1+ backend-index))))))))
         ))))
 
 (defun blink-search-candidate-select-next ()
@@ -727,7 +761,10 @@ Function `move-to-column' can't handle mixed string of Chinese and English corre
   (when (and (> (length blink-search-candidate-items) 0)
              (> (length blink-search-backend-items) 0))
     (let* ((backend-name (plist-get (nth blink-search-candidate-select-index blink-search-candidate-items) :backend))
-           (candidate (nth blink-search-backend-select-index blink-search-backend-items)))
+           (candidate
+            (if (get-buffer-window blink-search-backend-buffer)
+                (nth blink-search-backend-select-index blink-search-backend-items)
+              (format "%s" (plist-get (nth blink-search-candidate-select-index blink-search-candidate-items) :candidate)))))
       (blink-search-quit)
 
       (pcase backend-name

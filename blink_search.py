@@ -100,6 +100,19 @@ class BlinkSearch:
         self.search_imenu = SearchIMenu("IMenu", self.message_queue)
         self.search_common_directory = SearchCommonDirectory("Common Directory", self.message_queue)
         
+        self.search_backend_dict = {}
+        self.search_backend_dict["Elisp Symbol"] = self.search_elisp_symbol
+        self.search_backend_dict["Recent File"] = self.search_recent_file
+        self.search_backend_dict["Buffer List"] = self.search_buffer_list
+        self.search_backend_dict["EAF Browser History"] = self.search_eaf_browser_history
+        self.search_backend_dict["Google Suggest"] = self.search_google_suggestion
+        self.search_backend_dict["Find File"] = self.search_fd
+        self.search_backend_dict["Grep File"] = self.search_rg
+        self.search_backend_dict["Current Buffer"] = self.search_current_buffer
+        self.search_backend_dict["IMenu"] = self.search_imenu
+        self.search_backend_dict["Common Directory"] = self.search_common_directory
+        self.search_backend_list = []
+        
         # Pass epc port and webengine codec information to Emacs when first start blink-search.
         eval_in_emacs('blink-search--first-start', self.server.server_address[1])
 
@@ -134,20 +147,14 @@ class BlinkSearch:
             self.search_backend_items = []
             
             candidate_items = []
-            for backend_info in [
-                    ["Buffer List", 5],
-                    ["Common Directory", 5],
-                    ["Find File", 5],
-                    ["Recent File", 5],
-                    ["EAF Browser History", 5],
-                    ["Current Buffer", 5],
-                    ["Grep File", 10],
-                    ["IMenu", 5],
-                    ["Elisp Symbol", 5],
-                    ["Google Suggest", 3]]:
-                [backend_name, candidate_show_number] = backend_info
+            for backend_name in self.search_backend_list:
                 if backend_name in self.search_dict and self.search_dict[backend_name] != None and len(self.search_dict[backend_name]) > 0:
                     candidates = self.search_dict[backend_name]
+                    if len(self.search_backend_list) > 1:
+                        candidate_show_number = 5
+                    else:
+                        candidate_show_number = len(candidates)
+                        
                     for candidate in candidates[:min(len(candidates), candidate_show_number)]:
                         candidate_items.append({
                             "backend": backend_name,
@@ -167,10 +174,14 @@ class BlinkSearch:
                 self.render_backend_offset = 0
                 self.render_backend_index = 0
                 
-                eval_in_emacs("blink-search-update-items", 
-                              self.render_candidate_items, self.render_candidate_index, 
-                              self.render_backend_items, self.render_backend_index)
-            
+                self.render_items()
+                
+    def render_items(self):
+        eval_in_emacs("blink-search-update-items", 
+                      self.render_candidate_items, self.render_candidate_index, 
+                      self.render_backend_items, self.render_backend_index,
+                      len(self.search_backend_list))
+                
     def update_render_index_and_offset(self):
         try:
             candiate = self.search_candidate_items[self.render_candidate_offset + self.render_candidate_index]
@@ -218,9 +229,7 @@ class BlinkSearch:
         if need_update:
             self.update_render_index_and_offset()
             
-            eval_in_emacs("blink-search-update-items", 
-                          self.render_candidate_items, self.render_candidate_index, 
-                          self.render_backend_items, self.render_backend_index)
+            self.render_items()
 
     def select_prev_candidate_item(self):
         need_update = True
@@ -240,9 +249,7 @@ class BlinkSearch:
         if need_update:
             self.update_render_index_and_offset()
             
-            eval_in_emacs("blink-search-update-items", 
-                          self.render_candidate_items, self.render_candidate_index, 
-                          self.render_backend_items, self.render_backend_index)
+            self.render_items()
     
     def select_next_backend_item(self):
         need_update = True
@@ -259,9 +266,7 @@ class BlinkSearch:
             need_update = False
         
         if need_update:
-            eval_in_emacs("blink-search-update-items", 
-                          self.render_candidate_items, self.render_candidate_index, 
-                          self.render_backend_items, self.render_backend_index)
+            self.render_items()
 
     def select_prev_backend_item(self):
         need_update = True
@@ -278,9 +283,7 @@ class BlinkSearch:
             need_update = False
         
         if need_update:
-            eval_in_emacs("blink-search-update-items", 
-                          self.render_candidate_items, self.render_candidate_index, 
-                          self.render_backend_items, self.render_backend_index)
+            self.render_items()
     
     def search_elisp_symbol_update(self, symbols):
         self.search_elisp_symbol.update(symbols)
@@ -318,19 +321,17 @@ class BlinkSearch:
         elif backend == "Common Directory":
             self.search_common_directory.do(candidate)
         
-    def search(self, input, row_number):
+    def search(self, input, row_number, backend_list):
         self.search_row_number = row_number
         
-        self.search_elisp_symbol.search(input)
-        self.search_recent_file.search(input)
-        self.search_buffer_list.search(input)
-        self.search_eaf_browser_history.search(input)
-        self.search_google_suggestion.search(input)
-        self.search_fd.search(input)
-        self.search_rg.search(input)
-        self.search_current_buffer.search(input)
-        self.search_imenu.search(input)
-        self.search_common_directory.search(input)
+        if len(backend_list) == 0:
+            self.search_backend_list = ["Buffer List", "Common Directory", "Find File", "Recent File", "EAF Browser History", 
+                                        "IMenu", "Elisp Symbol", "Google Suggest"]
+        else:
+            self.search_backend_list = backend_list
+        
+        for backend in self.search_backend_list:
+            self.search_backend_dict[backend].search(input)
         
     def cleanup(self):
         """Do some cleanup before exit python process."""

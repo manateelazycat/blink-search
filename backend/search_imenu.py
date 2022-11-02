@@ -30,10 +30,10 @@ class SearchIMenu(Search):
     
     def __init__(self, backend_name, message_queue) -> None:
         Search.__init__(self, backend_name, message_queue)
+        self.item_dict = {}
         
     def update(self, items):
         self.items = items
-        self.item_dict = {}
         for item in items:
             self.item_dict[item[0]] = item[1]
         
