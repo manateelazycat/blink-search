@@ -600,11 +600,12 @@ influence of C1 on the result."
                                       (if (> backend-number 1)
                                           (format " %s " display-candiate)
                                         (format " %s " candidate))
-                                      (when (> backend-number 1)
-                                        (propertize " " 'display
-                                                    (blink-search-indent-pixel
-                                                     (- window-width
-                                                        (* (window-font-width) (+ (string-width backend) padding-right))))))
+                                      (if (> backend-number 1)
+                                          (propertize " " 'display
+                                                      (blink-search-indent-pixel
+                                                       (- window-width
+                                                          (* (window-font-width) (+ (string-width backend) padding-right)))))
+                                        (propertize " " 'display (blink-search-indent-pixel window-width)))
                                       (when (> backend-number 1)
                                         (propertize (format "%s " backend)
                                                     'face (if (equal candidate-index candidate-select-index) 'blink-search-select-face 'font-lock-doc-face)))
