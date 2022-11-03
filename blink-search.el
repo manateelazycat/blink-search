@@ -569,9 +569,9 @@ influence of C1 on the result."
           (t
            (if (<= candidate-length candidate-max-length)
                candidate
-             (concat (substring candidate 0 candidate-max-length)
+             (concat (substring candidate 0 (/ candidate-max-length 2))
                      "..."
-                     (substring candidate candidate-max-length (length candidate))))))))
+                     (substring candidate (- (length candidate) (/ candidate-max-length 2)) (length candidate))))))))
 
 (defun blink-search-select-window (window)
   (when (window-live-p window)
