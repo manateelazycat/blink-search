@@ -6,6 +6,12 @@ English | [简体中文](./README.zh-CN.md)
   <h3>In the blink of an eye, the search is complete!</h3>
 </p>
 
+<img src="./images/blink-search.png">
+
+<img src="./images/blink-search-grep-buffer.png">
+
+<img src="./images/blink-search-grep-directory.png">
+
 blink-search's goal is to become the fastest search framework in Emacs.
 
 blink-search use python multi-thread technology to search and filter candidates, Emacs only render result and do action.
