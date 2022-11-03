@@ -29,3 +29,6 @@ class SearchElispSymbol(Search):
     def __init__(self, backend_name, message_queue) -> None:
         Search.__init__(self, backend_name, message_queue)
         
+    def update(self, items):
+        self.items = sorted(list(map(str, items)), key=len)
+        
