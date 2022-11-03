@@ -52,6 +52,21 @@ blink-search will provide smooth completion experience without compromise to slo
 
 * `blink-search-restart-process`: restart blink-search process (only used for development)
 
+## Search Backend
+
+blink-search has completed the following search backend:
+
+* Buffer List: search buffer list
+* Common Directory: search common directory, you can customize option `blink-search-common-directory`
+* Recent File: search recent file
+* Current Buffer: use `ripgrep` grep current buffer content
+* Grep File: use `ripgrep` grep file under project or current directory
+* IMenu: search imenu of current buffer
+* Find File: use `fd` search file under project or current directory
+* EAF Browser History: search history of EAF browser
+* Elisp Symbol: search elisp symbol
+* Google Suggest: search google suggestions
+
 ## Report bug
 
 Please use `emacs -q` and load a minimal setup with only blink-search to verify that the bug is reproducible. If `emacs -q` works fine, probably something is wrong with your Emacs config.
