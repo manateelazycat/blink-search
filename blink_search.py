@@ -103,16 +103,10 @@ class BlinkSearch:
         self.search_common_directory = SearchCommonDirectory("Common Directory", self.message_queue)
         
         self.search_backend_dict = {}
-        self.search_backend_dict["Elisp Symbol"] = self.search_elisp_symbol
-        self.search_backend_dict["Recent File"] = self.search_recent_file
-        self.search_backend_dict["Buffer List"] = self.search_buffer_list
-        self.search_backend_dict["EAF Browser History"] = self.search_eaf_browser_history
-        self.search_backend_dict["Google Suggest"] = self.search_google_suggestion
-        self.search_backend_dict["Find File"] = self.search_fd
-        self.search_backend_dict["Grep File"] = self.search_rg
-        self.search_backend_dict["Current Buffer"] = self.search_current_buffer
-        self.search_backend_dict["IMenu"] = self.search_imenu
-        self.search_backend_dict["Common Directory"] = self.search_common_directory
+        for backend in [self.search_elisp_symbol, self.search_recent_file, self.search_buffer_list,
+                        self.search_eaf_browser_history, self.search_google_suggestion, self.search_common_directory,
+                        self.search_fd, self.search_rg, self.search_current_buffer, self.search_imenu]:
+            self.search_backend_dict[backend.backend_name] = backend
         self.search_backend_list = []
         
         # Pass epc port and webengine codec information to Emacs when first start blink-search.
