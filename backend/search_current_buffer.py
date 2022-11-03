@@ -75,3 +75,11 @@ class SearchCurrentBuffer(Search):
                       int(candidate_infos[1]))
         
         os.unlink(self.buffer_temp_path)
+
+    def select(self, candidate, start_buffer_name):
+        candidate_infos = candidate["text"].split(":")
+        eval_in_emacs("blink-search-current-buffer-preview", 
+                      self.buffer_name,
+                      int(candidate_infos[0]),
+                      int(candidate_infos[1]))
+        

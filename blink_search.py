@@ -81,6 +81,7 @@ class BlinkSearch:
         self.search_row_number = 0
         self.search_candidate_items = []
         self.search_backend_items = []
+        self.search_start_buffer_name = ""
         self.render_candidate_index = 0
         self.render_backend_index = 0
         self.render_candidate_items = []
@@ -176,6 +177,8 @@ class BlinkSearch:
                 
                 self.render_items()
                 
+                self.select_candidate_item()
+                
     def render_items(self):
         eval_in_emacs("blink-search-update-items", 
                       self.render_candidate_items, self.render_candidate_index, 
@@ -210,7 +213,22 @@ class BlinkSearch:
             
     def update_render_backend_items(self):
         self.render_backend_items = self.search_backend_items[self.render_backend_offset:self.render_backend_offset + self.search_row_number]
-            
+        
+    def select_candidate_item(self):
+        candiate_item = self.search_candidate_items[self.render_candidate_offset + self.render_candidate_index]
+        backend_name = candiate_item["backend"]
+        candidate = candiate_item["candidate"]
+        
+        self.search_backend_dict[backend_name].select(candidate, self.search_start_buffer_name)
+    
+    def select_backend_item(self):
+        candiate_item = self.search_candidate_items[self.render_candidate_offset + self.render_candidate_index]
+        backend_name = candiate_item["backend"]
+        
+        candidate = self.search_backend_items[self.render_backend_offset + self.render_backend_index]
+        
+        self.search_backend_dict[backend_name].select(candidate, self.search_start_buffer_name)
+        
     def select_next_candidate_item(self):
         need_update = True
         
@@ -230,7 +248,9 @@ class BlinkSearch:
             self.update_render_index_and_offset()
             
             self.render_items()
-
+            
+            self.select_candidate_item()
+            
     def select_prev_candidate_item(self):
         need_update = True
         
@@ -250,6 +270,8 @@ class BlinkSearch:
             self.update_render_index_and_offset()
             
             self.render_items()
+            
+            self.select_candidate_item()
     
     def select_next_backend_item(self):
         need_update = True
@@ -267,6 +289,8 @@ class BlinkSearch:
         
         if need_update:
             self.render_items()
+            
+            self.select_backend_item()
 
     def select_prev_backend_item(self):
         need_update = True
@@ -284,6 +308,8 @@ class BlinkSearch:
         
         if need_update:
             self.render_items()
+            
+            self.select_backend_item()
     
     def search_elisp_symbol_update(self, symbols):
         self.search_elisp_symbol.update(symbols)
@@ -302,6 +328,7 @@ class BlinkSearch:
         self.search_rg.init_dir(start_dir)
         
     def search_init_current_buffer(self, buffer_name, buffer_content):
+        self.search_start_buffer_name = buffer_name
         self.search_current_buffer.init_buffer(buffer_name, buffer_content)
         
     def search_init_imenu(self, candidates):

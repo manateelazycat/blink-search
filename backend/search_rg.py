@@ -65,3 +65,12 @@ class SearchRg(Search):
                       os.path.join(self.search_path, candidate_infos[0]),
                       int(candidate_infos[1]),
                       int(candidate_infos[2]))
+
+    def select(self, candidate, start_buffer_name):
+        candidate_infos = candidate["text"].split(":")
+        eval_in_emacs("blink-search-rg-preview", 
+                      os.path.join(self.search_path, candidate_infos[0]),
+                      int(candidate_infos[1]),
+                      int(candidate_infos[2]))
+
+        

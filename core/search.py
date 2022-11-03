@@ -88,4 +88,5 @@ class Search:
         
         return results
             
-        
+    def select(self, candidate, start_buffer_name):
+        eval_in_emacs("blink-search-select-start-buffer", start_buffer_name)
