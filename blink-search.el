@@ -78,6 +78,7 @@
 (require 'subr-x)
 
 (require 'blink-search-epc)
+(require 'blink-search-icon)
 
 (require 'recentf)
 (require 'imenu)
@@ -654,13 +655,18 @@ influence of C1 on the result."
                      (backend (plist-get item :backend))
                      (display-candiate (blink-search-render-candidate backend candidate candidate-max-length))
                      (padding-right 5)
+                     (icon (cdr (assoc backend blink-search-icon-alist)))
+                     (icon-default (cdr (assoc t blink-search-icon-alist)))
+                     (display-icon (if icon icon icon-default))
+                     (icon-text (blink-search-icon-build (nth 0 display-icon) (nth 1 display-icon) (nth 2 display-icon)))
                      candidate-line)
 
                 (setq candidate-line
                       (concat
+                       icon-text
                        (if (> backend-number 1)
-                           (format " %s " display-candiate)
-                         (format " %s " candidate))
+                           (format "%s " display-candiate)
+                         (format "%s " candidate))
                        (if (> backend-number 1)
                            (propertize " " 'display
                                        (blink-search-indent-pixel
