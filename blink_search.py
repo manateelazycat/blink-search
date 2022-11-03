@@ -188,6 +188,9 @@ class BlinkSearch:
         eval_in_emacs("blink-search-update-items", 
                       self.render_candidate_items, self.render_candidate_index, 
                       self.render_backend_items, self.render_backend_index,
+                      self.search_candidate_items[self.render_candidate_offset + self.render_candidate_index]["backend"],
+                      self.render_backend_offset + self.render_backend_index + 1, 
+                      len(self.search_backend_items),
                       len(self.search_backend_list))
                 
     def update_render_index_and_offset(self):

@@ -101,6 +101,7 @@
 (defvar blink-search-window-configuration nil)
 (defvar blink-search-start-buffer nil)
 (defvar blink-search-input-buffer " *blink search input*")
+(defvar blink-search-tooltip-buffer " *blink search tooltip*")
 (defvar blink-search-candidate-buffer " *blink search candidate*")
 (defvar blink-search-backend-buffer " *blink search backend*")
 
@@ -381,6 +382,18 @@ influence of C1 on the result."
     (setq-local left-margin-width 1)
     (setq-local right-margin-width 1))
 
+  (with-current-buffer (get-buffer-create blink-search-tooltip-buffer)
+    (erase-buffer)
+
+    (blink-search-disable-options t)
+
+    ;; Avoid background around input string.
+    (face-remap-add-relative 'hl-line :background (face-background 'default))
+
+    ;; Set window margin.
+    (setq-local left-margin-width 1)
+    (setq-local right-margin-width 1))
+
   (with-current-buffer (get-buffer-create blink-search-candidate-buffer)
     (erase-buffer)
     (blink-search-disable-options t)
@@ -396,11 +409,16 @@ influence of C1 on the result."
 
   ;; Show input buffer.
   (split-window)
-  (other-window -1)
+  (other-window 1)
   (switch-to-buffer blink-search-input-buffer)
 
-  ;; Show candidate buffer.
+  ;; Show tooltip buffer.
   (split-window (selected-window) (line-pixel-height) 'below t)
+  (split-window (selected-window) nil 'right t)
+  (other-window 1)
+  (switch-to-buffer blink-search-tooltip-buffer)
+
+  ;; Show candidate buffer.
   (other-window 1)
   (switch-to-buffer blink-search-candidate-buffer)
 
@@ -586,7 +604,7 @@ influence of C1 on the result."
   (unless (stringp candidate-info)
     (plist-get candidate-info :matches)))
 
-(defun blink-search-update-items (candidate-items candidate-select-index backend-items backend-select-index backend-number)
+(defun blink-search-update-items (candidate-items candidate-select-index backend-items backend-select-index backend-name search-items-index search-items-number backend-number)
   (setq blink-search-candidate-items candidate-items)
   (setq blink-search-candidate-select-index candidate-select-index)
   (setq blink-search-backend-items backend-items)
@@ -599,6 +617,26 @@ influence of C1 on the result."
   (save-excursion
     (let* ((window-allocation (blink-search-get-window-allocation (get-buffer-window blink-search-candidate-buffer)))
            (window-width (nth 2 window-allocation)))
+      (with-current-buffer blink-search-tooltip-buffer
+        (let* ((tooltip-window-allocation (blink-search-get-window-allocation (get-buffer-window blink-search-input-buffer)))
+               (tooltip-window-width (nth 2 tooltip-window-allocation))
+               tooltip-line)
+          (erase-buffer)
+
+          (setq tooltip-line
+                (concat
+                 (propertize (format "%s [%s/%s]" backend-name search-items-index search-items-number)
+                             'face font-lock-constant-face)
+                 (propertize " search prefix: " 'face font-lock-type-face)
+                 (propertize "#" 'face font-lock-type-face)
+                 (propertize " grep buffer " 'face font-lock-keyword-face)
+                 (propertize "!" 'face font-lock-type-face)
+                 (propertize " grep directory " 'face font-lock-keyword-face)
+                 ))
+
+          (insert tooltip-line)
+          ))
+
       (with-current-buffer blink-search-candidate-buffer
         (let* ((candidate-max-length (ceiling (* (/ window-width (window-font-width)) 0.45)))
                (candidate-index 0))
