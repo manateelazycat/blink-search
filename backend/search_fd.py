@@ -22,7 +22,7 @@
 import os
 import re
 
-from core.utils import eval_in_emacs, get_project_path    # type: ignore
+from core.utils import eval_in_emacs, message_emacs, get_project_path    # type: ignore
 from core.search import Search    # type: ignore
 
 class SearchFd(Search):
@@ -46,3 +46,9 @@ class SearchFd(Search):
 
     def do(self, candidate):
         eval_in_emacs("find-file", os.path.join(self.search_path, candidate))
+
+    def copy(self, candidate):
+        path = os.path.join(self.search_path, candidate)
+        eval_in_emacs("kill-new", path)
+        message_emacs("Copy: {}".format(path))
+        

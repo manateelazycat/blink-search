@@ -90,3 +90,7 @@ class Search:
             
     def select(self, candidate, start_buffer_name):
         eval_in_emacs("blink-search-select-start-buffer", start_buffer_name)
+        
+    def copy(self, candidate):
+        eval_in_emacs("kill-new", candidate)
+        message_emacs("Copy: {}".format(candidate))

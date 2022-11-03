@@ -332,6 +332,7 @@ influence of C1 on the result."
     (define-key map (kbd "M-n") 'blink-search-backend-select-next)
     (define-key map (kbd "M-p") 'blink-search-backend-select-prev)
     (define-key map (kbd "C-m") 'blink-search-do)
+    (define-key map (kbd "M-w") 'blink-search-copy)
     map)
   "Keymap used by `blink-search-mode'.")
 
@@ -850,16 +851,23 @@ Function `move-to-column' can't handle mixed string of Chinese and English corre
   (blink-search-preview
    (blink-search-current-buffer-do buffer line column)))
 
+(defun blink-search-get-select-backend-name ()
+  (plist-get (nth blink-search-candidate-select-index blink-search-candidate-items) :backend))
+
+(defun blink-search-get-select-candidate ()
+  (let* ((candidate-info
+          (if (get-buffer-window blink-search-backend-buffer)
+              (nth blink-search-backend-select-index blink-search-backend-items)
+            (plist-get (nth blink-search-candidate-select-index blink-search-candidate-items) :candidate)))
+         (candidate (blink-search-get-candidate-text candidate-info)))
+    candidate))
+
 (defun blink-search-do ()
   (interactive)
   (when (and (> (length blink-search-candidate-items) 0)
              (> (length blink-search-backend-items) 0))
-    (let* ((backend-name (plist-get (nth blink-search-candidate-select-index blink-search-candidate-items) :backend))
-           (candidate-info
-            (if (get-buffer-window blink-search-backend-buffer)
-                (nth blink-search-backend-select-index blink-search-backend-items)
-              (plist-get (nth blink-search-candidate-select-index blink-search-candidate-items) :candidate)))
-           (candidate (blink-search-get-candidate-text candidate-info)))
+    (let* ((backend-name (blink-search-get-select-backend-name))
+           (candidate (blink-search-get-select-candidate)))
       (blink-search-quit)
 
       (pcase backend-name
@@ -869,6 +877,17 @@ Function `move-to-column' can't handle mixed string of Chinese and English corre
         ("EAF Browser History" (eaf-open-browser (car (last (split-string candidate)))))
         (t (blink-search-call-async "search_do" backend-name candidate))
         ))))
+
+(defun blink-search-copy ()
+  (interactive)
+  (when (and (> (length blink-search-candidate-items) 0)
+             (> (length blink-search-backend-items) 0))
+    (let* ((backend-name (blink-search-get-select-backend-name))
+           (candidate (blink-search-get-select-candidate)))
+      (blink-search-quit)
+
+      (blink-search-call-async "search_copy" backend-name candidate)
+      )))
 
 (provide 'blink-search)
 

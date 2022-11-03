@@ -349,18 +349,10 @@ class BlinkSearch:
         self.search_imenu.update(candidates)
         
     def search_do(self, backend, candidate):
-        if backend == "Find File":
-            self.search_fd.do(candidate)
-        elif backend == "Grep File":
-            self.search_rg.do(candidate)
-        elif backend == "Google Suggest":
-            self.search_google_suggestion.do(candidate)
-        elif backend == "Current Buffer":
-            self.search_current_buffer.do(candidate)
-        elif backend == "IMenu":
-            self.search_imenu.do(candidate)
-        elif backend == "Common Directory":
-            self.search_common_directory.do(candidate)
+        self.search_backend_dict[backend].do(candidate)
+            
+    def search_copy(self, backend, candidate):
+        self.search_backend_dict[backend].copy(candidate)
         
     def search(self, input, row_number, backend_list):
         self.search_row_number = row_number

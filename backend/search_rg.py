@@ -22,7 +22,7 @@
 import os
 import json
 
-from core.utils import eval_in_emacs, get_project_path    # type: ignore
+from core.utils import eval_in_emacs, message_emacs, get_project_path    # type: ignore
 from core.search import Search    # type: ignore
 
 class SearchRg(Search):
@@ -73,4 +73,8 @@ class SearchRg(Search):
                       int(candidate_infos[1]),
                       int(candidate_infos[2]))
 
+    def copy(self, candidate):
+        candidate_text = candidate.split(":")[-1]
+        eval_in_emacs("kill-new", candidate_text)
+        message_emacs("Copy: {}".format(candidate_text))
         
