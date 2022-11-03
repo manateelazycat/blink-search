@@ -6,17 +6,13 @@ English | [简体中文](./README.zh-CN.md)
   <h3>In the blink of an eye, the search is complete!</h3>
 </p>
 
-<img src="./images/blink-search.png">
-
-<img src="./images/blink-search-grep-buffer.png">
-
-<img src="./images/blink-search-grep-directory.png">
-
 blink-search's goal is to become the fastest search framework in Emacs.
 
 blink-search use python multi-thread technology to search and filter candidates, Emacs only render result and do action.
 
 blink-search will provide smooth completion experience without compromise to slow down emacs' performance.
+
+<img src="./images/blink-search.png">
 
 ## Installation
 
@@ -39,6 +35,10 @@ blink-search will provide smooth completion experience without compromise to slo
 2. Type keyword to search from multiple backend
 3. Type keyword that prefix with `#` to search current buffer
 4. Type keyword that prefix with `!` to grep current directory
+
+| Grep Buffer                                          | Grep Directory |
+| :--------:                                       | :----:                                                      |
+| <img src="./images/blink-search-grep-buffer.png" width="400"> | <img src="./images/blink-search-grep-directory.png" width="400"> |
 
 ## Keymap
 | Key      | Command                   | Description                                                                  |
