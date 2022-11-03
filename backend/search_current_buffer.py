@@ -43,7 +43,7 @@ class SearchCurrentBuffer(Search):
         md5.update(buffer_name.encode("utf-8"))
         self.buffer_temp_path = os.path.join(tempfile.gettempdir(), "blink-search-temp-buffer-{}".format(md5.hexdigest()))
         touch(self.buffer_temp_path)
-        with open(self.buffer_temp_path, "w") as f:
+        with open(self.buffer_temp_path, "w", encoding="utf-8") as f:
             f.write(self.buffer_content)
         
     def search_match(self, prefix):

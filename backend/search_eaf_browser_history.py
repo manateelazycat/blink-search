@@ -38,7 +38,7 @@ class SearchEAFBrowserHistory(Search):
             eaf_browser_history_path = os.path.join(eaf_config_path, "browser", "history", "log.txt")
             if os.path.exists(eaf_browser_history_path):
                 histories = []
-                with open(eaf_browser_history_path) as f:
+                with open(eaf_browser_history_path, encoding="utf-8") as f:
                     histories = f.read().splitlines()
                 
                 match_histories = []
