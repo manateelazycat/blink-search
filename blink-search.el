@@ -694,28 +694,20 @@ influence of C1 on the result."
     (dotimes (i 50)
       (windmove-up))))
 
-(cl-defmacro blink-search-preview (&rest body)
-  "Evaluate BODY for search preview."
-  `(with-temp-message ""
-     (let ((inhibit-message t))
-       (blink-search-select-toppest-window)
-
-       ,@body
-
-       (select-window (get-buffer-window blink-search-input-buffer))
-       )))
-
 (defun blink-search-select-start-buffer (buffer)
-  (blink-search-preview
-      (switch-to-buffer buffer)))
+  (blink-search-select-toppest-window)
+  (switch-to-buffer buffer)
+  (select-window (get-buffer-window blink-search-input-buffer)))
 
 (defun blink-search-rg-preview (file line column)
-  (blink-search-preview
-      (blink-search-rg-do file line column)))
+  (blink-search-select-toppest-window)
+  (blink-search-rg-do file line column)
+  (select-window (get-buffer-window blink-search-input-buffer)))
 
 (defun blink-search-current-buffer-preview (buffer line column)
-  (blink-search-preview
-      (blink-search-current-buffer-do buffer line column)))
+  (blink-search-select-toppest-window)
+  (blink-search-current-buffer-do buffer line column)
+  (select-window (get-buffer-window blink-search-input-buffer)))
 
 (defun blink-search-rg-do (file line column)
   (find-file file)
