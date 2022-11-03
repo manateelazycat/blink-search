@@ -81,6 +81,7 @@
 
 (require 'recentf)
 (require 'imenu)
+(require 'pulse)
 
 (recentf-mode 1)
 
@@ -689,26 +690,6 @@ influence of C1 on the result."
   (interactive)
   (blink-search-call-async "select_prev_backend_item"))
 
-(defun blink-search-select-toppest-window ()
-  (ignore-errors
-    (dotimes (i 50)
-      (windmove-up))))
-
-(defun blink-search-select-start-buffer (buffer)
-  (blink-search-select-toppest-window)
-  (switch-to-buffer buffer)
-  (select-window (get-buffer-window blink-search-input-buffer)))
-
-(defun blink-search-rg-preview (file line column)
-  (blink-search-select-toppest-window)
-  (blink-search-rg-do file line column)
-  (select-window (get-buffer-window blink-search-input-buffer)))
-
-(defun blink-search-current-buffer-preview (buffer line column)
-  (blink-search-select-toppest-window)
-  (blink-search-current-buffer-do buffer line column)
-  (select-window (get-buffer-window blink-search-input-buffer)))
-
 (defun blink-search-rg-do (file line column)
   (find-file file)
   (goto-line line)
@@ -804,6 +785,32 @@ Function `move-to-column' can't handle mixed string of Chinese and English corre
                                                     (pred integerp)))
                                         (copy-marker mk))))
                          (list elm)))))))
+
+
+(cl-defmacro blink-search-preview (&rest body)
+  `(let* ((inhibit-message t)
+          (input-window (get-buffer-window blink-search-input-buffer)))
+     (when input-window
+       (select-window input-window)
+       (other-window -1)
+
+       ,@body
+
+       (select-window input-window)
+       )))
+
+(defun blink-search-select-start-buffer (buffer)
+  (blink-search-preview
+   (switch-to-buffer buffer)))
+
+(defun blink-search-rg-preview (file line column)
+  (blink-search-preview
+   (blink-search-rg-do file line column)
+   ))
+
+(defun blink-search-current-buffer-preview (buffer line column)
+  (blink-search-preview
+   (blink-search-current-buffer-do buffer line column)))
 
 (defun blink-search-do ()
   (interactive)

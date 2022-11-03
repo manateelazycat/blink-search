@@ -220,19 +220,25 @@ class BlinkSearch:
         self.render_backend_items = self.search_backend_items[self.render_backend_offset:self.render_backend_offset + self.search_row_number]
         
     def select_candidate_item(self):
-        candiate_item = self.search_candidate_items[self.render_candidate_offset + self.render_candidate_index]
-        backend_name = candiate_item["backend"]
-        candidate = candiate_item["candidate"]
-        
-        self.search_backend_dict[backend_name].select(candidate, self.search_start_buffer_name)
+        try:
+            candiate_item = self.search_candidate_items[self.render_candidate_offset + self.render_candidate_index]
+            backend_name = candiate_item["backend"]
+            candidate = candiate_item["candidate"]
+            
+            self.search_backend_dict[backend_name].select(candidate, self.search_start_buffer_name)
+        except:
+            pass
     
     def select_backend_item(self):
-        candiate_item = self.search_candidate_items[self.render_candidate_offset + self.render_candidate_index]
-        backend_name = candiate_item["backend"]
-        
-        candidate = self.search_backend_items[self.render_backend_offset + self.render_backend_index]
-        
-        self.search_backend_dict[backend_name].select(candidate, self.search_start_buffer_name)
+        try:
+            candiate_item = self.search_candidate_items[self.render_candidate_offset + self.render_candidate_index]
+            backend_name = candiate_item["backend"]
+            
+            candidate = self.search_backend_items[self.render_backend_offset + self.render_backend_index]
+            
+            self.search_backend_dict[backend_name].select(candidate, self.search_start_buffer_name)
+        except:
+            pass
         
     def select_next_candidate_item(self):
         need_update = True
