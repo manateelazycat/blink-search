@@ -45,6 +45,8 @@ blink-search will provide smooth completion experience without compromise to slo
 | C + p  | blink-search-candidate-select-prev           | Select previous candidate item                                                    |
 | M + n    | blink-search-backend-select-next           | Select next backend item                                                        |
 | M + p  | blink-search-backend-select-prev           | Select previous backend item                                                    |
+| M + j    | blink-search-candidate-group-select-next           | Select next candidate group item                                                        |
+| M + k  | blink-search-candidate-group-select-prev           | Select previous candidate group item                                                    |
 | C + m  | blink-search-do           | Do action for select candidate item                                                    |
 | M + w  | blink-search-copy           | Copy select candidate item                                                    |
 | C + g  | blink-search-quit           | Quit 

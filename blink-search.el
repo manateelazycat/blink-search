@@ -331,6 +331,8 @@ influence of C1 on the result."
     (define-key map (kbd "C-p") 'blink-search-candidate-select-prev)
     (define-key map (kbd "M-n") 'blink-search-backend-select-next)
     (define-key map (kbd "M-p") 'blink-search-backend-select-prev)
+    (define-key map (kbd "M-j") 'blink-search-candidate-group-select-next)
+    (define-key map (kbd "M-k") 'blink-search-candidate-group-select-prev)
     (define-key map (kbd "C-m") 'blink-search-do)
     (define-key map (kbd "M-w") 'blink-search-copy)
     map)
@@ -728,6 +730,14 @@ influence of C1 on the result."
 (defun blink-search-backend-select-prev ()
   (interactive)
   (blink-search-call-async "select_prev_backend_item"))
+
+(defun blink-search-candidate-group-select-next ()
+  (interactive)
+  (blink-search-call-async "select_next_candidate_group"))
+
+(defun blink-search-candidate-group-select-prev ()
+  (interactive)
+  (blink-search-call-async "select_prev_candidate_group"))
 
 (defun blink-search-rg-do (file line column)
   (find-file file)

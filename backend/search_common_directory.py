@@ -46,7 +46,7 @@ class SearchCommonDirectory(Search):
                 
                 for path in os.listdir(directory):
                     if os.path.isdir(os.path.join(directory, path)):
-                        if self.is_match(prefix, prefix_regexp, path):
+                        if self.is_match(prefix, prefix_regexp, "{} {}".format(alias.lower(), path)):
                             results.append("{} {}".format(alias, path))
                             
             return sorted(results)
