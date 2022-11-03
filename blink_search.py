@@ -295,11 +295,9 @@ class BlinkSearch:
             self.select_candidate_item()
             
     def select_next_candidate_group(self):
-        need_update = True
-        group_list = self.get_candiate_group_list()
-        
         if len(self.search_candidate_items) > 0:
             candidate_index = self.render_candidate_offset + self.render_candidate_index
+            group_list = self.get_candiate_group_list()
             match_list = list(filter(lambda index: candidate_index < index, group_list))
             if len(match_list) > 0:
                 next_index = match_list[0]
@@ -313,22 +311,15 @@ class BlinkSearch:
                     self.render_candidate_offset = next_index - (self.search_row_number - 1)
                     
                 self.update_render_candidate_items()
-            else:
-                need_update = False
-        else:
-            need_update = False
         
-        if need_update:
-            self.update_render_index_and_offset()
-            self.render_items()
-            self.select_candidate_item()
+                self.update_render_index_and_offset()
+                self.render_items()
+                self.select_candidate_item()
     
     def select_prev_candidate_group(self):
-        need_update = True
-        group_list = self.get_candiate_group_list()
-        
         if len(self.search_candidate_items) > 0:
             candidate_index = self.render_candidate_offset + self.render_candidate_index
+            group_list = self.get_candiate_group_list()
             match_list = list(filter(lambda index: candidate_index > index, group_list))
             if len(match_list) > 0:
                 next_index = match_list[-1]
@@ -342,15 +333,10 @@ class BlinkSearch:
                     self.render_candidate_index = 0
                     
                 self.update_render_candidate_items()
-            else:
-                need_update = False
-        else:
-            need_update = False
         
-        if need_update:
-            self.update_render_index_and_offset()
-            self.render_items()
-            self.select_candidate_item()
+                self.update_render_index_and_offset()
+                self.render_items()
+                self.select_candidate_item()
             
     def select_next_backend_item(self):
         need_update = True
