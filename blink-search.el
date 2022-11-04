@@ -99,6 +99,7 @@
 (require 'blink-search-common-directory)
 (require 'blink-search-recent-file)
 (require 'blink-search-buffer-list)
+(require 'blink-search-fd)
 
 (defgroup blink-search nil
   "Blink-Search group."
