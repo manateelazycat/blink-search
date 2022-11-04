@@ -125,8 +125,7 @@
 
 (defun blink-search-imenu-do (point)
   (goto-char point)
-  (recenter)
-  (blink-search-flash-line))
+  (blink-search-flash-locate))
 
 (provide 'blink-search-imenu)
 

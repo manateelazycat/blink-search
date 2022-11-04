@@ -104,8 +104,7 @@
   (switch-to-buffer buffer)
   (goto-line line)
   (blink-search-goto-column column)
-  (recenter)
-  (blink-search-flash-line))
+  (blink-search-flash-locate))
 
 (provide 'blink-search-current-buffer)
 

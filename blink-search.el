@@ -700,12 +700,14 @@ Function `move-to-column' can't handle mixed string of Chinese and English corre
       (forward-char 1)
       (setq scan-column (string-bytes (buffer-substring first-char-point (point)))))))
 
-(defun blink-search-flash-line ()
-  (let ((pulse-iterations 1)
-        (pulse-delay blink-search-flash-line-delay))
-    ;; Flash match line.
-    (pulse-momentary-highlight-one-line (point) 'blink-search-font-lock-flash)
-    ))
+(defun blink-search-flash-locate ()
+  (ignore-errors
+    (recenter)
+    (let ((pulse-iterations 1)
+          (pulse-delay blink-search-flash-line-delay))
+      ;; Flash match line.
+      (pulse-momentary-highlight-one-line (point) 'blink-search-font-lock-flash)
+      )))
 
 (cl-defmacro blink-search-preview (&rest body)
   `(let* ((inhibit-message t)

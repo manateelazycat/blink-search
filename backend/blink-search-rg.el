@@ -86,10 +86,10 @@
 
 (defun blink-search-rg-do (file line column)
   (find-file file)
-  (goto-line line)
-  (blink-search-goto-column column)
-  (recenter)
-  (blink-search-flash-line))
+  (ignore-errors
+    (goto-line line)
+    (blink-search-goto-column column))
+  (blink-search-flash-locate))
 
 (defun blink-search-rg-preview (file line column)
   (blink-search-preview
