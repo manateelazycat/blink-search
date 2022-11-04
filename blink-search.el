@@ -636,7 +636,7 @@ blink-search will search current symbol if you call this function with `C-u' pre
                         (concat
                          icon-text
                          (propertize (format "%s " (nth candidate-index blink-search-quick-keys))
-                                     'face 'font-lock-keyword-face)
+                                     'face 'font-lock-type-face)
                          (if (> backend-number 1)
                              (format "%s " display-candiate)
                            (format "%s " candidate))
