@@ -86,6 +86,20 @@
 
 (recentf-mode 1)
 
+(defvar blink-search-backend-path (expand-file-name "backend"
+                                                    (if load-file-name
+                                                        (file-name-directory load-file-name)
+                                                      default-directory)))
+(add-to-list 'load-path blink-search-backend-path t)
+
+(require 'blink-search-elisp-symbol)
+(require 'blink-search-imenu)
+(require 'blink-search-rg)
+(require 'blink-search-current-buffer)
+(require 'blink-search-common-directory)
+(require 'blink-search-recent-file)
+(require 'blink-search-buffer-list)
+
 (defgroup blink-search nil
   "Blink-Search group."
   :group 'applications)
@@ -105,12 +119,6 @@
 (defvar blink-search-tooltip-buffer " *blink search tooltip*")
 (defvar blink-search-candidate-buffer " *blink search candidate*")
 (defvar blink-search-backend-buffer " *blink search backend*")
-
-(defvar blink-search-elisp-symbol-timer nil)
-(defvar blink-search-elisp-symbol-size 0)
-
-(defvar blink-search-recent-file-timer nil)
-(defvar blink-search-recent-file-size 0)
 
 (defvar blink-search-candidate-items nil)
 (defvar blink-search-candidate-select-index nil)
@@ -137,16 +145,6 @@ Then Blink-Search will start by gdb, please send new issue with `*blink-search*'
 (defcustom blink-search-enable-log nil
   "Enable this option to print log message in `*blink-search*' buffer, default only print message header."
   :type 'boolean)
-
-(defcustom blink-search-elisp-symbol-update-idle 5
-  "The idle seconds to update elisp symbols."
-  :type 'float
-  :group 'blink-search)
-
-(defcustom blink-search-recent-file-update-idle 4
-  "The idle seconds to update recent files."
-  :type 'float
-  :group 'blink-search)
 
 (defcustom blink-search-flash-line-delay .3
   "How many seconds to flash `blink-search-font-lock-flash' after navigation.
@@ -477,65 +475,6 @@ influence of C1 on the result."
 (defun blink-search-get-row-number ()
   (/ (nth 3 (blink-search-get-window-allocation (get-buffer-window blink-search-candidate-buffer))) (line-pixel-height)))
 
-(defun blink-search-elisp-symbol-update ()
-  "We need synchronize elisp symbols to Python side when idle."
-  (let* ((symbols (all-completions "" obarray))
-         (symbols-size (length symbols)))
-    ;; Only synchronize when new symbol created.
-    (unless (equal blink-search-elisp-symbol-size symbols-size)
-      (blink-search-call-async "search_elisp_symbol_update" symbols)
-      (setq blink-search-elisp-symbol-size symbols-size))))
-
-(defun blink-search-start-elisp-symbol-update ()
-  (blink-search-elisp-symbol-update)
-
-  (unless blink-search-elisp-symbol-timer
-    (setq blink-search-elisp-symbol-timer (run-with-idle-timer blink-search-elisp-symbol-update-idle t #'blink-search-elisp-symbol-update))))
-
-(defun blink-search-stop-elisp-symbol-update ()
-  (when blink-search-elisp-symbol-timer
-    (cancel-timer blink-search-elisp-symbol-timer)
-    (setq blink-search-elisp-symbol-timer nil)
-    (setq blink-search-elisp-symbol-size 0)))
-
-(defun blink-search-recent-file-update ()
-  "We need synchronize recent files to Python side when idle."
-  (let* ((files-size (length recentf-list)))
-    ;; Only synchronize when new symbol created.
-    (unless (equal blink-search-recent-file-size files-size)
-      (blink-search-call-async "search_recent_file_update" recentf-list)
-      (setq blink-search-recent-file-size files-size))))
-
-(defun blink-search-start-recent-file-update ()
-  (blink-search-recent-file-update)
-
-  (unless blink-search-recent-file-timer
-    (setq blink-search-recent-file-timer (run-with-idle-timer blink-search-recent-file-update-idle t #'blink-search-recent-file-update))))
-
-(defun blink-search-stop-recent-file-update ()
-  (when blink-search-recent-file-timer
-    (cancel-timer blink-search-recent-file-timer)
-    (setq blink-search-recent-file-timer nil)
-    (setq blink-search-recent-file-size 0)))
-
-(defun blink-search-buffer-list-update ()
-  (when (blink-search-epc-live-p blink-search-epc-process)
-    (if (featurep 'sort-tab)
-        (blink-search-call-async "search_sort_buffer_list_update" (mapcar #'buffer-name (append sort-tab-visible-buffers (buffer-list))))
-      (blink-search-call-async "search_buffer_list_update" (mapcar #'buffer-name (buffer-list))))))
-
-(defun blink-search-encode-string (str)
-  "Encode string STR with UTF-8 coding using Base64."
-  (base64-encode-string (encode-coding-string str 'utf-8)))
-
-(defun blink-search-init-current-buffer ()
-  (when (blink-search-epc-live-p blink-search-epc-process)
-    (blink-search-call-async "search_init_current_buffer"
-                             (buffer-name blink-search-start-buffer)
-                             (blink-search-encode-string
-                              (with-current-buffer blink-search-start-buffer
-                                (buffer-string))))))
-
 (defun blink-search-init-search-dir ()
   (when (blink-search-epc-live-p blink-search-epc-process)
     (blink-search-call-async "search_init_search_dir"
@@ -748,44 +687,6 @@ influence of C1 on the result."
   (interactive)
   (blink-search-call-async "select_prev_candidate_group"))
 
-(defun blink-search-rg-do (file line column)
-  (find-file file)
-  (goto-line line)
-  (blink-search-goto-column column)
-  (recenter)
-  (blink-search-flash-line))
-
-(defun blink-search-current-buffer-do (buffer line column)
-  (switch-to-buffer buffer)
-  (goto-line line)
-  (blink-search-goto-column column)
-  (recenter)
-  (blink-search-flash-line))
-
-(defun blink-search-imenu-do (point)
-  (goto-char point)
-  (recenter)
-  (blink-search-flash-line))
-
-(defun blink-search-common-directory-do (dir)
-  (if (featurep 'eaf-file-manager)
-      (eaf-open-in-file-manager dir)
-    (find-file dir)))
-
-(defun blink-search-elisp-symbol-do (candidate)
-  (let* ((symbol (intern candidate)))
-    (cond ((commandp symbol)
-           (call-interactively symbol))
-          ((or (functionp symbol)
-               (macrop symbol))
-           (describe-function symbol))
-          ((facep symbol)
-           (customize-face symbol))
-          ((custom-variable-p symbol)
-           (customize-option symbol))
-          (t
-           (describe-variable symbol)))))
-
 (defun blink-search-goto-column (column)
   "This function use for jump to correct column positions in multi-byte strings.
 Such as, mixed string of Chinese and English.
@@ -805,46 +706,6 @@ Function `move-to-column' can't handle mixed string of Chinese and English corre
     (pulse-momentary-highlight-one-line (point) 'blink-search-font-lock-flash)
     ))
 
-(defun blink-search-init-imenu ()
-  (when (blink-search-epc-live-p blink-search-epc-process)
-    (blink-search-call-async "search_init_imenu"
-                             (with-current-buffer blink-search-start-buffer
-                               (blink-search-imenu-get-candidates)))))
-
-(defun blink-search-imenu-get-candidates ()
-  (mapcar (lambda (info) (list (car info) (marker-position (cdr info))))
-          (let* ((index (ignore-errors (imenu--make-index-alist t))))
-            (when index
-              (blink-search-imenu-build-candidates
-               (delete (assoc "*Rescan*" index) index))))))
-
-(defun blink-search-imenu-build-candidates (alist)
-  (cl-remove-if
-   (lambda (c)
-     (or (string-equal (car c) "Types")
-         (string-equal (car c) "Variables")
-         ))
-   (cl-loop for elm in alist
-            nconc (cond
-                   ((imenu--subalist-p elm)
-                    (blink-search-imenu-build-candidates
-                     (cl-loop for (e . v) in (cdr elm) collect
-                              (cons
-                               e
-                               (if (integerp v) (copy-marker v) v)))))
-                   ((listp (cdr elm))
-                    (and elm (list elm)))
-                   (t
-                    (and (cdr elm)
-                         (setcdr elm (pcase (cdr elm)
-                                       ((and ov (pred overlayp))
-                                        (copy-overlay ov))
-                                       ((and mk (or (pred markerp)
-                                                    (pred integerp)))
-                                        (copy-marker mk))))
-                         (list elm)))))))
-
-
 (cl-defmacro blink-search-preview (&rest body)
   `(let* ((inhibit-message t)
           (input-window (get-buffer-window blink-search-input-buffer)))
@@ -860,15 +721,6 @@ Function `move-to-column' can't handle mixed string of Chinese and English corre
 (defun blink-search-select-start-buffer (buffer)
   (blink-search-preview
    (switch-to-buffer buffer)))
-
-(defun blink-search-rg-preview (file line column)
-  (blink-search-preview
-   (blink-search-rg-do file line column)
-   ))
-
-(defun blink-search-current-buffer-preview (buffer line column)
-  (blink-search-preview
-   (blink-search-current-buffer-do buffer line column)))
 
 (defun blink-search-get-select-backend-name ()
   (plist-get (nth blink-search-candidate-select-index blink-search-candidate-items) :backend))
