@@ -92,6 +92,9 @@
                                                       default-directory)))
 (add-to-list 'load-path blink-search-backend-path t)
 
+(defvar blink-search-idle-update-list nil)
+(defvar blink-search-start-update-list nil)
+
 (require 'blink-search-elisp-symbol)
 (require 'blink-search-imenu)
 (require 'blink-search-rg)
@@ -314,14 +317,11 @@ influence of C1 on the result."
   (blink-search-epc-init-epc-layer blink-search-epc-process)
   (setq blink-search-is-starting nil)
 
-  (blink-search-start-elisp-symbol-update)
-  (blink-search-start-recent-file-update)
-  (blink-search-buffer-list-update)
-
-  (blink-search-init-search-dir)
-  (blink-search-init-current-buffer)
-  (blink-search-init-imenu)
-  (blink-search-start))
+  (dolist (update-func blink-search-idle-update-list)
+    (funcall update-func))
+  
+  (dolist (update-func blink-search-start-update-list)
+    (funcall update-func)))
 
 (defvar blink-search-mode-map
   (let ((map (make-sparse-keymap)))
@@ -437,12 +437,9 @@ blink-search will search current symbol if you call this function with `C-u' pre
 
   ;; Select input window.
   (select-window (get-buffer-window blink-search-input-buffer))
-
-  (blink-search-buffer-list-update)
-  (blink-search-init-search-dir)
-  (blink-search-init-current-buffer)
-  (blink-search-init-imenu)
-  (blink-search-start)
+  
+  (dolist (update-func blink-search-start-update-list)
+    (funcall update-func))
 
   ;; Start process.
   (unless blink-search-is-starting
@@ -758,7 +755,7 @@ Function `move-to-column' can't handle mixed string of Chinese and English corre
         ("Recent File" (find-file candidate))
         ("Buffer List" (switch-to-buffer candidate))
         ("EAF Browser History" (eaf-open-browser (car (last (split-string candidate)))))
-        (t (blink-search-call-async "search_do" backend-name candidate))
+        (_ (blink-search-call-async "search_do" backend-name candidate))
         ))))
 
 (defun blink-search-copy ()
@@ -771,6 +768,9 @@ Function `move-to-column' can't handle mixed string of Chinese and English corre
 
       (blink-search-call-async "search_copy" backend-name candidate)
       )))
+
+(add-to-list 'blink-search-start-update-list #'blink-search-init-search-dir)
+(add-to-list 'blink-search-start-update-list #'blink-search-start)
 
 (provide 'blink-search)
 

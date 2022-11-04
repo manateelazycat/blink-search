@@ -127,6 +127,8 @@
   (goto-char point)
   (blink-search-flash-locate))
 
+(add-to-list 'blink-search-start-update-list #'blink-search-init-imenu)
+
 (provide 'blink-search-imenu)
 
 ;;; blink-search-imenu.el ends here
