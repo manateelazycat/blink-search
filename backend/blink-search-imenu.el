@@ -86,7 +86,7 @@
 
 (defun blink-search-init-imenu ()
   (when (blink-search-epc-live-p blink-search-epc-process)
-    (blink-search-call-async "search_init_imenu"
+    (blink-search-call-async "search_imenu_update"
                              (with-current-buffer blink-search-start-buffer
                                (blink-search-imenu-get-candidates)))))
 

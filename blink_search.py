@@ -107,6 +107,9 @@ class BlinkSearch:
                         self.search_eaf_browser_history, self.search_google_suggestion, self.search_common_directory,
                         self.search_fd, self.search_rg, self.search_current_buffer, self.search_imenu]:
             self.search_backend_dict[backend.backend_name] = backend
+            
+            # Build backend update API.
+            self.build_update_interface(str(backend).split(".")[1])
         self.search_backend_list = []
         
         # Pass epc port and webengine codec information to Emacs when first start blink-search.
@@ -368,28 +371,26 @@ class BlinkSearch:
             self.render_items()
             self.select_backend_item()
     
-    def search_elisp_symbol_update(self, symbols):
-        self.search_elisp_symbol.update(symbols)
-        
-    def search_recent_file_update(self, files):
-        self.search_recent_file.update(files)
-        
+    def build_update_interface(self, backend_name):
+        def _do(*args):
+            getattr(self, backend_name).update(*args)
+
+        setattr(self, "{}_update".format(backend_name), _do)
+            
     def search_sort_buffer_list_update(self, buffers):
         self.search_buffer_list.update_sort_buffers(buffers)
 
-    def search_buffer_list_update(self, buffers):
-        self.search_buffer_list.update(buffers)
-        
     def search_init_search_dir(self, start_dir):
-        self.search_fd.init_dir(start_dir)
-        self.search_rg.init_dir(start_dir)
+        for backend in self.search_backend_dict:
+            backend_var_name = str(self.search_backend_dict[backend]).split(".")[1]
+            if hasattr(self, backend_var_name):
+                backend_var = getattr(self, backend_var_name)
+                if hasattr(backend_var, "init_dir"):
+                    getattr(backend_var, "init_dir")(start_dir)
         
     def search_init_current_buffer(self, buffer_name, buffer_content):
         self.search_start_buffer_name = buffer_name
         self.search_current_buffer.init_buffer(buffer_name, buffer_content)
-        
-    def search_init_imenu(self, candidates):
-        self.search_imenu.update(candidates)
         
     def search_do(self, backend, candidate):
         self.search_backend_dict[backend].do(candidate)
