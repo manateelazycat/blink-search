@@ -361,6 +361,7 @@ influence of C1 on the result."
 
 blink-search will search current symbol if you call this function with `C-u' prefix."
   (interactive "P")
+  
   (setq blink-search-start-buffer (current-buffer))
   (setq blink-search-start-keyword (if arg (or (thing-at-point 'symbol t) "") ""))
 
@@ -750,13 +751,8 @@ Function `move-to-column' can't handle mixed string of Chinese and English corre
            (candidate (blink-search-get-select-candidate)))
       (blink-search-quit)
 
-      (pcase backend-name
-        ("Elisp Symbol" (blink-search-elisp-symbol-do candidate))
-        ("Recent File" (find-file candidate))
-        ("Buffer List" (switch-to-buffer candidate))
-        ("EAF Browser History" (eaf-open-browser (car (last (split-string candidate)))))
-        (_ (blink-search-call-async "search_do" backend-name candidate))
-        ))))
+      (blink-search-call-async "search_do" backend-name candidate)
+      )))
 
 (defun blink-search-copy ()
   (interactive)
@@ -769,8 +765,8 @@ Function `move-to-column' can't handle mixed string of Chinese and English corre
       (blink-search-call-async "search_copy" backend-name candidate)
       )))
 
-(add-to-list 'blink-search-start-update-list #'blink-search-init-search-dir)
-(add-to-list 'blink-search-start-update-list #'blink-search-start)
+(add-to-list 'blink-search-start-update-list #'blink-search-init-search-dir t)
+(add-to-list 'blink-search-start-update-list #'blink-search-start t)
 
 (provide 'blink-search)
 

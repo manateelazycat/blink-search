@@ -21,6 +21,7 @@
 
 import re
 
+from core.utils import eval_in_emacs
 from core.search import Search    # type: ignore
 
 
@@ -29,3 +30,6 @@ class SearchRecentFile(Search):
     def __init__(self, backend_name, message_queue) -> None:
         Search.__init__(self, backend_name, message_queue)
         
+    def do(self, candidate):
+        eval_in_emacs("find-file", candidate)
+

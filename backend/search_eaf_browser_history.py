@@ -22,7 +22,7 @@
 import os
 import re
 
-from core.utils import get_emacs_var    # type: ignore
+from core.utils import get_emacs_var, eval_in_emacs    # type: ignore
 from core.search import Search    # type: ignore
 
 
@@ -50,3 +50,6 @@ class SearchEAFBrowserHistory(Search):
                         
                 return match_histories
                         
+    def do(self, candidate):
+        eval_in_emacs("eaf-open-browser", candidate.split()[-1])
+

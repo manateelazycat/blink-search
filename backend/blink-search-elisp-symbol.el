@@ -127,7 +127,7 @@
           (t
            (describe-variable symbol)))))
 
-(add-to-list 'blink-search-idle-update-list #'blink-search-start-elisp-symbol-update)
+(add-to-list 'blink-search-idle-update-list #'blink-search-start-elisp-symbol-update t)
 
 (provide 'blink-search-elisp-symbol)
 

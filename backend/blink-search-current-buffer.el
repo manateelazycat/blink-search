@@ -106,7 +106,7 @@
   (blink-search-goto-column column)
   (blink-search-flash-locate))
 
-(add-to-list 'blink-search-start-update-list #'blink-search-init-current-buffer)
+(add-to-list 'blink-search-start-update-list #'blink-search-init-current-buffer t)
 
 (provide 'blink-search-current-buffer)
 

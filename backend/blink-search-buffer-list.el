@@ -90,7 +90,7 @@
         (blink-search-call-async "search_sort_buffer_list_update" (mapcar #'buffer-name (append sort-tab-visible-buffers (buffer-list))))
       (blink-search-call-async "search_buffer_list_update" (mapcar #'buffer-name (buffer-list))))))
 
-(add-to-list 'blink-search-start-update-list #'blink-search-buffer-list-update)
+(add-to-list 'blink-search-start-update-list #'blink-search-buffer-list-update t)
 
 (provide 'blink-search-buffer-list)
 

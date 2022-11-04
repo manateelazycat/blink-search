@@ -112,7 +112,7 @@
     (setq blink-search-recent-file-timer nil)
     (setq blink-search-recent-file-size 0)))
 
-(add-to-list 'blink-search-idle-update-list #'blink-search-start-recent-file-update)
+(add-to-list 'blink-search-idle-update-list #'blink-search-start-recent-file-update t)
 
 (provide 'blink-search-recent-file)
 

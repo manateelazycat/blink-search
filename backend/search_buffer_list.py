@@ -22,6 +22,7 @@
 import functools
 import re
 
+from core.utils import eval_in_emacs
 from core.search import Search    # type: ignore
 
 
@@ -57,3 +58,6 @@ class SearchBufferList(Search):
         else:
             return match_items
         
+    def do(self, candidate):
+        eval_in_emacs("switch-to-buffer", candidate)
+
