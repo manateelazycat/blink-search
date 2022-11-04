@@ -111,6 +111,10 @@ class BlinkSearch:
             # Build backend update API.
             self.build_update_interface(str(backend).split(".")[1])
         self.search_backend_list = []
+        self.search_backend_default_list = [
+            "Buffer List", "Common Directory", "Find File", "Recent File", "EAF Browser History", 
+            "IMenu", "Elisp Symbol", "Google Suggest"
+        ]
         
         # Pass epc port and webengine codec information to Emacs when first start blink-search.
         eval_in_emacs('blink-search--first-start', self.server.server_address[1])
@@ -402,8 +406,7 @@ class BlinkSearch:
         self.search_row_number = row_number
         
         if len(backend_list) == 0:
-            self.search_backend_list = ["Buffer List", "Common Directory", "Find File", "Recent File", "EAF Browser History", 
-                                        "IMenu", "Elisp Symbol", "Google Suggest"]
+            self.search_backend_list = self.search_backend_default_list
         else:
             self.search_backend_list = backend_list
         
