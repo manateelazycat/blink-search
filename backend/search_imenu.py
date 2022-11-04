@@ -35,7 +35,7 @@ class SearchIMenu(Search):
     def update(self, items):
         self.items = items
         for item in items:
-            self.item_dict[item[0]] = item[1]
+            self.item_dict[str(item[0])] = item[1]
         
     def search_match(self, prefix: str):
         prefix_regexp = re.compile(".*" + ".*".join(prefix.replace("*", "").split()), re.IGNORECASE)
