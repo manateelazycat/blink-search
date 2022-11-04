@@ -130,6 +130,24 @@
 (defvar blink-search-backend-items nil)
 (defvar blink-search-backend-select-index nil)
 
+(defvar blink-search-posframe-preview-window nil)
+(defvar blink-search-posframe-current-window nil)
+
+(defcustom blink-search-enable-posframe nil
+  "Enable posframe."
+  :type 'boolean
+  :group 'blink-search)
+
+(defcustom blink-search-posframe-width-ratio 0.6
+  "The width of posframe."
+  :type 'number
+  :group 'blink-search)
+
+(defcustom blink-search-posframe-height-ratio 0.6
+  "The height of posframe."
+  :type 'number
+  :group 'blink-search)
+
 (defcustom blink-search-common-directory '(("HOME" "~/"))
   "Common directory to search and open."
   :type 'cons)
@@ -360,6 +378,8 @@ influence of C1 on the result."
     (set-window-configuration blink-search-window-configuration)
     (setq blink-search-window-configuration nil)
 
+    (when blink-search-enable-posframe (posframe-hide blink-search-input-buffer))
+
     (setq blink-search-start-buffer nil)))
 
 (defun blink-search-quick-do ()
@@ -431,31 +451,34 @@ blink-search will search current symbol if you call this function with `C-u' pre
     (blink-search-disable-options t)
     (setq-local truncate-lines t))
 
-  ;; Clean layout.
-  ;; NOTE: `ignore-errors' make sure start always successfully,
-  ;; even no buffer does exist when Emacs first start.
-  (ignore-errors
-    (delete-other-windows)
-    (split-window)
-    (other-window 1))
+  (if blink-search-enable-posframe
+      (blink-search-posframe-show-layout)
 
-  ;; Show input buffer.
-  (switch-to-buffer blink-search-input-buffer)
+    ;; Clean layout.
+    ;; NOTE: `ignore-errors' make sure start always successfully,
+    ;; even no buffer does exist when Emacs first start.
+    (ignore-errors
+      (delete-other-windows)
+      (split-window)
+      (other-window 1))
 
-  ;; Show tooltip buffer.
-  (split-window (selected-window) (line-pixel-height) 'below t)
-  (split-window (selected-window) nil 'right t)
-  (other-window 1)
-  (switch-to-buffer blink-search-tooltip-buffer)
+    ;; Show input buffer.
+    (switch-to-buffer blink-search-input-buffer)
 
-  ;; Show candidate buffer.
-  (other-window 1)
-  (switch-to-buffer blink-search-candidate-buffer)
+    ;; Show tooltip buffer.
+    (split-window (selected-window) (line-pixel-height) 'below t)
+    (split-window (selected-window) nil 'right t)
+    (other-window 1)
+    (switch-to-buffer blink-search-tooltip-buffer)
 
-  ;; Show backend buffer.
-  (split-window (selected-window) nil 'right t)
-  (other-window 1)
-  (switch-to-buffer blink-search-backend-buffer)
+    ;; Show candidate buffer.
+    (other-window 1)
+    (switch-to-buffer blink-search-candidate-buffer)
+
+    ;; Show backend buffer.
+    (split-window (selected-window) nil 'right t)
+    (other-window 1)
+    (switch-to-buffer blink-search-backend-buffer))
 
   ;; Select input window.
   (select-window (get-buffer-window blink-search-input-buffer))
@@ -549,9 +572,11 @@ blink-search will search current symbol if you call this function with `C-u' pre
 (defun blink-search-show-backend-window ()
   (unless (get-buffer-window blink-search-backend-buffer)
     (save-excursion
-      (blink-search-select-window (get-buffer-window blink-search-candidate-buffer))
-      (split-window (selected-window) nil 'right t)
-      (other-window 1)
+      (if (and blink-search-enable-posframe blink-search-posframe-preview-window)
+          (set-window-buffer blink-search-posframe-preview-window blink-search-backend-buffer)
+        (blink-search-select-window (get-buffer-window blink-search-candidate-buffer))
+        (split-window (selected-window) nil 'right t)
+        (other-window 1))
       (switch-to-buffer blink-search-backend-buffer)
 
       (blink-search-select-window (get-buffer-window blink-search-input-buffer)))))
@@ -559,7 +584,8 @@ blink-search will search current symbol if you call this function with `C-u' pre
 (defun blink-search-hide-backend-window ()
   (when (get-buffer-window blink-search-backend-buffer)
     (save-excursion
-      (delete-window (get-buffer-window blink-search-backend-buffer))
+      (unless blink-search-enable-posframe
+        (delete-window (get-buffer-window blink-search-backend-buffer)))
 
       (blink-search-select-window (get-buffer-window blink-search-input-buffer)))))
 
@@ -739,12 +765,23 @@ Function `move-to-column' can't handle mixed string of Chinese and English corre
       (pulse-momentary-highlight-one-line (point) 'blink-search-font-lock-flash)
       )))
 
+(defun blink-search-preview-select-window ()
+  (message "test search ")
+  (if blink-search-enable-posframe
+      (unless (blink-search-select-window blink-search-posframe-preview-window)
+        (blink-search-select-window (get-buffer-window blink-search-candidate-buffer))
+        (split-window (selected-window) nil 'right t)
+        (other-window 1)
+        (setq blink-search-posframe-preview-window (selected-window)))
+    (other-window -1)))
+
+
 (cl-defmacro blink-search-preview (&rest body)
   `(let* ((inhibit-message t)
           (input-window (get-buffer-window blink-search-input-buffer)))
      (when input-window
        (select-window input-window)
-       (other-window -1)
+       (blink-search-preview-select-window)
 
        ,@body
 
@@ -752,8 +789,10 @@ Function `move-to-column' can't handle mixed string of Chinese and English corre
        )))
 
 (defun blink-search-select-start-buffer (buffer)
-  (blink-search-preview
-   (switch-to-buffer buffer)))
+  (if blink-search-enable-posframe
+      (set-window-buffer buffer blink-search-posframe-current-window)
+    (blink-search-preview
+     (switch-to-buffer buffer))))
 
 (defun blink-search-get-select-backend-name ()
   (plist-get (nth blink-search-candidate-select-index blink-search-candidate-items) :backend))
@@ -787,6 +826,51 @@ Function `move-to-column' can't handle mixed string of Chinese and English corre
 
       (blink-search-call-async "search_copy" backend-name candidate)
       )))
+
+(defun blink-search-posframe-show (buffer)
+  (let* ((posframe-height
+          (if (and (equal buffer blink-search-input-buffer)
+                 (equal buffer blink-search-tooltip-buffer))
+             1 (round (* (frame-height) blink-search-posframe-height-ratio))))
+        (posframe-width (round (* (frame-width) blink-search-posframe-width-ratio))))
+    (apply #'posframe-show
+           (get-buffer buffer)
+           :poshandler #'posframe-poshandler-frame-center
+           (list
+            :max-height posframe-height
+            :min-height posframe-height
+            :min-width  posframe-width
+            :max-width  posframe-width
+            :border-width 2
+            :border-color "gray"
+            :accept-focus (equal buffer blink-search-input-buffer)
+            :override-parameters '((cursor-type . box))
+            ))))
+
+(defun blink-search-posframe-show-layout ()
+
+  (select-frame (blink-search-posframe-show blink-search-input-buffer))
+
+  (setq blink-search-posframe-current-window (get-buffer-window (current-buffer)))
+
+  (select-window (get-buffer-window blink-search-input-buffer))
+  (unless (equal (window-height) 1)
+    (split-window (selected-window) (line-pixel-height) 'below t)
+    (split-window (selected-window) nil 'right t)
+    (other-window 1)
+    (switch-to-buffer blink-search-tooltip-buffer)
+
+    ;; Show candidate buffer.
+    (other-window 1)
+    (switch-to-buffer blink-search-candidate-buffer)
+
+    ;; Show backend buffer.
+    (split-window (selected-window) nil 'right t)
+    (other-window 1)
+    (switch-to-buffer blink-search-backend-buffer)
+    (setq blink-search-posframe-preview-window (selected-window))
+  ))
+
 
 (add-to-list 'blink-search-start-update-list #'blink-search-init-search-dir t)
 (add-to-list 'blink-search-start-update-list #'blink-search-start t)
