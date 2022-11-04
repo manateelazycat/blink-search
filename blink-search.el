@@ -766,7 +766,6 @@ Function `move-to-column' can't handle mixed string of Chinese and English corre
       )))
 
 (defun blink-search-preview-select-window ()
-  (message "test search ")
   (if blink-search-enable-posframe
       (unless (blink-search-select-window blink-search-posframe-preview-window)
         (blink-search-select-window (get-buffer-window blink-search-candidate-buffer))
@@ -828,10 +827,7 @@ Function `move-to-column' can't handle mixed string of Chinese and English corre
       )))
 
 (defun blink-search-posframe-show (buffer)
-  (let* ((posframe-height
-          (if (and (equal buffer blink-search-input-buffer)
-                 (equal buffer blink-search-tooltip-buffer))
-             1 (round (* (frame-height) blink-search-posframe-height-ratio))))
+  (let* ((posframe-height (round (* (frame-height) blink-search-posframe-height-ratio)))
         (posframe-width (round (* (frame-width) blink-search-posframe-width-ratio))))
     (apply #'posframe-show
            (get-buffer buffer)
