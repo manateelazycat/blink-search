@@ -409,11 +409,14 @@ influence of C1 on the result."
     (setq-local truncate-lines t))
 
   ;; Clean layout.
-  (delete-other-windows)
+  ;; NOTE: `ignore-errors' make sure start always successfully,
+  ;; even no buffer does exist when Emacs first start.
+  (ignore-errors
+    (delete-other-windows)
+    (split-window)
+    (other-window 1))
 
   ;; Show input buffer.
-  (split-window)
-  (other-window 1)
   (switch-to-buffer blink-search-input-buffer)
 
   ;; Show tooltip buffer.
