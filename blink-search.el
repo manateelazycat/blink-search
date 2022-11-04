@@ -116,6 +116,7 @@
 (defvar blink-search-stop-process-hook nil)
 (defvar blink-search-window-configuration nil)
 (defvar blink-search-start-buffer nil)
+(defvar blink-search-start-keyword nil)
 (defvar blink-search-input-buffer " *blink search input*")
 (defvar blink-search-tooltip-buffer " *blink search tooltip*")
 (defvar blink-search-candidate-buffer " *blink search candidate*")
@@ -347,10 +348,6 @@ influence of C1 on the result."
   ;; Injection keymap.
   (use-local-map blink-search-mode-map))
 
-(defun blink-search ()
-  (interactive)
-  (blink-search-init-layout))
-
 (defun blink-search-quit ()
   (interactive)
   (when blink-search-window-configuration
@@ -359,8 +356,13 @@ influence of C1 on the result."
 
     (setq blink-search-start-buffer nil)))
 
-(defun blink-search-init-layout ()
+(defun blink-search (&optional arg)
+  "Start blink-search.
+
+blink-search will search current symbol if you call this function with `C-u' prefix."
+  (interactive "P")
   (setq blink-search-start-buffer (current-buffer))
+  (setq blink-search-start-keyword (if arg (or (thing-at-point 'symbol t) "") ""))
 
   ;; Save window configuration.
   (unless blink-search-window-configuration
@@ -498,7 +500,9 @@ influence of C1 on the result."
 
 (defun blink-search-start ()
   (when (blink-search-epc-live-p blink-search-epc-process)
-    (blink-search-call-async "search" "" (blink-search-get-row-number) (list))))
+    (unless (string-empty-p blink-search-start-keyword)
+      (message "[blink-search] Search symbol '%s'" blink-search-start-keyword))
+    (blink-search-call-async "search" blink-search-start-keyword (blink-search-get-row-number) (list))))
 
 (defsubst blink-search-indent-pixel (xpos)
   "Return a display property that aligns to XPOS."
@@ -555,7 +559,7 @@ influence of C1 on the result."
                                   candidate-select-index
                                   backend-items backend-select-index backend-name
                                   search-items-index search-items-number backend-number)
-  ;; Don't pop completion candidates when 
+  ;; Don't pop completion candidates when
   (when (get-buffer-window blink-search-input-buffer)
     (setq blink-search-candidate-items candidate-items)
     (setq blink-search-candidate-select-index candidate-select-index)

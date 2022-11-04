@@ -33,6 +33,7 @@ blink-search will provide smooth completion experience without compromise to slo
 2. Type keyword to search from multiple backend
 3. Type keyword that prefix with `#` to search current buffer
 4. Type keyword that prefix with `!` to grep current directory
+5. Search current symbol: C-u M-x blink-search
 
 | Grep Buffer                                          | Grep Directory |
 | :--------:                                       | :----:                                                      |
