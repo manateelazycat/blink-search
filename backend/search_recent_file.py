@@ -20,6 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import re
+import os
 
 from core.utils import eval_in_emacs
 from core.search import Search    # type: ignore
@@ -32,4 +33,7 @@ class SearchRecentFile(Search):
         
     def do(self, candidate):
         eval_in_emacs("find-file", candidate)
+
+    def parent(self, candidate):
+        eval_in_emacs("blink-search-open-directory", os.path.dirname(candidate))
 

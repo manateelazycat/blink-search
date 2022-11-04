@@ -338,6 +338,7 @@ influence of C1 on the result."
     (define-key map (kbd "M-j") 'blink-search-candidate-group-select-next)
     (define-key map (kbd "M-k") 'blink-search-candidate-group-select-prev)
     (define-key map (kbd "C-m") 'blink-search-do)
+    (define-key map (kbd "C-j") 'blink-search-parent)
     (define-key map (kbd "M-w") 'blink-search-copy)
 
     (dolist (key blink-search-quick-keys)
@@ -766,6 +767,11 @@ Function `move-to-column' can't handle mixed string of Chinese and English corre
          (candidate (blink-search-get-candidate-text candidate-info)))
     candidate))
 
+(defun blink-search-open-directory (dir)
+  (if (featurep 'eaf-file-manager)
+      (eaf-open-in-file-manager dir)
+    (find-file dir)))
+
 (defun blink-search-do ()
   (interactive)
   (when (and (> (length blink-search-candidate-items) 0)
@@ -775,6 +781,17 @@ Function `move-to-column' can't handle mixed string of Chinese and English corre
       (blink-search-quit)
 
       (blink-search-call-async "search_do" backend-name candidate)
+      )))
+
+(defun blink-search-parent ()
+  (interactive)
+  (when (and (> (length blink-search-candidate-items) 0)
+             (> (length blink-search-backend-items) 0))
+    (let* ((backend-name (blink-search-get-select-backend-name))
+           (candidate (blink-search-get-select-candidate)))
+      (blink-search-quit)
+
+      (blink-search-call-async "search_parent" backend-name candidate)
       )))
 
 (defun blink-search-copy ()

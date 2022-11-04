@@ -22,6 +22,7 @@
 import os
 import re
 
+from urllib.parse import urlparse
 from core.utils import get_emacs_var, eval_in_emacs    # type: ignore
 from core.search import Search    # type: ignore
 
@@ -52,4 +53,13 @@ class SearchEAFBrowserHistory(Search):
                         
     def do(self, candidate):
         eval_in_emacs("eaf-open-browser", candidate.split()[-1])
+
+    def parent(self, candidate):
+        url = candidate.split()[-1]
+        host = urlparse(url).hostname
+        if host == "github.com":
+            parent_url = "/".join(url.split("/")[2:5])
+        else:
+            parent_url = host
+        eval_in_emacs("eaf-open-browser", parent_url)
 
