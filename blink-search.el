@@ -319,9 +319,12 @@ influence of C1 on the result."
 
   (dolist (update-func blink-search-idle-update-list)
     (funcall update-func))
-  
+
   (dolist (update-func blink-search-start-update-list)
     (funcall update-func)))
+
+(defvar blink-search-quick-keys '("h" "l" "u" "i" "o" "y" "m" "b" "," "." ";" "/" "'" "f"
+                                  "r" "v" "g" "t" "d" "s" "a" "e" "w" "q" "[" "]"))
 
 (defvar blink-search-mode-map
   (let ((map (make-sparse-keymap)))
@@ -336,6 +339,9 @@ influence of C1 on the result."
     (define-key map (kbd "M-k") 'blink-search-candidate-group-select-prev)
     (define-key map (kbd "C-m") 'blink-search-do)
     (define-key map (kbd "M-w") 'blink-search-copy)
+
+    (dolist (key blink-search-quick-keys)
+      (define-key map (kbd (format "M-%s" key)) 'blink-search-quick-do))
     map)
   "Keymap used by `blink-search-mode'.")
 
@@ -344,7 +350,7 @@ influence of C1 on the result."
   (kill-all-local-variables)
   ;; Switch new mode.
   (setq major-mode 'blink-search-mode)
-  (setq mode-name "snails")
+  (setq mode-name "blink-search")
   ;; Injection keymap.
   (use-local-map blink-search-mode-map))
 
@@ -356,12 +362,25 @@ influence of C1 on the result."
 
     (setq blink-search-start-buffer nil)))
 
+(defun blink-search-quick-do ()
+  (interactive)
+  (let* ((event-type (event-basic-type last-command-event))
+         (event-string (if (characterp event-type)
+                           (string event-type)
+                         (error "Unexpected input")))
+         (candidate-index (cl-position event-string blink-search-quick-keys :test 'equal))
+         (backend-name (plist-get (nth candidate-index blink-search-candidate-items) :backend))
+         (candidate-info (plist-get (nth candidate-index blink-search-candidate-items) :candidate))
+         (candidate (blink-search-get-candidate-text candidate-info)))
+    (blink-search-quit)
+    (blink-search-call-async "search_do" backend-name candidate)))
+
 (defun blink-search (&optional arg)
   "Start blink-search.
 
 blink-search will search current symbol if you call this function with `C-u' prefix."
   (interactive "P")
-  
+
   (setq blink-search-start-buffer (current-buffer))
   (setq blink-search-start-keyword (if arg (or (thing-at-point 'symbol t) "") ""))
 
@@ -375,7 +394,9 @@ blink-search will search current symbol if you call this function with `C-u' pre
   ;; Create buffers.
   (with-current-buffer (get-buffer-create blink-search-input-buffer)
     (erase-buffer)
+
     (blink-search-mode)
+
     (run-hooks 'blink-search-mode-hook)
     (add-hook 'after-change-functions 'blink-search-monitor-input nil t)
 
@@ -438,7 +459,7 @@ blink-search will search current symbol if you call this function with `C-u' pre
 
   ;; Select input window.
   (select-window (get-buffer-window blink-search-input-buffer))
-  
+
   (dolist (update-func blink-search-start-update-list)
     (funcall update-func))
 
@@ -614,6 +635,8 @@ blink-search will search current symbol if you call this function with `C-u' pre
                   (setq candidate-line
                         (concat
                          icon-text
+                         (propertize (format "%s " (nth candidate-index blink-search-quick-keys))
+                                     'face 'font-lock-keyword-face)
                          (if (> backend-number 1)
                              (format "%s " display-candiate)
                            (format "%s " candidate))
