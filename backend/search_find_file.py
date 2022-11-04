@@ -25,7 +25,7 @@ import re
 from core.utils import eval_in_emacs, message_emacs, get_project_path    # type: ignore
 from core.search import Search    # type: ignore
 
-class SearchFd(Search):
+class SearchFindFile(Search):
     
     def __init__(self, backend_name, message_queue) -> None:
         Search.__init__(self, backend_name, message_queue)
@@ -45,7 +45,7 @@ class SearchFd(Search):
             return []
 
     def do(self, candidate):
-        eval_in_emacs("blink-search-fd-do", os.path.join(self.search_path, candidate))
+        eval_in_emacs("blink-search-find-file-do", os.path.join(self.search_path, candidate))
 
     def copy(self, candidate):
         path = os.path.join(self.search_path, candidate)

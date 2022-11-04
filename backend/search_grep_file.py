@@ -25,7 +25,7 @@ import json
 from core.utils import eval_in_emacs, message_emacs, get_project_path    # type: ignore
 from core.search import Search    # type: ignore
 
-class SearchRg(Search):
+class SearchGrepFile(Search):
     
     def __init__(self, backend_name, message_queue) -> None:
         Search.__init__(self, backend_name, message_queue)
@@ -61,14 +61,14 @@ class SearchRg(Search):
 
     def do(self, candidate):
         candidate_infos = candidate.split(":")
-        eval_in_emacs("blink-search-rg-do", 
+        eval_in_emacs("blink-search-grep-file-do", 
                       os.path.join(self.search_path, candidate_infos[0]),
                       int(candidate_infos[1]),
                       int(candidate_infos[2]))
 
     def select(self, candidate, start_buffer_name):
         candidate_infos = candidate["text"].split(":")
-        eval_in_emacs("blink-search-rg-preview", 
+        eval_in_emacs("blink-search-grep-file-preview", 
                       os.path.join(self.search_path, candidate_infos[0]),
                       int(candidate_infos[1]),
                       int(candidate_infos[2]))

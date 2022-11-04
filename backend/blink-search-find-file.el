@@ -1,6 +1,6 @@
-;;; blink-search-fd.el --- fd backend for blink-search   -*- lexical-binding: t; -*-
+;;; blink-search-find-file.el --- fd backend for blink-search   -*- lexical-binding: t; -*-
 
-;; Filename: blink-search-fd.el
+;; Filename: blink-search-find-file.el
 ;; Description: fd backend for blink-search
 ;; Author: Andy Stewart <lazycat.manatee@gmail.com>
 ;; Maintainer: Andy Stewart <lazycat.manatee@gmail.com>
@@ -9,7 +9,7 @@
 ;; Version: 0.1
 ;; Last-Updated: 2022-11-04 09:00:00
 ;;           By: Andy Stewart
-;; URL: https://www.github.org/manateelazycat/blink-search-fd
+;; URL: https://www.github.org/manateelazycat/blink-search-find-file
 ;; Keywords:
 ;; Compatibility: GNU Emacs 28.2
 ;;
@@ -44,14 +44,14 @@
 
 ;;; Installation:
 ;;
-;; Put blink-search-fd.el to your load-path.
+;; Put blink-search-find-file.el to your load-path.
 ;; The load-path is usually ~/elisp/.
 ;; It's set in your ~/.emacs like this:
 ;; (add-to-list 'load-path (expand-file-name "~/elisp"))
 ;;
 ;; And the following to your ~/.emacs startup file.
 ;;
-;; (require 'blink-search-fd)
+;; (require 'blink-search-find-file)
 ;;
 ;; No need more.
 
@@ -60,7 +60,7 @@
 ;;
 ;;
 ;; All of the above can customize by:
-;;      M-x customize-group RET blink-search-fd RET
+;;      M-x customize-group RET blink-search-find-file RET
 ;;
 
 ;;; Change log:
@@ -84,13 +84,13 @@
 
 ;;; Code:
 
-(defun blink-search-fd-do (candidate)
+(defun blink-search-find-file-do (candidate)
   (if (file-directory-p candidate)
       (if (featurep 'eaf-file-manager)
           (eaf-open-in-file-manager candidate)
         (find-file candidate))
     (find-file candidate)))
 
-(provide 'blink-search-fd)
+(provide 'blink-search-find-file)
 
-;;; blink-search-fd.el ends here
+;;; blink-search-find-file.el ends here

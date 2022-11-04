@@ -31,9 +31,9 @@ from backend.search_elisp_symbol import SearchElispSymbol
 from backend.search_recent_file import SearchRecentFile
 from backend.search_buffer_list import SearchBufferList
 from backend.search_eaf_browser_history import SearchEAFBrowserHistory
-from backend.search_google_suggestion import SearchGoogleSuggestion
-from backend.search_fd import SearchFd
-from backend.search_rg import SearchRg
+from backend.search_google_suggest import SearchGoogleSuggest
+from backend.search_find_file import SearchFindFile
+from backend.search_grep_file import SearchGrepFile
 from backend.search_current_buffer import SearchCurrentBuffer
 from backend.search_imenu import SearchIMenu
 from backend.search_common_directory import SearchCommonDirectory
@@ -95,9 +95,9 @@ class BlinkSearch:
         self.search_recent_file = SearchRecentFile("Recent File", self.message_queue)
         self.search_buffer_list = SearchBufferList("Buffer List", self.message_queue)
         self.search_eaf_browser_history = SearchEAFBrowserHistory("EAF Browser History", self.message_queue)
-        self.search_google_suggestion = SearchGoogleSuggestion("Google Suggest", self.message_queue)
-        self.search_fd = SearchFd("Find File", self.message_queue)
-        self.search_rg = SearchRg("Grep File", self.message_queue)
+        self.search_google_suggestion = SearchGoogleSuggest("Google Suggest", self.message_queue)
+        self.search_find_file = SearchFindFile("Find File", self.message_queue)
+        self.search_grep_file = SearchGrepFile("Grep File", self.message_queue)
         self.search_current_buffer = SearchCurrentBuffer("Current Buffer", self.message_queue)
         self.search_imenu = SearchIMenu("IMenu", self.message_queue)
         self.search_common_directory = SearchCommonDirectory("Common Directory", self.message_queue)
@@ -105,7 +105,7 @@ class BlinkSearch:
         self.search_backend_dict = {}
         for backend in [self.search_elisp_symbol, self.search_recent_file, self.search_buffer_list,
                         self.search_eaf_browser_history, self.search_google_suggestion, self.search_common_directory,
-                        self.search_fd, self.search_rg, self.search_current_buffer, self.search_imenu]:
+                        self.search_find_file, self.search_grep_file, self.search_current_buffer, self.search_imenu]:
             self.search_backend_dict[backend.backend_name] = backend
             
             # Build backend update API.

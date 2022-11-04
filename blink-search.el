@@ -97,12 +97,12 @@
 
 (require 'blink-search-elisp-symbol)
 (require 'blink-search-imenu)
-(require 'blink-search-rg)
+(require 'blink-search-grep-file)
 (require 'blink-search-current-buffer)
 (require 'blink-search-common-directory)
 (require 'blink-search-recent-file)
 (require 'blink-search-buffer-list)
-(require 'blink-search-fd)
+(require 'blink-search-find-file)
 
 (defgroup blink-search nil
   "Blink-Search group."

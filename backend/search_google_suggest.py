@@ -26,7 +26,7 @@ import json
 from core.utils import eval_in_emacs    # type: ignore
 from core.search import Search    # type: ignore
 
-class SearchGoogleSuggestion(Search):
+class SearchGoogleSuggest(Search):
     
     def __init__(self, backend_name, message_queue) -> None:
         Search.__init__(self, backend_name, message_queue)

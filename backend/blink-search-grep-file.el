@@ -1,6 +1,6 @@
-;;; blink-search-rg.el --- rg backend for blink-search   -*- lexical-binding: t; -*-
+;;; blink-search-grep-file.el --- rg backend for blink-search   -*- lexical-binding: t; -*-
 
-;; Filename: blink-search-rg.el
+;; Filename: blink-search-grep-file.el
 ;; Description: rg backend for blink-search
 ;; Author: Andy Stewart <lazycat.manatee@gmail.com>
 ;; Maintainer: Andy Stewart <lazycat.manatee@gmail.com>
@@ -9,7 +9,7 @@
 ;; Version: 0.1
 ;; Last-Updated: 2022-11-04 08:44:27
 ;;           By: Andy Stewart
-;; URL: https://www.github.org/manateelazycat/blink-search-rg
+;; URL: https://www.github.org/manateelazycat/blink-search-grep-file
 ;; Keywords:
 ;; Compatibility: GNU Emacs 28.2
 ;;
@@ -44,14 +44,14 @@
 
 ;;; Installation:
 ;;
-;; Put blink-search-rg.el to your load-path.
+;; Put blink-search-grep-file.el to your load-path.
 ;; The load-path is usually ~/elisp/.
 ;; It's set in your ~/.emacs like this:
 ;; (add-to-list 'load-path (expand-file-name "~/elisp"))
 ;;
 ;; And the following to your ~/.emacs startup file.
 ;;
-;; (require 'blink-search-rg)
+;; (require 'blink-search-grep-file)
 ;;
 ;; No need more.
 
@@ -60,7 +60,7 @@
 ;;
 ;;
 ;; All of the above can customize by:
-;;      M-x customize-group RET blink-search-rg RET
+;;      M-x customize-group RET blink-search-grep-file RET
 ;;
 
 ;;; Change log:
@@ -84,18 +84,18 @@
 
 ;;; Code:
 
-(defun blink-search-rg-do (file line column)
+(defun blink-search-grep-file-do (file line column)
   (find-file file)
   (ignore-errors
     (goto-line line)
     (blink-search-goto-column column))
   (blink-search-flash-locate))
 
-(defun blink-search-rg-preview (file line column)
+(defun blink-search-grep-file-preview (file line column)
   (blink-search-preview
-   (blink-search-rg-do file line column)
+   (blink-search-grep-file-do file line column)
    ))
 
-(provide 'blink-search-rg)
+(provide 'blink-search-grep-file)
 
-;;; blink-search-rg.el ends here
+;;; blink-search-grep-file.el ends here
