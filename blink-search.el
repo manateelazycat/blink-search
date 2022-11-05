@@ -323,7 +323,7 @@ influence of C1 on the result."
   (dolist (update-func blink-search-start-update-list)
     (funcall update-func)))
 
-(defvar blink-search-quick-keys '("h" "l" "u" "i" "o" "y" "m" "b" "," "." ";" "/" "'" 
+(defvar blink-search-quick-keys '("h" "l" "u" "i" "o" "y" "m" "b" "," "." ";" "/" "'"
                                   "f" "r" "v" "g" "t" "7" "8" "9" "0" "d" "s" "a" "e" "q" "[" "]"))
 
 (defvar blink-search-mode-map
@@ -368,12 +368,14 @@ influence of C1 on the result."
          (event-string (if (characterp event-type)
                            (string event-type)
                          (error "Unexpected input")))
-         (candidate-index (cl-position event-string blink-search-quick-keys :test 'equal))
-         (backend-name (plist-get (nth candidate-index blink-search-candidate-items) :backend))
-         (candidate-info (plist-get (nth candidate-index blink-search-candidate-items) :candidate))
-         (candidate (blink-search-get-candidate-text candidate-info)))
-    (blink-search-quit)
-    (blink-search-call-async "search_do" backend-name candidate)))
+         (candidate-index (cl-position event-string blink-search-quick-keys :test 'equal)))
+    (when (< candidate-index (length blink-search-candidate-items))
+      (let* ((backend-name (plist-get (nth candidate-index blink-search-candidate-items) :backend))
+             (candidate-info (plist-get (nth candidate-index blink-search-candidate-items) :candidate))
+             (candidate (blink-search-get-candidate-text candidate-info)))
+        (blink-search-quit)
+        (blink-search-call-async "search_do" backend-name candidate)
+        ))))
 
 (defun blink-search (&optional arg)
   "Start blink-search.
