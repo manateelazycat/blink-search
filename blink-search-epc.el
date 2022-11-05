@@ -299,7 +299,7 @@ channel : Event channels for incoming messages."
 return blink-search-epc-connection object."
   (blink-search-epc-log ">> Connection start: %s:%s" host port)
   (let* ((connection-id (blink-search-epc-uid))
-         (connection-name (format "epc con %s" connection-id))
+         (connection-name (format "blink-search-epc con %s" connection-id))
          (connection-buf (blink-search-epc-make-procbuf (format "*%s*" connection-name)))
          (connection-process
           (open-network-stream connection-name connection-buf host port))
@@ -695,7 +695,7 @@ This variable is used for the management purpose.")
   "[internal] Initialize the process and return blink-search-epc-manager object."
   (blink-search-epc-log "LSPBRIDGE-EPC-SERVER- >> Connection accept: %S" process)
   (let* ((connection-id (blink-search-epc-uid))
-         (connection-name (format "epc con %s" connection-id))
+         (connection-name (format "blink-search-epc con %s" connection-id))
          (channel (list connection-name nil))
          (connection (make-blink-search-epc-connection
                       :name connection-name
@@ -748,7 +748,7 @@ This variable is used for the management purpose.")
   "Start TCP Server and return the main process object."
   (let*
       ((connect-function connect-function)
-       (name (format "EPC Server %s" (blink-search-epc-uid)))
+       (name (format "BLINK-SEARCH EPC Server %s" (blink-search-epc-uid)))
        (buf (blink-search-epc-make-procbuf (format " *%s*" name)))
        (main-process
         (make-network-process
