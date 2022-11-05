@@ -82,6 +82,6 @@ class SearchGrepFile(Search):
 
     def parent(self, candidate):
         candidate_infos = candidate.split(":")
-        eval_in_emacs("blink-search-open-directory", os.path.dirname(os.path.join(self.search_path, candidate_infos[0])))
+        eval_in_emacs("blink-search-open-file", os.path.dirname(os.path.join(self.search_path, candidate_infos[0])))
 
         

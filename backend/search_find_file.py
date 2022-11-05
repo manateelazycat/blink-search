@@ -53,5 +53,5 @@ class SearchFindFile(Search):
         message_emacs("Copy: {}".format(path))
         
     def parent(self, candidate):
-        eval_in_emacs("blink-search-open-directory", os.path.dirname(os.path.join(self.search_path, candidate)))
+        eval_in_emacs("blink-search-open-file", os.path.dirname(os.path.join(self.search_path, candidate)))
 

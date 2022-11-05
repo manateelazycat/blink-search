@@ -35,5 +35,5 @@ class SearchRecentFile(Search):
         eval_in_emacs("find-file", candidate)
 
     def parent(self, candidate):
-        eval_in_emacs("blink-search-open-directory", os.path.dirname(candidate))
+        eval_in_emacs("blink-search-open-file", os.path.dirname(candidate))
 
