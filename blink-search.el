@@ -323,14 +323,13 @@ influence of C1 on the result."
   (dolist (update-func blink-search-start-update-list)
     (funcall update-func)))
 
-(defvar blink-search-quick-keys '("h" "l" "u" "i" "o" "y" "m" "b" "," "." ";" "/" "'" "f"
-                                  "r" "v" "g" "t" "d" "s" "a" "e" "w" "q" "[" "]"))
+(defvar blink-search-quick-keys '("h" "l" "u" "i" "o" "y" "m" "b" "," "." ";" "/" "'" 
+                                  "f" "r" "v" "g" "t" "7" "8" "9" "0" "d" "s" "a" "e" "q" "[" "]"))
 
 (defvar blink-search-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "C-g") 'blink-search-quit)
     (define-key map (kbd "ESC ESC ESC") 'blink-search-quit)
-    (define-key map (kbd "M-h") 'blink-search-quit)
     (define-key map (kbd "C-n") 'blink-search-candidate-select-next)
     (define-key map (kbd "C-p") 'blink-search-candidate-select-prev)
     (define-key map (kbd "M-n") 'blink-search-backend-select-next)
