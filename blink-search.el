@@ -130,6 +130,9 @@
 (defvar blink-search-backend-items nil)
 (defvar blink-search-backend-select-index nil)
 
+(defvar blink-search-highlight-offset 6
+  "Highlight offset include, prefix 1 blank, 2 icon width, 2 blank around quick key, 1 width of quick key.")
+
 (defcustom blink-search-common-directory '(("HOME" "~/"))
   "Common directory to search and open."
   :type 'cons)
@@ -654,11 +657,13 @@ blink-search will search current symbol if you call this function with `C-u' pre
                          "\n"
                          ))
 
+                  ;; Highlight match strings.
                   (when (and matches
                              (equal backend-number 1))
                     (dolist (match matches)
-                      (add-face-text-property (nth 0 match) (nth 1 match) 'font-lock-type-face 'append candidate-line)
-                      ))
+                      (add-face-text-property (+ (nth 0 match) blink-search-highlight-offset)
+                                              (+ (nth 1 match) blink-search-highlight-offset)
+                                              'font-lock-type-face 'append candidate-line)))
 
                   (when (equal candidate-index candidate-select-index)
                     (add-face-text-property 0 (length candidate-line) 'blink-search-select-face 'append candidate-line))
