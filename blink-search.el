@@ -133,6 +133,9 @@
 (defvar blink-search-highlight-offset 6
   "Highlight offset include, prefix 1 blank, 2 icon width, 2 blank around quick key, 1 width of quick key.")
 
+(defvar blink-search-search-backends nil 
+  "Default backends for blink search, which is a list of backend names, nil for all backends defined in python side.")
+ 
 (defcustom blink-search-common-directory '(("HOME" "~/"))
   "Common directory to search and open."
   :type 'cons)
@@ -520,13 +523,13 @@ blink-search will search current symbol if you call this function with `C-u' pre
             ((string-prefix-p "!" input)
              (blink-search-call-async "search" (substring input 1) (blink-search-get-row-number) (list "Grep File")))
             (t
-             (blink-search-call-async "search" input (blink-search-get-row-number) (list)))))))
+             (blink-search-call-async "search" input (blink-search-get-row-number) blink-search-search-backends))))))
 
 (defun blink-search-start ()
   (when (blink-search-epc-live-p blink-search-epc-process)
     (unless (string-empty-p blink-search-start-keyword)
       (message "[blink-search] Search symbol '%s'" blink-search-start-keyword))
-    (blink-search-call-async "search" blink-search-start-keyword (blink-search-get-row-number) (list))))
+    (blink-search-call-async "search" blink-search-start-keyword (blink-search-get-row-number) blink-search-search-backends)))
 
 (defsubst blink-search-indent-pixel (xpos)
   "Return a display property that aligns to XPOS."
