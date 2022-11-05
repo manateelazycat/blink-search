@@ -57,7 +57,8 @@ class SearchCurrentBuffer(Search):
                 if info["type"] == "match":
                     prefix = "{}:{}: ".format(info["data"]["line_number"], info["data"]["submatches"][0]["start"])
                     candidate = "{}{}".format(prefix, info["data"]["lines"]["text"][:-1])
-                    matches = list(map(lambda match: [match["start"] + len(prefix) + 1, match["end"] + len(prefix) + 1], info["data"]["submatches"]))
+                    # +6: space(1) + icon(2) + space(1) + shortcut(1) + space(1)
+                    matches = list(map(lambda match: [match["start"] + len(prefix) + 6, match["end"] + len(prefix) + 6], info["data"]["submatches"]))
                     results.append({
                         "text": candidate,
                         "matches": matches
