@@ -129,7 +129,6 @@
 (defvar blink-search-backend-select-index nil)
 
 (defvar blink-search-posframe-preview-window nil)
-(defvar blink-search-posframe-current-window nil)
 (defvar blink-search-posframe-emacs-frame nil)
 (defvar blink-search-posframe-frame nil)
 
@@ -147,7 +146,7 @@
   "The height of posframe."
   :type 'number
   :group 'blink-search)
-  
+
 (defvar blink-search-highlight-offset 6
   "Highlight offset include, prefix 1 blank, 2 icon width, 2 blank around quick key, 1 width of quick key.")
 
@@ -463,36 +462,8 @@ blink-search will search current symbol if you call this function with `C-u' pre
     (setq-local truncate-lines t))
 
   (if blink-search-enable-posframe
-      (blink-search-posframe-show-layout)
-
-    ;; Clean layout.
-    ;; NOTE: `ignore-errors' make sure start always successfully,
-    ;; even no buffer does exist when Emacs first start.
-    (ignore-errors
-      (delete-other-windows)
-      (split-window)
-      (other-window 1))
-
-    ;; Show input buffer.
-    (switch-to-buffer blink-search-input-buffer)
-
-    ;; Show tooltip buffer.
-    (split-window (selected-window) (line-pixel-height) 'below t)
-    (split-window (selected-window) nil 'right t)
-    (other-window 1)
-    (switch-to-buffer blink-search-tooltip-buffer)
-
-    ;; Show candidate buffer.
-    (other-window 1)
-    (switch-to-buffer blink-search-candidate-buffer)
-
-    ;; Show backend buffer.
-    (split-window (selected-window) nil 'right t)
-    (other-window 1)
-    (switch-to-buffer blink-search-backend-buffer))
-
-  ;; Select input window.
-  (select-window (get-buffer-window blink-search-input-buffer))
+      (blink-search-init-popup-layout)
+    (blink-search-init-bottom-layout))
 
   (dolist (update-func blink-search-start-update-list)
     (funcall update-func))
@@ -816,7 +787,9 @@ Function `move-to-column' can't handle mixed string of Chinese and English corre
 (defun blink-search-select-start-buffer (buffer)
   (if blink-search-enable-posframe
       (when (frame-visible-p blink-search-posframe-frame)
-        (set-window-buffer buffer blink-search-posframe-current-window))
+        (with-selected-frame blink-search-posframe-frame
+          (blink-search-preview
+           (switch-to-buffer buffer))))
     (blink-search-preview
      (switch-to-buffer buffer))))
 
@@ -876,13 +849,41 @@ Function `move-to-column' can't handle mixed string of Chinese and English corre
             ))))
 
 
-(defun blink-search-posframe-show-layout ()
+(defun blink-search-init-bottom-layout ()
+  ;; Clean layout.
+  ;; NOTE: `ignore-errors' make sure start always successfully,
+  ;; even no buffer does exist when Emacs first start.
+  (ignore-errors
+    (delete-other-windows)
+    (split-window)
+    (other-window 1))
+
+  ;; Show input buffer.
+  (switch-to-buffer blink-search-input-buffer)
+
+  ;; Show tooltip buffer.
+  (split-window (selected-window) (line-pixel-height) 'below t)
+  (split-window (selected-window) nil 'right t)
+  (other-window 1)
+  (switch-to-buffer blink-search-tooltip-buffer)
+
+  ;; Show candidate buffer.
+  (other-window 1)
+  (switch-to-buffer blink-search-candidate-buffer)
+
+  ;; Show backend buffer.
+  (split-window (selected-window) nil 'right t)
+  (other-window 1)
+  (switch-to-buffer blink-search-backend-buffer)
+
+  ;; Select input window.
+  (blink-search-select-window (get-buffer-window blink-search-input-buffer)))
+
+(defun blink-search-init-popup-layout ()
   (setq blink-search-posframe-emacs-frame (selected-frame))
   (setq blink-search-posframe-frame (blink-search-posframe-show blink-search-input-buffer))
 
   (select-frame-set-input-focus blink-search-posframe-frame)
-
-  (setq blink-search-posframe-current-window (get-buffer-window (current-buffer)))
 
   (when (equal (length (window-list)) 1)
     (split-window (selected-window) (line-pixel-height) 'below t)
@@ -898,7 +899,7 @@ Function `move-to-column' can't handle mixed string of Chinese and English corre
       (when (equal buffer blink-search-backend-buffer)
         (setq blink-search-posframe-preview-window (selected-window)))))
 
-  (select-window (get-buffer-window blink-search-input-buffer))
+  (blink-search-select-window (get-buffer-window blink-search-input-buffer))
   (setq-local cursor-type 'box)
   (set-window-margins (get-buffer-window blink-search-input-buffer) 1 1))
 
