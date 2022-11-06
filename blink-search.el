@@ -133,9 +133,9 @@
 (defvar blink-search-highlight-offset 6
   "Highlight offset include, prefix 1 blank, 2 icon width, 2 blank around quick key, 1 width of quick key.")
 
-(defvar blink-search-search-backends nil 
+(defvar blink-search-search-backends nil
   "Default backends for blink search, which is a list of backend names, nil for all backends defined in python side.")
- 
+
 (defcustom blink-search-common-directory '(("HOME" "~/"))
   "Common directory to search and open."
   :type 'cons)
@@ -329,7 +329,7 @@ influence of C1 on the result."
   (dolist (update-func blink-search-start-update-list)
     (funcall update-func)))
 
-(defvar blink-search-quick-keys '("h" "l" "u" "i" "o" "y" "m" "b" "," "." ";" "/" "'"
+(defvar blink-search-quick-keys '("h" "l" "u" "i" "y" "m" "b" "," "." ";" "/" "'"
                                   "f" "r" "v" "g" "t" "7" "8" "9" "0" "d" "s" "a" "e" "q" "[" "]"))
 
 (defvar blink-search-mode-map
@@ -664,9 +664,22 @@ blink-search will search current symbol if you call this function with `C-u' pre
                   (when (and matches
                              (equal backend-number 1))
                     (dolist (match matches)
-                      (add-face-text-property (+ (nth 0 match) blink-search-highlight-offset)
-                                              (+ (nth 1 match) blink-search-highlight-offset)
-                                              'font-lock-type-face 'append candidate-line)))
+                      (let ((match-column
+                             (let (match-start-point match-end-point)
+                               ;; We need use `blink-search-goto-column' to handle mixed string of Chinese and English correctly.
+                               (with-temp-buffer
+                                 (insert (substring candidate-line blink-search-highlight-offset))
+                                 (goto-char (point-min))
+                                 (blink-search-goto-column (nth 0 match))
+                                 (backward-char 1)
+                                 (setq match-start-point (+ (point) blink-search-highlight-offset))
+                                 (goto-char (point-min))
+                                 (blink-search-goto-column (nth 1 match))
+                                 (backward-char 1)
+                                 (setq match-end-point (+ (point) blink-search-highlight-offset))
+                                 (list match-start-point match-end-point)))))
+                        (add-face-text-property (nth 0 match-column) (nth 1 match-column) 'font-lock-type-face 'append candidate-line)
+                        )))
 
                   (when (equal candidate-index candidate-select-index)
                     (add-face-text-property 0 (length candidate-line) 'blink-search-select-face 'append candidate-line))
