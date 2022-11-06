@@ -12,6 +12,8 @@ blink-search will provide smooth completion experience without compromise to slo
 
 <img src="./images/blink-search.png">
 
+<img src="./images/blink-search-posframe.png">
+
 ## Installation
 
 1. Install Emacs 28 and above versions
@@ -54,6 +56,9 @@ blink-search will provide smooth completion experience without compromise to slo
 | C + g  | blink-search-quit           | Quit 
 
 * `blink-search-restart-process`: restart blink-search process (only used for development)
+
+## Option
+* `blink-search-enable-posframe`: set this option with `t`, blink-search will use `posframe` instead split bottom layout, this feature need you install [posframe](https://github.com/tumashu/posframe) first
 
 ## Search Backend
 
