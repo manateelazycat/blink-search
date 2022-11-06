@@ -133,6 +133,7 @@
 (defvar blink-search-posframe-preview-window nil)
 (defvar blink-search-posframe-current-window nil)
 (defvar blink-search-posframe-emacs-frame nil)
+(defvar blink-search-posframe-frame nil)
 
 (defcustom blink-search-enable-posframe nil
   "Enable posframe."
@@ -387,7 +388,7 @@ influence of C1 on the result."
     (setq blink-search-window-configuration nil)
 
     (when blink-search-enable-posframe
-      (posframe-hide blink-search-input-buffer)
+      (make-frame-invisible blink-search-posframe-frame)
       (select-frame-set-input-focus blink-search-posframe-emacs-frame))
 
     (setq blink-search-start-buffer nil)))
@@ -816,7 +817,8 @@ Function `move-to-column' can't handle mixed string of Chinese and English corre
 
 (defun blink-search-select-start-buffer (buffer)
   (if blink-search-enable-posframe
-      (set-window-buffer buffer blink-search-posframe-current-window)
+      (when (frame-visible-p blink-search-posframe-frame)
+        (set-window-buffer buffer blink-search-posframe-current-window))
     (blink-search-preview
      (switch-to-buffer buffer))))
 
@@ -878,17 +880,14 @@ Function `move-to-column' can't handle mixed string of Chinese and English corre
 
 
 (defun blink-search-posframe-show-layout ()
-
   (setq blink-search-posframe-emacs-frame (selected-frame))
-  (select-frame-set-input-focus  (blink-search-posframe-show blink-search-input-buffer))
+  (setq blink-search-posframe-frame (blink-search-posframe-show blink-search-input-buffer))
+
+  (select-frame-set-input-focus blink-search-posframe-frame)
 
   (setq blink-search-posframe-current-window (get-buffer-window (current-buffer)))
 
-  (select-window (get-buffer-window blink-search-input-buffer))
-  (setq-local left-margin-width 1)
-  (setq-local right-margin-width 1)
-
-  (unless (equal (window-height) 1)
+  (when (equal (length (window-list)) 1)
     (split-window (selected-window) (line-pixel-height) 'below t)
     (split-window (selected-window) nil 'right t)
 
@@ -900,10 +899,10 @@ Function `move-to-column' can't handle mixed string of Chinese and English corre
       (other-window 1)
       (switch-to-buffer buffer)
       (when (equal buffer blink-search-backend-buffer)
-        (setq blink-search-posframe-preview-window (selected-window)))
-      (setq-local left-margin-width 1)
-      (setq-local right-margin-width 1)
-      )))
+        (setq blink-search-posframe-preview-window (selected-window)))))
+
+  (select-window (get-buffer-window blink-search-input-buffer))
+  (set-window-margins (get-buffer-window blink-search-input-buffer) 1 1))
 
 
 (add-to-list 'blink-search-start-update-list #'blink-search-init-search-dir t)
