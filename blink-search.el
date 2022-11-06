@@ -132,6 +132,7 @@
 
 (defvar blink-search-posframe-preview-window nil)
 (defvar blink-search-posframe-current-window nil)
+(defvar blink-search-posframe-emacs-frame nil)
 
 (defcustom blink-search-enable-posframe nil
   "Enable posframe."
@@ -378,7 +379,9 @@ influence of C1 on the result."
     (set-window-configuration blink-search-window-configuration)
     (setq blink-search-window-configuration nil)
 
-    (when blink-search-enable-posframe (posframe-hide blink-search-input-buffer))
+    (when blink-search-enable-posframe
+      (posframe-hide blink-search-input-buffer)
+      (select-frame-set-input-focus blink-search-posframe-emacs-frame))
 
     (setq blink-search-start-buffer nil)))
 
@@ -846,27 +849,31 @@ Function `move-to-column' can't handle mixed string of Chinese and English corre
 
 (defun blink-search-posframe-show-layout ()
 
+  (setq blink-search-posframe-emacs-frame (selected-frame))
   (select-frame-set-input-focus  (blink-search-posframe-show blink-search-input-buffer))
 
   (setq blink-search-posframe-current-window (get-buffer-window (current-buffer)))
 
   (select-window (get-buffer-window blink-search-input-buffer))
+  (setq-local left-margin-width 1)
+  (setq-local right-margin-width 1)
+
   (unless (equal (window-height) 1)
     (split-window (selected-window) (line-pixel-height) 'below t)
     (split-window (selected-window) nil 'right t)
-    (other-window 1)
-    (switch-to-buffer blink-search-tooltip-buffer)
 
-    ;; Show candidate buffer.
-    (other-window 1)
-    (switch-to-buffer blink-search-candidate-buffer)
-
-    ;; Show backend buffer.
-    (split-window (selected-window) nil 'right t)
-    (other-window 1)
-    (switch-to-buffer blink-search-backend-buffer)
-    (setq blink-search-posframe-preview-window (selected-window))
-  ))
+    (dolist (buffer (list blink-search-tooltip-buffer
+                          blink-search-candidate-buffer
+                          blink-search-backend-buffer))
+      (when (equal buffer blink-search-backend-buffer)
+        (split-window (selected-window) nil 'right t))
+      (other-window 1)
+      (switch-to-buffer buffer)
+      (when (equal buffer blink-search-backend-buffer)
+        (setq blink-search-posframe-preview-window (selected-window)))
+      (setq-local left-margin-width 1)
+      (setq-local right-margin-width 1)
+      )))
 
 
 (add-to-list 'blink-search-start-update-list #'blink-search-init-search-dir t)
