@@ -398,9 +398,12 @@ class BlinkSearch:
         
     def search_do(self, backend, candidate):
         self.search_backend_dict[backend].do(candidate)
-            
+        
     def search_copy(self, backend, candidate):
         self.search_backend_dict[backend].copy(candidate)
+        
+    def search_parent(self, backend, candidate):
+        self.search_backend_dict[backend].parent(candidate)
         
     def search(self, input, row_number, backend_list):
         self.search_row_number = row_number

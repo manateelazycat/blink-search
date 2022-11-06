@@ -85,9 +85,7 @@
 ;;; Code:
 
 (defun blink-search-common-directory-do (dir)
-  (if (featurep 'eaf-file-manager)
-      (eaf-open-in-file-manager dir)
-    (find-file dir)))
+  (blink-search-open-file dir))
 
 (provide 'blink-search-common-directory)
 

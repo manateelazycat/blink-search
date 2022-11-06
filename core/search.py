@@ -94,3 +94,10 @@ class Search:
     def copy(self, candidate):
         eval_in_emacs("kill-new", candidate)
         message_emacs("Copy: {}".format(candidate))
+
+    def do(self, candidate):
+        pass
+        
+    def parent(self, candidate):
+        self.do(candidate)
+        
