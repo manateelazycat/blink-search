@@ -846,10 +846,7 @@ Function `move-to-column' can't handle mixed string of Chinese and English corre
 
 (defun blink-search-posframe-show-layout ()
 
-  (let ((frame (blink-search-posframe-show blink-search-input-buffer)))
-    (select-frame frame)
-    (when (frame-focus-state frame)
-      (select-frame-set-input-focus frame)))
+  (select-frame-set-input-focus  (blink-search-posframe-show blink-search-input-buffer))
 
   (setq blink-search-posframe-current-window (get-buffer-window (current-buffer)))
 
