@@ -85,11 +85,7 @@
 ;;; Code:
 
 (defun blink-search-find-file-do (candidate)
-  (if (file-directory-p candidate)
-      (if (featurep 'eaf-file-manager)
-          (eaf-open-in-file-manager candidate)
-        (find-file candidate))
-    (find-file candidate)))
+  (blink-search-open-file candidate))
 
 (provide 'blink-search-find-file)
 

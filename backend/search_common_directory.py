@@ -53,7 +53,7 @@ class SearchCommonDirectory(Search):
         else:
             return []
 
-    def do(self, candidate):
+    def get_candiate_dir(self, candidate):
         prefix = candidate.split()[0]
         common_directory = get_emacs_var("blink-search-common-directory")
         if type(common_directory) is list:
@@ -62,4 +62,16 @@ class SearchCommonDirectory(Search):
                 directory = os.path.expanduser(directory_info[1])
                 
                 if prefix == alias:
-                    eval_in_emacs("blink-search-common-directory-do", os.path.join(directory, candidate.replace(prefix, "").strip()))
+                    return os.path.join(directory, candidate.replace(prefix, "").strip())
+        
+        return None
+        
+    def do(self, candidate):
+        candidate_dir = self.get_candiate_dir(candidate)
+        if candidate_dir != None:
+            eval_in_emacs("blink-search-common-directory-do", candidate_dir)
+
+    def parent(self, candidate):
+        candidate_dir = self.get_candiate_dir(candidate)
+        if candidate_dir != None:
+            eval_in_emacs("blink-search-common-directory-do", os.path.dirname(candidate_dir))

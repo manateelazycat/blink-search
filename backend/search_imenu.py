@@ -34,6 +34,7 @@ class SearchIMenu(Search):
         
     def update(self, items):
         self.items = items
+        self.item_dict = {}
         for item in items:
             self.item_dict[str(item[0])] = item[1]
         
