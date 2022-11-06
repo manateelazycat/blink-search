@@ -538,7 +538,7 @@ blink-search will search current symbol if you call this function with `C-u' pre
 (defun blink-search-render-candidate (backend-name candidate candidate-max-length)
   (let ((candidate-length (string-width candidate)))
     (cond ((string-equal backend-name "Recent File")
-           (file-name-base candidate))
+           (file-name-nondirectory candidate))
           ((member backend-name '("Current Buffer" "EAF Browser History" "Grep File"))
            (if (<= candidate-length candidate-max-length)
                candidate
