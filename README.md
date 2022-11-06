@@ -1,8 +1,10 @@
 # blink-search
 
 <p align="center">
-  <h3>In the blink of an eye, the search is complete!</h3>
+  <br><strong>In the blink of an eye, the search is complete!</strong>
 </p>
+
+<br>
 
 blink-search's goal is to become the fastest search framework in Emacs.
 
@@ -10,8 +12,14 @@ blink-search use python multi-thread technology to search and filter candidates,
 
 blink-search will provide smooth completion experience without compromise to slow down emacs' performance.
 
+<p align="center">
+  <br>blink-search with split window style
+</p>
 <img src="./images/blink-search.png">
 
+<p align="center">
+  <br>blink-search with popup frame style
+</p>
 <img src="./images/blink-search-posframe.png">
 
 ## Installation
