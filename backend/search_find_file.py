@@ -45,7 +45,7 @@ class SearchFindFile(Search):
             return []
 
     def do(self, candidate):
-        eval_in_emacs("blink-search-find-file-do", os.path.join(self.search_path, candidate))
+        eval_in_emacs("blink-search-open-file", os.path.join(self.search_path, candidate))
 
     def copy(self, candidate):
         path = os.path.join(self.search_path, candidate)
