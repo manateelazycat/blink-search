@@ -376,7 +376,10 @@ influence of C1 on the result."
   (setq major-mode 'blink-search-mode)
   (setq mode-name "blink-search")
   ;; Injection keymap.
-  (use-local-map blink-search-mode-map))
+  (use-local-map blink-search-mode-map)
+  (when (featurep 'evil)
+    (evil-set-initial-state 'blink-search-mode 'emacs))
+  )
 
 (defun blink-search-quit ()
   (interactive)
