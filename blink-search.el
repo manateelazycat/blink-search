@@ -828,7 +828,7 @@ Function `move-to-column' can't handle mixed string of Chinese and English corre
 
 (defun blink-search-posframe-show (buffer)
   (let* ((posframe-height (round (* (frame-height) blink-search-posframe-height-ratio)))
-        (posframe-width (round (* (frame-width) blink-search-posframe-width-ratio))))
+         (posframe-width (round (* (frame-width) blink-search-posframe-width-ratio))))
     (apply #'posframe-show
            (get-buffer buffer)
            :poshandler #'posframe-poshandler-frame-center
@@ -843,9 +843,13 @@ Function `move-to-column' can't handle mixed string of Chinese and English corre
             :override-parameters '((cursor-type . box))
             ))))
 
+
 (defun blink-search-posframe-show-layout ()
 
-  (select-frame (blink-search-posframe-show blink-search-input-buffer))
+  (let ((frame (blink-search-posframe-show blink-search-input-buffer)))
+    (select-frame frame)
+    (when (frame-focus-state frame)
+      (select-frame-set-input-focus frame)))
 
   (setq blink-search-posframe-current-window (get-buffer-window (current-buffer)))
 
