@@ -875,7 +875,6 @@ Function `move-to-column' can't handle mixed string of Chinese and English corre
             :border-width 2
             :border-color "gray"
             :accept-focus (equal buffer blink-search-input-buffer)
-            :override-parameters '((cursor-type . box))
             ))))
 
 
@@ -902,6 +901,7 @@ Function `move-to-column' can't handle mixed string of Chinese and English corre
         (setq blink-search-posframe-preview-window (selected-window)))))
 
   (select-window (get-buffer-window blink-search-input-buffer))
+  (setq-local cursor-type 'box)
   (set-window-margins (get-buffer-window blink-search-input-buffer) 1 1))
 
 
