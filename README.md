@@ -73,7 +73,7 @@ blink-search will provide smooth completion experience without compromise to slo
 blink-search has completed the following search backend:
 
 * Buffer List: search buffer list
-* Common Directory: search common directory, you can customize option `blink-search-common-directory`
+* Common Directory: search your favorite common directory, you can customize option `blink-search-common-directory`
 * Recent File: search recent file
 * Current Buffer: use `ripgrep` grep current buffer content
 * Grep File: use `ripgrep` grep file under project or current directory
@@ -81,7 +81,7 @@ blink-search has completed the following search backend:
 * Find File: use `fd` search file under project or current directory
 * EAF Browser History: search history of EAF browser
 * Elisp Symbol: search elisp symbol
-* Google Suggest: search google suggestions
+* Google Suggest: search google suggestions and open in browser
 
 ## Report bug
 
