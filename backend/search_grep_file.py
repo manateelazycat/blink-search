@@ -22,7 +22,7 @@
 import os
 import json
 
-from core.utils import eval_in_emacs, message_emacs, get_project_path    # type: ignore
+from core.utils import eval_in_emacs, get_emacs_var, message_emacs, get_project_path    # type: ignore
 from core.search import Search    # type: ignore
 
 class SearchGrepFile(Search):
@@ -33,11 +33,16 @@ class SearchGrepFile(Search):
         
     def init_dir(self, search_dir):
         self.search_path = get_project_path(search_dir)
+        self.ignore_dirs = get_emacs_var("blink-search-grep-file-ignore-dirs")
         
     def search_match(self, prefix):
         prefix = prefix.replace("*", "")
         if len(prefix.split()) > 0:
             command_string = "rg -S --json --max-columns 300 '{}'".format(".*".join(prefix.split()))
+            if len(self.ignore_dirs) > 0:
+                ignore_pattern = ["-g !\"{}\"".format(d) for d in self.ignore_dirs]
+                command_string = "{} {}".format(command_string, " ".join(ignore_pattern))
+        
             lines = self.get_process_result(command_string, self.search_path)
             
             results = []
