@@ -96,6 +96,8 @@
    (blink-search-grep-file-do file line column)
    ))
 
+(defvar blink-search-grep-ignore-dirs '("node_modules" "__pycache__" "dist"))
+
 (provide 'blink-search-grep-file)
 
 ;;; blink-search-grep-file.el ends here

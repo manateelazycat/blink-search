@@ -47,7 +47,7 @@ class SearchCurrentBuffer(Search):
             f.write(self.buffer_content)
         
     def search_match(self, prefix):
-        if os.path.exists(self.buffer_temp_path):
+        if os.path.exists(self.buffer_temp_path) and len(prefix) > 0:
             command_string = "rg -S --json --max-columns 300 '{}' {}".format(prefix, self.buffer_temp_path)
             lines = self.get_process_result(command_string)
             
