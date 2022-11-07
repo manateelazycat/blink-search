@@ -153,6 +153,10 @@
 (defvar blink-search-search-backends nil
   "Default backends for blink search, which is a list of backend names, nil for all backends defined in python side.")
 
+(defcustom blink-search-enable-icon t
+  "Show icon in menu."
+  :type 'boolean
+  :group 'blink-search)
 
 (defcustom blink-search-common-directory '(("HOME" "~/"))
   "Common directory to search and open."
