@@ -390,7 +390,16 @@ influence of C1 on the result."
 
     (when blink-search-enable-posframe
       (make-frame-invisible blink-search-posframe-frame)
-      (select-frame-set-input-focus blink-search-posframe-emacs-frame))
+      (select-frame-set-input-focus blink-search-posframe-emacs-frame)
+
+      ;; popup will call 'eaf--mac-focus-change'
+      ;; which causes switched buffer
+      ;; switch back with (set-window-configuration (frame-parameter (selected-frame) 'eaf--mac-frame))
+      (when (and (eq system-type 'darwin) (featurep 'eaf)
+                 (eaf-emacs-not-use-reparent-technology)
+                 eaf--mac-safe-focus-change)
+        (set-frame-parameter  blink-search-posframe-emacs-frame
+                              'eaf--mac-frame nil)))
 
     (setq blink-search-start-buffer nil)))
 
@@ -797,11 +806,7 @@ Function `move-to-column' can't handle mixed string of Chinese and English corre
        )))
 
 (defun blink-search-select-start-buffer (buffer)
-  (if blink-search-enable-posframe
-      (when (frame-visible-p blink-search-posframe-frame)
-        (with-selected-frame blink-search-posframe-frame
-          (blink-search-preview
-           (switch-to-buffer buffer))))
+  (unless blink-search-enable-posframe
     (blink-search-preview
      (switch-to-buffer buffer))))
 
