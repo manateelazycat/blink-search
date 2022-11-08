@@ -373,6 +373,7 @@ you need customize option if some 'M + key' conflict with your command.")
     (define-key map (kbd "M-k") 'blink-search-candidate-group-select-prev)
     (define-key map (kbd "C-m") 'blink-search-do)
     (define-key map (kbd "C-j") 'blink-search-parent)
+    (define-key map (kbd "C-l") 'blink-search-continue)
     (define-key map (kbd "M-w") 'blink-search-copy)
 
     (dolist (key blink-search-quick-keys)
@@ -861,9 +862,24 @@ Function `move-to-column' can't handle mixed string of Chinese and English corre
   (interactive)
   (blink-search-action "search_parent"))
 
+(defun blink-search-continue ()
+  (interactive)
+  (when (and (> (length blink-search-candidate-items) 0)
+             (> (length blink-search-backend-items) 0))
+    (let* ((backend-name (blink-search-get-select-backend-name))
+           (candidate (blink-search-get-select-candidate)))
+
+      (blink-search-call-async "search_continue" backend-name candidate))))
+
 (defun blink-search-copy ()
   (interactive)
   (blink-search-action "search_copy"))
+
+(defun blink-search-continue-search (dir)
+  (blink-search-call-async "search_init_search_dir" dir)
+  (with-current-buffer blink-search-input-buffer
+    (erase-buffer))
+  (message "[blink-search] continue search at: %s" dir))
 
 (defun blink-search-posframe-show (buffer)
   (let* ((posframe-height (round (* (frame-height) blink-search-posframe-height-ratio)))

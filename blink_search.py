@@ -400,6 +400,13 @@ class BlinkSearch:
         
     def search_parent(self, backend, candidate):
         self.search_backend_dict[backend].parent(candidate)
+
+    def search_continue(self, backend, candidate):
+        backend = self.search_backend_dict[backend]
+        if hasattr(backend, "continue_search"):
+            getattr(backend, "continue_search")(candidate)
+        else:
+            message_emacs("{} not support continue search.".format(backend.backend_name))
         
     def search(self, input, row_number, backend_list):
         self.search_row_number = row_number
