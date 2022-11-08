@@ -21,8 +21,9 @@
 
 import os
 import json
+import subprocess
 
-from core.utils import eval_in_emacs, get_emacs_var, message_emacs, get_project_path, parse_rg_line    # type: ignore
+from core.utils import eval_in_emacs, get_emacs_var, message_emacs, get_project_path, parse_rg_line, get_emacs_func_result    # type: ignore
 from core.search import Search    # type: ignore
 
 class SearchGrepFile(Search):
@@ -30,31 +31,64 @@ class SearchGrepFile(Search):
     def __init__(self, backend_name, message_queue) -> None:
         Search.__init__(self, backend_name, message_queue)
         self.sub_process = None
+        self.row_number = 100
         
     def init_dir(self, search_dir):
         self.search_path = get_project_path(search_dir)
         
-    def search_match(self, prefix):
+    def search_items(self, prefix: str, ticker: int):
         prefix = prefix.replace("*", "")
         if len(prefix.split()) > 0:
-            lines = self.get_process_result(["rg", "-S", "--json", "--max-columns", "300",
-                                             "-g", "!node_modules",  
-                                             "-g", "!__pycache__",  
-                                             "-g", "!dist",  
-                                             ".*".join(prefix.split()), 
-                                             os.path.expanduser(self.search_path)
-            ])
             
-            results = []
-            for line in lines:
-                result = parse_rg_line(line, self.search_path)
-                if result != None:
-                    results.append(result)
+            command_list = ["rg", "-S", "--json", "--max-columns", "300",
+                            "-g", "!node_modules",  
+                            "-g", "!__pycache__",  
+                            "-g", "!dist",  
+                            ".*".join(prefix.split()), 
+                            os.path.expanduser(self.search_path)
+                            ]
             
-            return results
-        else:
-            return []
-
+            self.kill_sub_process()
+                
+            self.sub_process = subprocess.Popen(command_list, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            
+            lines = []
+            try:
+                while True:
+                    if self.sub_process == None:
+                        break
+                    
+                    line = self.sub_process.stdout.readline()    # type: ignore
+                    
+                    if not line: 
+                        break
+                    
+                    lines.append(line.strip())
+                    
+                    if len(lines) == self.row_number:
+                        self.parse_lines(lines, ticker)
+            except:
+                import traceback
+                traceback.print_exc()
+            finally:
+                self.kill_sub_process()
+                
+            self.parse_lines(lines, ticker)
+            
+    def parse_lines(self, lines, ticker):
+        candidates = []
+        for line in lines:
+            result = parse_rg_line(line, self.search_path)
+            if result != None:
+                candidates.append(result)
+            
+        if ticker == self.search_ticker:
+            self.message_queue.put({
+                "name": "update_backend_items",
+                "backend": self.backend_name,
+                "items": candidates
+            })
+            
     def do(self, candidate):
         candidate_infos = candidate.split(":")
         eval_in_emacs("blink-search-grep-file-do", 
@@ -81,4 +115,5 @@ class SearchGrepFile(Search):
 
         
     def clean(self):
+        self.kill_sub_process()
         eval_in_emacs("blink-search-grep-file-clean")

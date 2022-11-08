@@ -240,25 +240,24 @@ def touch(path):
 def parse_rg_line(line, search_path=None):
     try:
         info = json.loads(line)
+        if info["type"] == "match":
+            
+            if search_path != None:
+                prefix = "{}:{}:{}: ".format(
+                    os.path.relpath(info["data"]["path"]["text"], search_path),
+                    info["data"]["line_number"], 
+                    info["data"]["submatches"][0]["start"])
+            else:
+                prefix = "{}:{}: ".format(
+                    info["data"]["line_number"], 
+                    info["data"]["submatches"][0]["start"])
+                
+            lines = info["data"]["lines"]
+            text_key = list(lines.keys())[0]
+            candidate = "{}{}".format(prefix, info["data"]["lines"][text_key][:-1])
+            matches = list(map(lambda match: [match["start"] + len(prefix), match["end"] + len(prefix)], info["data"]["submatches"]))    
+            return {"text": candidate, "matches": matches}
     except:
         return None
-    
-    if info["type"] == "match":
-        
-        if search_path != None:
-            prefix = "{}:{}:{}: ".format(
-                os.path.relpath(info["data"]["path"]["text"], search_path),
-                info["data"]["line_number"], 
-                info["data"]["submatches"][0]["start"])
-        else:
-            prefix = "{}:{}: ".format(
-                info["data"]["line_number"], 
-                info["data"]["submatches"][0]["start"])
-            
-        lines = info["data"]["lines"]
-        text_key = list(lines.keys())[0]
-        candidate = "{}{}".format(prefix, info["data"]["lines"][text_key][:-1])
-        matches = list(map(lambda match: [match["start"] + len(prefix), match["end"] + len(prefix)], info["data"]["submatches"]))    
-        return {"text": candidate, "matches": matches}
     
     return None

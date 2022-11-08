@@ -72,24 +72,18 @@ class Search:
         return list(filter(lambda symbol: self.is_match(prefix, prefix_regexp, symbol), self.items))
     
     def get_process_result(self, command_list, cwd=None):
-        if self.sub_process != None:
-            try:
-                self.sub_process.kill()
-            except:
-                pass
+        self.kill_sub_process()
             
         self.sub_process = subprocess.Popen(command_list, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
         
         results = []
         try:
-            outs, errs = self.sub_process.communicate(timeout=15)
+            outs, errs = self.sub_process.communicate()
             results = list(map(lambda p: p.strip(), outs.splitlines()))    # type: ignore
         except:
             import traceback
-            print("ERROR ", traceback.print_exc())
-            self.sub_process.kill()
-            self.sub_process = None
-            outs, errs = [], []
+            traceback.print_exc()
+            self.kill_sub_process()
             
         return results
             
@@ -106,3 +100,10 @@ class Search:
     def parent(self, candidate):
         self.do(candidate)
         
+    def kill_sub_process(self):
+        if self.sub_process != None:
+            self.sub_process.kill()
+            self.sub_process = None
+        
+    def clean(self):
+        self.kill_sub_process()
