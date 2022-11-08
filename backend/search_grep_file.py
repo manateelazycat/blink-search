@@ -30,17 +30,17 @@ class SearchGrepFile(Search):
     def __init__(self, backend_name, message_queue) -> None:
         Search.__init__(self, backend_name, message_queue)
         self.sub_process = None
+        self.ignore_dirs = get_emacs_var("blink-search-grep-file-ignore-dirs")        
         
     def init_dir(self, search_dir):
         self.search_path = get_project_path(search_dir)
-        self.ignore_dirs = get_emacs_var("blink-search-grep-file-ignore-dirs")
         
     def search_match(self, prefix):
         prefix = prefix.replace("*", "")
         if len(prefix.split()) > 0:
             command_string = "rg -S --json --max-columns 300 '{}'".format(".*".join(prefix.split()))
             if len(self.ignore_dirs) > 0:
-                ignore_pattern = ["-g !\"{}\"".format(d) for d in self.ignore_dirs]
+                ignore_pattern = ["-g !\"{}\"".format(d) for d in self.ignore_dirs]    # type: ignore
                 command_string = "{} {}".format(command_string, " ".join(ignore_pattern))
         
             lines = self.get_process_result(command_string, self.search_path)
@@ -90,3 +90,5 @@ class SearchGrepFile(Search):
         eval_in_emacs("blink-search-open-file", os.path.dirname(os.path.join(self.search_path, candidate_infos[0])))
 
         
+    def clean(self):
+        eval_in_emacs("blink-search-grep-file-clean")

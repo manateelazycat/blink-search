@@ -394,6 +394,8 @@ you need customize option if some 'M + key' conflict with your command.")
 
 (defun blink-search-quit ()
   (interactive)
+  (blink-search-call-async "clean")
+  
   (when blink-search-window-configuration
     (set-window-configuration blink-search-window-configuration)
     (setq blink-search-window-configuration nil)

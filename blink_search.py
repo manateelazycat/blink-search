@@ -415,6 +415,11 @@ class BlinkSearch:
         
         for backend in self.search_backend_list:
             self.search_backend_dict[backend].search(input)
+            
+    def clean(self):
+        for k, v in self.search_backend_dict.items():
+            if hasattr(v, "clean"):
+                getattr(v, "clean")()
         
     def cleanup(self):
         """Do some cleanup before exit python process."""

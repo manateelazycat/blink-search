@@ -84,6 +84,16 @@
 
 ;;; Code:
 
+(defvar blink-search-grep-file-ignore-dirs '("node_modules" "__pycache__" "dist"))
+(defvar blink-search-grep-file-temp-buffers nil)
+
+(defun blink-search-grep-file-get-match-buffer (filepath)
+  (catch 'find-match
+    (dolist (buffer (buffer-list))
+      (when (string-equal (buffer-file-name buffer) filepath)
+        (throw 'find-match buffer)))
+    nil))
+
 (defun blink-search-grep-file-do (file line column)
   (find-file file)
   (ignore-errors
@@ -93,10 +103,17 @@
 
 (defun blink-search-grep-file-preview (file line column)
   (blink-search-preview
-   (blink-search-grep-file-do file line column)
-   ))
+   (let ((match-file (blink-search-grep-file-get-match-buffer file)))
+     (blink-search-grep-file-do file line column)
+     (unless match-file
+       (add-to-list 'blink-search-grep-file-temp-buffers (current-buffer))
+       ))))
 
-(defvar blink-search-grep-ignore-dirs '("node_modules" "__pycache__" "dist"))
+(defun blink-search-grep-file-clean ()
+  (dolist (temp-buffer blink-search-grep-file-temp-buffers)
+    (kill-buffer temp-buffer))
+
+  (setq blink-search-grep-file-temp-buffers nil))
 
 (provide 'blink-search-grep-file)
 
