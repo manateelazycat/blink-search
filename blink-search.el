@@ -348,8 +348,18 @@ influence of C1 on the result."
   (dolist (update-func blink-search-start-update-list)
     (funcall update-func)))
 
-(defvar blink-search-quick-keys '("h" "l" "u" "i" "y" "m" "b" "," "." ";" "/" "'"
-                                  "f" "r" "v" "g" "t" "7" "8" "9" "0" "d" "s" "a" "e" "q" "[" "]"))
+(defvar blink-search-quick-keys
+  '("h" "l" "u" "i" "y"
+    "," "." ";" "/" "'"
+    "r" "v" "g" "t" "c"
+    "7" "8" "9" "0"
+    "H" "L" "U" "I" "Y"
+    "s" "a" "e" "q" 
+    "1" "2" "3" "4"
+    "[" "]")
+  "This list keys to access candidate quickly, all those keys is prefix with Alt key,
+
+you need customize option if some 'M + key' conflict with your command.")
 
 (defvar blink-search-mode-map
   (let ((map (make-sparse-keymap)))
