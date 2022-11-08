@@ -80,7 +80,7 @@
 ;;
 
 ;;; Require
-
+(require 'svg)
 
 ;;; Code:
 
@@ -179,7 +179,8 @@ If COLOR-NAME is unknown to Emacs, then return COLOR-NAME as-is."
     (svg-image svg :ascent 'center :scale 1)))
 
 (defun blink-search-icon-build (collection name fg-color)
-  (if (and blink-search-enable-icon
+  (if (and (display-graphic-p)
+           blink-search-enable-icon
            (image-type-available-p 'svg))
       (let* ((icon-key (format "%s_%s" collection name))
              (icon-text (gethash icon-key blink-search-icon-cache)))
