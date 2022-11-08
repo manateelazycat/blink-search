@@ -54,3 +54,12 @@ class SearchFindFile(Search):
     def parent(self, candidate):
         eval_in_emacs("blink-search-open-file", os.path.dirname(os.path.join(self.search_path, candidate)))
 
+    def continue_search(self, candidate):
+        candidate_path = os.path.join(self.search_path, candidate)
+        if os.path.isdir(candidate_path):
+            continue_path = candidate_path
+        else:
+            continue_path = os.path.dirname(candidate_path)
+        
+        eval_in_emacs("blink-search-continue-search", continue_path)
+
