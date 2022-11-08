@@ -30,7 +30,6 @@ class SearchGrepFile(Search):
     def __init__(self, backend_name, message_queue) -> None:
         Search.__init__(self, backend_name, message_queue)
         self.sub_process = None
-        self.ignore_dirs = get_emacs_var("blink-search-grep-file-ignore-dirs")        
         
     def init_dir(self, search_dir):
         self.search_path = get_project_path(search_dir)
@@ -38,23 +37,23 @@ class SearchGrepFile(Search):
     def search_match(self, prefix):
         prefix = prefix.replace("*", "")
         if len(prefix.split()) > 0:
-            command_string = "rg -S --json --max-columns 300 '{}'".format(".*".join(prefix.split()))
-            if len(self.ignore_dirs) > 0:
-                ignore_pattern = ["-g !\"{}\"".format(d) for d in self.ignore_dirs]    # type: ignore
-                command_string = "{} {}".format(command_string, " ".join(ignore_pattern))
-        
-            lines = self.get_process_result(command_string, self.search_path)
+            lines = self.get_process_result(["rg", "-S", "--json", "--max-columns", "300", 
+                                             # "-g", "!node_modules",  
+                                             # "-g", "!__pycache__",  
+                                             # "-g", "!dist",  
+                                             ".*".join(prefix.split()), 
+                                             os.path.expanduser(self.search_path)
+            ])
             
             results = []
             for line in lines:
                 info = json.loads(line)
                 if info["type"] == "match":
                     prefix = "{}:{}:{}: ".format(
-                        info["data"]["path"]["text"],
+                        os.path.relpath(info["data"]["path"]["text"], self.search_path),
                         info["data"]["line_number"], 
                         info["data"]["submatches"][0]["start"])
                     candidate = "{}{}".format(prefix, info["data"]["lines"]["text"][:-1])
-                    # +6: space(1) + icon(2) + space(1) + shortcut(1) + space(1)
                     matches = list(map(lambda match: [match["start"] + len(prefix), match["end"] + len(prefix)], info["data"]["submatches"]))
                     results.append({
                         "text": candidate,

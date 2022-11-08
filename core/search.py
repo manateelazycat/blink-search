@@ -71,20 +71,20 @@ class Search:
         prefix_regexp = re.compile(".*" + ".*".join(prefix.split()), re.IGNORECASE)
         return list(filter(lambda symbol: self.is_match(prefix, prefix_regexp, symbol), self.items))
     
-    def get_process_result(self, command_string, cwd=None):
+    def get_process_result(self, command_list, cwd=None):
         if self.sub_process != None:
             try:
-                os.killpg(self.sub_process.pid, signal.SIGTERM)
+                self.sub_process.kill()
             except:
                 pass
             
-        self.sub_process = subprocess.Popen(command_string, cwd=cwd, shell=True, text=True,
-                                            stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                                            encoding="utf-8")
+        self.sub_process = subprocess.Popen(command_list, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8")
         ret = self.sub_process.wait()
         results = []
         if ret == 0:
             results = list(map(lambda p: p.strip(), self.sub_process.stdout.readlines()))    # type: ignore
+            self.sub_process.kill()
+            self.sub_process = None
         
         return results
             

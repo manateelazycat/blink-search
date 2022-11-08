@@ -84,7 +84,6 @@
 
 ;;; Code:
 
-(defvar blink-search-grep-file-ignore-dirs '("node_modules" "__pycache__" "dist"))
 (defvar blink-search-grep-file-temp-buffers nil)
 
 (defun blink-search-grep-file-get-match-buffer (filepath)

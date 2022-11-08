@@ -48,8 +48,7 @@ class SearchCurrentBuffer(Search):
         
     def search_match(self, prefix):
         if os.path.exists(self.buffer_temp_path) and len(prefix) > 0:
-            command_string = "rg -S --json --max-columns 300 '{}' {}".format(prefix, self.buffer_temp_path)
-            lines = self.get_process_result(command_string)
+            lines = self.get_process_result(["rg", "-S", "--json", "--max-columns", "300", prefix, self.buffer_temp_path])
             
             results = []
             for line in lines:
@@ -57,7 +56,6 @@ class SearchCurrentBuffer(Search):
                 if info["type"] == "match":
                     prefix = "{}:{}: ".format(info["data"]["line_number"], info["data"]["submatches"][0]["start"])
                     candidate = "{}{}".format(prefix, info["data"]["lines"]["text"][:-1])
-                    # +6: space(1) + icon(2) + space(1) + shortcut(1) + space(1)
                     matches = list(map(lambda match: [match["start"] + len(prefix), match["end"] + len(prefix)], info["data"]["submatches"]))
                     results.append({
                         "text": candidate,

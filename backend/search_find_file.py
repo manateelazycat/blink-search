@@ -37,8 +37,7 @@ class SearchFindFile(Search):
     def search_match(self, prefix):
         prefix = prefix.replace("*", "")
         if len(prefix.split()) > 0:
-            command_string = "fd --regex '{}' --search-path {}".format(".*".join(prefix.split()), self.search_path)
-            results = self.get_process_result(command_string)
+            results = self.get_process_result(["fd", "--regex", ".*".join(prefix.split()), "--search-path", self.search_path])
             
             return list(map(lambda p: os.path.relpath(p, self.search_path), results))
         else:
