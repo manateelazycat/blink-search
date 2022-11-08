@@ -273,7 +273,6 @@ class BlinkSearch:
         if need_update:
             self.update_render_index_and_offset()
             self.render_items()
-            self.select_candidate_item()
             
     def select_prev_candidate_item(self):
         need_update = True
@@ -293,7 +292,6 @@ class BlinkSearch:
         if need_update:
             self.update_render_index_and_offset()
             self.render_items()
-            self.select_candidate_item()
             
     def select_next_candidate_group(self):
         if len(self.search_candidate_items) > 0:
@@ -315,7 +313,6 @@ class BlinkSearch:
         
                 self.update_render_index_and_offset()
                 self.render_items()
-                self.select_candidate_item()
     
     def select_prev_candidate_group(self):
         if len(self.search_candidate_items) > 0:
@@ -337,7 +334,6 @@ class BlinkSearch:
         
                 self.update_render_index_and_offset()
                 self.render_items()
-                self.select_candidate_item()
             
     def select_next_backend_item(self):
         need_update = True

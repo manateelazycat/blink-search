@@ -354,7 +354,7 @@ influence of C1 on the result."
     "r" "v" "g" "t" "c"
     "7" "8" "9" "0"
     "H" "L" "U" "I" "Y"
-    "s" "a" "e" "q" 
+    "s" "a" "e" "q"
     "1" "2" "3" "4"
     "[" "]")
   "This list keys to access candidate quickly, all those keys is prefix with Alt key,
@@ -395,7 +395,7 @@ you need customize option if some 'M + key' conflict with your command.")
 (defun blink-search-quit ()
   (interactive)
   (blink-search-call-async "clean")
-  
+
   (when blink-search-window-configuration
     (set-window-configuration blink-search-window-configuration)
     (setq blink-search-window-configuration nil)
@@ -748,7 +748,11 @@ blink-search will search current symbol if you call this function with `C-u' pre
                       (insert backend-line)
 
                       (setq backend-index (1+ backend-index))))))))
-          )))))
+          )))
+
+    ;; Preview candidate when idle, avoid `find-file' slow down candidate select
+    (run-with-idle-timer 0.1 nil #'(lambda () (blink-search-call-async "select_candidate_item")))
+    ))
 
 (defun blink-search-candidate-select-next ()
   (interactive)
