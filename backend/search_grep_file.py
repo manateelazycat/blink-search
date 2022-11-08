@@ -22,7 +22,7 @@
 import os
 import json
 
-from core.utils import eval_in_emacs, get_emacs_var, message_emacs, get_project_path    # type: ignore
+from core.utils import eval_in_emacs, get_emacs_var, message_emacs, get_project_path, parse_rg_line    # type: ignore
 from core.search import Search    # type: ignore
 
 class SearchGrepFile(Search):
@@ -37,28 +37,19 @@ class SearchGrepFile(Search):
     def search_match(self, prefix):
         prefix = prefix.replace("*", "")
         if len(prefix.split()) > 0:
-            lines = self.get_process_result(["rg", "-S", "--json", "--max-columns", "300", 
-                                             # "-g", "!node_modules",  
-                                             # "-g", "!__pycache__",  
-                                             # "-g", "!dist",  
+            lines = self.get_process_result(["rg", "-S", "--json", "--max-columns", "300",
+                                             "-g", "!node_modules",  
+                                             "-g", "!__pycache__",  
+                                             "-g", "!dist",  
                                              ".*".join(prefix.split()), 
                                              os.path.expanduser(self.search_path)
             ])
             
             results = []
             for line in lines:
-                info = json.loads(line)
-                if info["type"] == "match":
-                    prefix = "{}:{}:{}: ".format(
-                        os.path.relpath(info["data"]["path"]["text"], self.search_path),
-                        info["data"]["line_number"], 
-                        info["data"]["submatches"][0]["start"])
-                    candidate = "{}{}".format(prefix, info["data"]["lines"]["text"][:-1])
-                    matches = list(map(lambda match: [match["start"] + len(prefix), match["end"] + len(prefix)], info["data"]["submatches"]))
-                    results.append({
-                        "text": candidate,
-                        "matches": matches
-                    })
+                result = parse_rg_line(line, self.search_path)
+                if result != None:
+                    results.append(result)
             
             return results
         else:

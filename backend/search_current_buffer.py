@@ -24,7 +24,7 @@ import tempfile
 import hashlib
 import json
 
-from core.utils import eval_in_emacs, message_emacs, touch    # type: ignore
+from core.utils import eval_in_emacs, message_emacs, touch, parse_rg_line    # type: ignore
 from core.search import Search    # type: ignore
 
 class SearchCurrentBuffer(Search):
@@ -47,20 +47,21 @@ class SearchCurrentBuffer(Search):
             f.write(self.buffer_content)
         
     def search_match(self, prefix):
-        if os.path.exists(self.buffer_temp_path) and len(prefix) > 0:
-            lines = self.get_process_result(["rg", "-S", "--json", "--max-columns", "300", prefix, self.buffer_temp_path])
+        prefix = prefix.replace("*", "")
+        if len(prefix.split()) > 0 and os.path.exists(self.buffer_temp_path) and len(prefix) > 0:
+            lines = self.get_process_result(["rg", "-S", "--json", "--max-columns", "300", 
+                                             "-g", "!node_modules",  
+                                             "-g", "!__pycache__",  
+                                             "-g", "!dist",  
+                                             ".*".join(prefix.split()), 
+                                             self.buffer_temp_path])
             
             results = []
             for line in lines:
                 info = json.loads(line)
-                if info["type"] == "match":
-                    prefix = "{}:{}: ".format(info["data"]["line_number"], info["data"]["submatches"][0]["start"])
-                    candidate = "{}{}".format(prefix, info["data"]["lines"]["text"][:-1])
-                    matches = list(map(lambda match: [match["start"] + len(prefix), match["end"] + len(prefix)], info["data"]["submatches"]))
-                    results.append({
-                        "text": candidate,
-                        "matches": matches
-                    })
+                result = parse_rg_line(line)
+                if result != None:
+                    results.append(result)
             
             return results
         else:

@@ -78,14 +78,19 @@ class Search:
             except:
                 pass
             
-        self.sub_process = subprocess.Popen(command_list, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8")
-        ret = self.sub_process.wait()
+        self.sub_process = subprocess.Popen(command_list, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        
         results = []
-        if ret == 0:
-            results = list(map(lambda p: p.strip(), self.sub_process.stdout.readlines()))    # type: ignore
+        try:
+            outs, errs = self.sub_process.communicate(timeout=15)
+            results = list(map(lambda p: p.strip(), outs.splitlines()))    # type: ignore
+        except:
+            import traceback
+            print("ERROR ", traceback.print_exc())
             self.sub_process.kill()
             self.sub_process = None
-        
+            outs, errs = [], []
+            
         return results
             
     def select(self, candidate, start_buffer_name):
