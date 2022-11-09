@@ -57,7 +57,8 @@ class Search:
             self.message_queue.put({
                 "name": "update_backend_items",
                 "backend": self.backend_name,
-                "items": candidates
+                "items": candidates,
+                "keyword": prefix
             })
             
     def update(self, items):

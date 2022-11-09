@@ -77,16 +77,16 @@ class SearchGrepFile(Search):
                     lines.append(line.strip())
                     
                     if len(lines) == self.row_number:
-                        self.parse_lines(lines, ticker)
+                        self.parse_lines(lines, prefix, ticker)
             except:
                 import traceback
                 traceback.print_exc()
             finally:
                 self.kill_sub_process()
                 
-            self.parse_lines(lines, ticker)
+            self.parse_lines(lines, prefix, ticker)
             
-    def parse_lines(self, lines, ticker):
+    def parse_lines(self, lines, prefix, ticker):
         candidates = []
         for line in lines:
             result = parse_rg_line(line, self.search_path)
@@ -97,7 +97,8 @@ class SearchGrepFile(Search):
             self.message_queue.put({
                 "name": "update_backend_items",
                 "backend": self.backend_name,
-                "items": candidates
+                "items": candidates,
+                "keyword": prefix
             })
             
     def do(self, candidate):

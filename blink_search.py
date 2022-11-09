@@ -100,6 +100,7 @@ class BlinkSearch:
         self.search_current_buffer = SearchCurrentBuffer("Current Buffer", self.message_queue)
         self.search_imenu = SearchIMenu("IMenu", self.message_queue)
         self.search_common_directory = SearchCommonDirectory("Common Directory", self.message_queue)
+        self.search_keyword = ""
         
         self.search_backend_dict = {}
         for backend in [self.search_elisp_symbol, self.search_recent_file, self.search_buffer_list,
@@ -169,13 +170,20 @@ class BlinkSearch:
                 self.search_candidate_items = candidate_items
                 self.search_backend_items = backend_items
                 
-                self.render_candidate_items = candidate_items[:min(self.search_row_number, len(candidate_items))]
-                self.render_backend_items = backend_items[:min(self.search_row_number, len(backend_items))]
-                self.render_candidate_offset = 0
-                self.render_candidate_index = 0
-                self.render_backend_offset = 0
-                self.render_backend_index = 0
+                if message["keyword"] != self.search_keyword:
+                    # Move cursor to first candidate when search keyword change.
+                    self.render_candidate_items = candidate_items[:min(self.search_row_number, len(candidate_items))]
+                    self.render_backend_items = backend_items[:min(self.search_row_number, len(backend_items))]
+                    self.render_candidate_offset = 0
+                    self.render_candidate_index = 0
+                    self.render_backend_offset = 0
+                    self.render_backend_index = 0
+                else:
+                    # Don't change candidate offset if search keyword not change.
+                    self.update_render_candidate_items()
+                    self.update_render_index_and_offset()
             else:
+                # Clean everything if no result found.
                 backend_items = []
                 
                 self.search_candidate_items = []
@@ -187,6 +195,8 @@ class BlinkSearch:
                 self.render_candidate_index = 0
                 self.render_backend_offset = 0
                 self.render_backend_index = 0
+                
+            self.search_keyword = message["keyword"]
                 
             self.render_items()
                 
@@ -320,7 +330,6 @@ class BlinkSearch:
                     self.render_candidate_offset = next_index - (self.search_row_number - 1)
                     
                 self.update_render_candidate_items()
-        
                 self.update_render_index_and_offset()
                 self.render_items()
     
@@ -341,7 +350,6 @@ class BlinkSearch:
                     self.render_candidate_index = 0
                     
                 self.update_render_candidate_items()
-        
                 self.update_render_index_and_offset()
                 self.render_items()
             
