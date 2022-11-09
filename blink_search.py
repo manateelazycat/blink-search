@@ -175,17 +175,34 @@ class BlinkSearch:
                 self.render_candidate_index = 0
                 self.render_backend_offset = 0
                 self.render_backend_index = 0
+            else:
+                backend_items = []
                 
-                self.render_items()
+                self.search_candidate_items = []
+                self.search_backend_items = []
+                
+                self.render_candidate_items = []
+                self.render_backend_items = []
+                self.render_candidate_offset = 0
+                self.render_candidate_index = 0
+                self.render_backend_offset = 0
+                self.render_backend_index = 0
+                
+            self.render_items()
                 
     def render_items(self):
+        if len(self.search_candidate_items) > 0:
+            backend_name = self.search_candidate_items[self.render_candidate_offset + self.render_candidate_index]["backend"] 
+            candidate_index = self.render_backend_offset + self.render_backend_index + 1 
+        else:
+            backend_name = ""
+            candidate_index = 0
+        
         eval_in_emacs("blink-search-update-items", 
                       self.render_candidate_items, self.render_candidate_index, 
                       self.render_backend_items, self.render_backend_index,
-                      self.search_candidate_items[self.render_candidate_offset + self.render_candidate_index]["backend"],
-                      self.render_backend_offset + self.render_backend_index + 1, 
-                      len(self.search_backend_items),
-                      len(self.search_backend_list))
+                      backend_name, candidate_index,
+                      len(self.search_backend_items), len(self.search_backend_list))
                 
     def update_render_index_and_offset(self):
         try:
