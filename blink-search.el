@@ -127,6 +127,10 @@
 (defvar blink-search-candidate-select-index nil)
 (defvar blink-search-backend-items nil)
 (defvar blink-search-backend-select-index nil)
+(defvar blink-search-backend-name nil)
+(defvar blink-search-item-index nil)
+(defvar blink-search-items-number nil)
+(defvar blink-search-backend-number nil)
 
 (defvar blink-search-posframe-preview-window nil)
 (defvar blink-search-posframe-emacs-frame nil)
@@ -250,6 +254,10 @@ influence of C1 on the result."
           (color-values c1) (color-values c2))))
 
 (defun blink-search-init-colors (&optional force)
+  ;; Avoid background around input string.
+  (with-current-buffer blink-search-input-buffer
+    (face-remap-add-relative 'hl-line :background (face-background 'default)))
+
   (let* ((is-dark-mode (string-equal (blink-search-get-theme-mode) "dark"))
          (blend-background (if is-dark-mode "#000000" "#AAAAAA"))
          (default-background (face-attribute 'default :background)))
@@ -258,6 +266,22 @@ influence of C1 on the result."
       (set-face-background 'blink-search-select-face (blink-search-color-blend default-background blend-background 0.6)))
     (when (or force (equal (face-attribute 'blink-search-select-face :foreground) 'unspecified))
       (set-face-foreground 'blink-search-select-face (face-attribute 'font-lock-function-name-face :foreground)))))
+
+(defun blink-search-reset-colors (&rest args)
+  ;; Reset colors.
+  (blink-search-init-colors t)
+  (blink-search-render))
+
+(if (daemonp)
+    ;; The :background of 'default is unavailable until frame is created in
+    ;; daemon mode.
+    (add-hook 'server-after-make-frame-hook
+              (lambda ()
+                (advice-add #'load-theme :after #'blink-search-reset-colors)
+                ;; Compensation for missing the first `load-thme' in
+                ;; `after-init-hook'.
+                (blink-search-reset-colors)))
+  (advice-add #'load-theme :after #'blink-search-reset-colors))
 
 (defun blink-search-restart-process ()
   "Stop and restart Blink-Search process."
@@ -447,9 +471,6 @@ blink-search will search current symbol if you call this function with `C-u' pre
   (unless blink-search-window-configuration
     (setq blink-search-window-configuration (current-window-configuration)))
 
-  ;; Init color.
-  (blink-search-init-colors)
-
   ;; Create buffers.
   (with-current-buffer (get-buffer-create blink-search-input-buffer)
     (erase-buffer)
@@ -460,9 +481,6 @@ blink-search will search current symbol if you call this function with `C-u' pre
     (add-hook 'after-change-functions 'blink-search-monitor-input nil t)
 
     (blink-search-disable-options nil)
-
-    ;; Avoid background around input string.
-    (face-remap-add-relative 'hl-line :background (face-background 'default))
 
     ;; Set window margin.
     (setq-local left-margin-width 1)
@@ -489,6 +507,9 @@ blink-search will search current symbol if you call this function with `C-u' pre
     (erase-buffer)
     (blink-search-disable-options t)
     (setq-local truncate-lines t))
+
+  ;; Init color.
+  (blink-search-init-colors)
 
   (if blink-search-enable-posframe
       (blink-search-init-popup-layout)
@@ -611,21 +632,15 @@ blink-search will search current symbol if you call this function with `C-u' pre
   (unless (stringp candidate-info)
     (plist-get candidate-info :matches)))
 
-(defun blink-search-update-items (candidate-items
-                                  candidate-select-index
-                                  backend-items backend-select-index backend-name
-                                  search-items-index search-items-number backend-number)
-  ;; Don't pop completion candidates when
-  (when (get-buffer-window blink-search-input-buffer)
-    (setq blink-search-candidate-items candidate-items)
-    (setq blink-search-candidate-select-index candidate-select-index)
-    (setq blink-search-backend-items backend-items)
-    (setq blink-search-backend-select-index backend-select-index)
-
-    (if (> backend-number 1)
-        (blink-search-show-backend-window)
-      (blink-search-hide-backend-window))
-
+(defun blink-search-render ()
+  (let ((candidate-items blink-search-candidate-items)
+        (candidate-select-index blink-search-candidate-select-index)
+        (backend-items blink-search-backend-items)
+        (backend-select-index blink-search-backend-select-index)
+        (backend-name blink-search-backend-name)
+        (search-items-index blink-search-item-index)
+        (search-items-number blink-search-items-number)
+        (backend-number blink-search-backend-number))
     (save-excursion
       (let* ((window-allocation (blink-search-get-window-allocation (get-buffer-window blink-search-candidate-buffer)))
              (window-width (nth 2 window-allocation)))
@@ -753,6 +768,27 @@ blink-search will search current symbol if you call this function with `C-u' pre
 
                       (setq backend-index (1+ backend-index))))))))
           )))))
+
+(defun blink-search-update-items (candidate-items
+                                  candidate-select-index
+                                  backend-items backend-select-index backend-name
+                                  search-items-index search-items-number backend-number)
+  ;; Don't pop completion candidates when
+  (when (get-buffer-window blink-search-input-buffer)
+    (setq blink-search-candidate-items candidate-items)
+    (setq blink-search-candidate-select-index candidate-select-index)
+    (setq blink-search-backend-items backend-items)
+    (setq blink-search-backend-select-index backend-select-index)
+    (setq blink-search-backend-name backend-name)
+    (setq blink-search-item-index search-items-index)
+    (setq blink-search-items-number search-items-number)
+    (setq blink-search-backend-number backend-number)
+
+    (if (> backend-number 1)
+        (blink-search-show-backend-window)
+      (blink-search-hide-backend-window))
+
+    (blink-search-render)))
 
 (defun blink-search-candidate-select-next ()
   (interactive)
