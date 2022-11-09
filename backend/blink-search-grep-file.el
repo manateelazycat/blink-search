@@ -101,7 +101,7 @@
   (blink-search-flash-locate))
 
 (defun blink-search-grep-file-preview (file line column)
-  (blink-search-preview
+  (blink-search-select-input-window
    (let ((match-file (blink-search-grep-file-get-match-buffer file)))
      (blink-search-grep-file-do file line column)
      (unless match-file

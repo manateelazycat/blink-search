@@ -97,7 +97,7 @@
   (base64-encode-string (encode-coding-string str 'utf-8)))
 
 (defun blink-search-current-buffer-preview (buffer line column)
-  (blink-search-preview
+  (blink-search-select-input-window
    (blink-search-current-buffer-do buffer line column)))
 
 (defun blink-search-current-buffer-do (buffer line column)

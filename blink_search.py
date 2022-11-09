@@ -82,7 +82,6 @@ class BlinkSearch:
         self.search_candidate_items = []
         self.search_backend_items = []
         self.search_start_buffer_name = ""
-        self.search_first_preview_timer = None
         self.render_candidate_index = 0
         self.render_backend_index = 0
         self.render_candidate_items = []
@@ -178,12 +177,6 @@ class BlinkSearch:
                 self.render_backend_index = 0
                 
                 self.render_items()
-                
-                if self.search_first_preview_timer is not None and self.search_first_preview_timer.is_alive():
-                    self.search_first_preview_timer.cancel()
-                
-                self.search_first_preview_timer = threading.Timer(0.5, self.select_candidate_item)
-                self.search_first_preview_timer.start()
                 
     def render_items(self):
         eval_in_emacs("blink-search-update-items", 

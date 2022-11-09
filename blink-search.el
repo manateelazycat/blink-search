@@ -372,6 +372,7 @@ you need customize option if some 'M + key' conflict with your command.")
     (define-key map (kbd "M-j") 'blink-search-candidate-group-select-next)
     (define-key map (kbd "M-k") 'blink-search-candidate-group-select-prev)
     (define-key map (kbd "C-m") 'blink-search-do)
+    (define-key map (kbd "C-M-n") 'blink-search-preview)
     (define-key map (kbd "C-j") 'blink-search-parent)
     (define-key map (kbd "C-l") 'blink-search-continue)
     (define-key map (kbd "M-w") 'blink-search-copy)
@@ -749,11 +750,7 @@ blink-search will search current symbol if you call this function with `C-u' pre
                       (insert backend-line)
 
                       (setq backend-index (1+ backend-index))))))))
-          )))
-
-    ;; Preview candidate when idle, avoid `find-file' slow down candidate select
-    (run-with-idle-timer 0.1 nil #'(lambda () (blink-search-call-async "select_candidate_item")))
-    ))
+          )))))
 
 (defun blink-search-candidate-select-next ()
   (interactive)
@@ -810,7 +807,7 @@ Function `move-to-column' can't handle mixed string of Chinese and English corre
     (other-window -1)))
 
 
-(cl-defmacro blink-search-preview (&rest body)
+(cl-defmacro blink-search-select-input-window (&rest body)
   `(let* ((inhibit-message t)
           (input-window (get-buffer-window blink-search-input-buffer)))
      (when input-window
@@ -824,7 +821,7 @@ Function `move-to-column' can't handle mixed string of Chinese and English corre
 
 (defun blink-search-select-start-buffer (buffer)
   (unless blink-search-enable-posframe
-    (blink-search-preview
+    (blink-search-select-input-window
      (switch-to-buffer buffer))))
 
 (defun blink-search-get-select-backend-name ()
@@ -861,6 +858,10 @@ Function `move-to-column' can't handle mixed string of Chinese and English corre
 (defun blink-search-parent ()
   (interactive)
   (blink-search-action "search_parent"))
+
+(defun blink-search-preview ()
+  (interactive)
+  (blink-search-call-async "select_candidate_item"))
 
 (defun blink-search-continue ()
   (interactive)

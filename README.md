@@ -62,6 +62,7 @@ blink-search will provide smooth completion experience without compromise to slo
 | C + j  | blink-search-parent           | Jump parent for select candidate item                                                    |
 | C + l  | blink-search-continue           | Continue search from directory of current candidate item                                                    |
 | C + m  | blink-search-do           | Do action for select candidate item                                                    |
+| C + M + n  | blink-search-preview           | Preview select candidate item                                                    |
 | M + w  | blink-search-copy           | Copy select candidate item                                                    |
 | C + g  | blink-search-quit           | Quit 
 
