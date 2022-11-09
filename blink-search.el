@@ -568,7 +568,7 @@ blink-search will search current symbol if you call this function with `C-u' pre
           ((member backend-name '("Current Buffer" "EAF Browser History" "Grep File"))
            (if (<= candidate-length candidate-max-length)
                candidate
-             (concat (substring candidate 0 candidate-max-length) "...")))
+             (concat (substring candidate 0 (- candidate-max-length (length "..."))) "...")))
           (t
            (if (<= candidate-length candidate-max-length)
                candidate
