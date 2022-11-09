@@ -269,7 +269,8 @@ influence of C1 on the result."
 
 (defun blink-search-reset-colors (&rest args)
   ;; Reset colors.
-  (blink-search-init-colors t)
+  (when (get-buffer blink-search-input-buffer)
+    (blink-search-init-colors t))
   (blink-search-render))
 
 (if (daemonp)
