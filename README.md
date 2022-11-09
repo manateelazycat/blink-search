@@ -43,8 +43,9 @@ blink-search will provide smooth completion experience without compromise to slo
 2. Type keyword to search from multiple backend
 3. Type keyword that prefix with `#` to search current buffer
 4. Type keyword that prefix with `!` to grep current directory
-5. Search current symbol: C-u M-x blink-search
-6. When you select candidate of common directory, you can press `Ctrl + l` to continue search on new directory with select candidate
+5. Use `Ctrl + m` to select candidate or press `Alt + QuickKey` to select candidate match QuickKey
+6. Search current symbol: C-u M-x blink-search
+7. When you select candidate of common directory, you can press `Ctrl + l` to continue search on new directory with select candidate
 
 | Grep Buffer                                          | Grep Directory |
 | :--------:                                       | :----:                                                      |
