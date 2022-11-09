@@ -633,141 +633,142 @@ blink-search will search current symbol if you call this function with `C-u' pre
     (plist-get candidate-info :matches)))
 
 (defun blink-search-render ()
-  (let ((candidate-items blink-search-candidate-items)
-        (candidate-select-index blink-search-candidate-select-index)
-        (backend-items blink-search-backend-items)
-        (backend-select-index blink-search-backend-select-index)
-        (backend-name blink-search-backend-name)
-        (search-items-index blink-search-item-index)
-        (search-items-number blink-search-items-number)
-        (backend-number blink-search-backend-number))
-    (save-excursion
-      (let* ((window-allocation (blink-search-get-window-allocation (get-buffer-window blink-search-candidate-buffer)))
-             (window-width (nth 2 window-allocation)))
-        (with-current-buffer blink-search-tooltip-buffer
-          (let* ((tooltip-window-allocation (blink-search-get-window-allocation (get-buffer-window blink-search-input-buffer)))
-                 (tooltip-window-width (nth 2 tooltip-window-allocation))
-                 tooltip-line)
-            (erase-buffer)
+  (when (get-buffer-window blink-search-input-buffer)
+    (let ((candidate-items blink-search-candidate-items)
+          (candidate-select-index blink-search-candidate-select-index)
+          (backend-items blink-search-backend-items)
+          (backend-select-index blink-search-backend-select-index)
+          (backend-name blink-search-backend-name)
+          (search-items-index blink-search-item-index)
+          (search-items-number blink-search-items-number)
+          (backend-number blink-search-backend-number))
+      (save-excursion
+        (let* ((window-allocation (blink-search-get-window-allocation (get-buffer-window blink-search-candidate-buffer)))
+               (window-width (nth 2 window-allocation)))
+          (with-current-buffer blink-search-tooltip-buffer
+            (let* ((tooltip-window-allocation (blink-search-get-window-allocation (get-buffer-window blink-search-input-buffer)))
+                   (tooltip-window-width (nth 2 tooltip-window-allocation))
+                   tooltip-line)
+              (erase-buffer)
 
-            (setq tooltip-line
-                  (concat
-                   (propertize (format "%s [%s/%s]" backend-name search-items-index search-items-number)
-                               'face font-lock-constant-face)
-                   (propertize " search prefix: " 'face font-lock-type-face)
-                   (propertize "#" 'face font-lock-type-face)
-                   (propertize " grep buffer " 'face font-lock-keyword-face)
-                   (propertize "!" 'face font-lock-type-face)
-                   (propertize " grep directory " 'face font-lock-keyword-face)
-                   ))
+              (setq tooltip-line
+                    (concat
+                     (propertize (format "%s [%s/%s]" backend-name search-items-index search-items-number)
+                                 'face font-lock-constant-face)
+                     (propertize " search prefix: " 'face font-lock-type-face)
+                     (propertize "#" 'face font-lock-type-face)
+                     (propertize " grep buffer " 'face font-lock-keyword-face)
+                     (propertize "!" 'face font-lock-type-face)
+                     (propertize " grep directory " 'face font-lock-keyword-face)
+                     ))
 
-            (insert tooltip-line)
-            ))
+              (insert tooltip-line)
+              ))
 
-        (with-current-buffer blink-search-candidate-buffer
-          (let* ((candidate-max-length (ceiling (* (/ window-width (window-font-width)) 0.45)))
-                 (candidate-index 0))
-            (erase-buffer)
+          (with-current-buffer blink-search-candidate-buffer
+            (let* ((candidate-max-length (ceiling (* (/ window-width (window-font-width)) 0.45)))
+                   (candidate-index 0))
+              (erase-buffer)
 
-            (when candidate-items
-              (dolist (item candidate-items)
-                (let* ((candidate-info (plist-get item :candidate))
-                       (candidate (blink-search-get-candidate-text candidate-info))
-                       (candidate-length (length candidate))
-                       (matches (blink-search-get-candidate-matches candidate-info))
-                       (backend (plist-get item :backend))
-                       (display-candiate (blink-search-render-candidate backend candidate candidate-max-length))
-                       (padding-right 5)
-                       (icon (cdr (assoc backend blink-search-icon-alist)))
-                       (icon-default (cdr (assoc t blink-search-icon-alist)))
-                       (display-icon (if icon icon icon-default))
-                       (icon-text (blink-search-icon-build (nth 0 display-icon) (nth 1 display-icon) (nth 2 display-icon)))
-                       candidate-prefix
-                       candidate-prefix-length
-                       candidate-line)
-
-                  (setq candidate-prefix
-                        (concat
-                         icon-text
-                         (propertize (format "%s " (nth candidate-index blink-search-quick-keys)) 'face 'font-lock-type-face)))
-
-                  (setq candidate-prefix-length (length candidate-prefix))
-
-                  (setq candidate-line
-                        (concat
+              (when candidate-items
+                (dolist (item candidate-items)
+                  (let* ((candidate-info (plist-get item :candidate))
+                         (candidate (blink-search-get-candidate-text candidate-info))
+                         (candidate-length (length candidate))
+                         (matches (blink-search-get-candidate-matches candidate-info))
+                         (backend (plist-get item :backend))
+                         (display-candiate (blink-search-render-candidate backend candidate candidate-max-length))
+                         (padding-right 5)
+                         (icon (cdr (assoc backend blink-search-icon-alist)))
+                         (icon-default (cdr (assoc t blink-search-icon-alist)))
+                         (display-icon (if icon icon icon-default))
+                         (icon-text (blink-search-icon-build (nth 0 display-icon) (nth 1 display-icon) (nth 2 display-icon)))
                          candidate-prefix
-                         (if (> backend-number 1)
-                             (format "%s " display-candiate)
-                           (format "%s " candidate))
-                         (if (> backend-number 1)
-                             (propertize " " 'display
-                                         (blink-search-indent-pixel
-                                          (- window-width
-                                             (* (window-font-width) (+ (string-width backend) padding-right)))))
-                           (propertize " " 'display (blink-search-indent-pixel window-width)))
-                         (when (> backend-number 1)
-                           (propertize (format "%s " backend)
-                                       'face (if (equal candidate-index candidate-select-index) 'blink-search-select-face 'font-lock-doc-face)))
-                         "\n"
-                         ))
+                         candidate-prefix-length
+                         candidate-line)
 
-                  ;; Highlight match strings.
-                  (when (and matches
-                             (equal backend-number 1))
-                    (dolist (match matches)
-                      (let ((match-column
-                             (let (match-start-point
-                                   match-end-point)
-                               ;; We need use `blink-search-goto-column' to handle mixed string of Chinese and English correctly.
-                               (with-temp-buffer
-                                 (insert (substring candidate-line candidate-prefix-length))
-                                 (goto-char (point-min))
-                                 (blink-search-goto-column (nth 0 match))
-                                 (backward-char 1)
-                                 (setq match-start-point (+ (point) candidate-prefix-length))
-                                 (goto-char (point-min))
-                                 (blink-search-goto-column (nth 1 match))
-                                 (backward-char 1)
-                                 (setq match-end-point (+ (point) candidate-prefix-length))
-                                 (list match-start-point match-end-point)))))
-                        (add-face-text-property (nth 0 match-column) (nth 1 match-column) 'font-lock-type-face 'append candidate-line)
-                        )))
+                    (setq candidate-prefix
+                          (concat
+                           icon-text
+                           (propertize (format "%s " (nth candidate-index blink-search-quick-keys)) 'face 'font-lock-type-face)))
 
-                  (when (equal candidate-index candidate-select-index)
-                    (add-face-text-property 0 (length candidate-line) 'blink-search-select-face 'append candidate-line))
+                    (setq candidate-prefix-length (length candidate-prefix))
 
-                  (insert candidate-line)
+                    (setq candidate-line
+                          (concat
+                           candidate-prefix
+                           (if (> backend-number 1)
+                               (format "%s " display-candiate)
+                             (format "%s " candidate))
+                           (if (> backend-number 1)
+                               (propertize " " 'display
+                                           (blink-search-indent-pixel
+                                            (- window-width
+                                               (* (window-font-width) (+ (string-width backend) padding-right)))))
+                             (propertize " " 'display (blink-search-indent-pixel window-width)))
+                           (when (> backend-number 1)
+                             (propertize (format "%s " backend)
+                                         'face (if (equal candidate-index candidate-select-index) 'blink-search-select-face 'font-lock-doc-face)))
+                           "\n"
+                           ))
 
-                  (setq candidate-index (1+ candidate-index))
-                  ))))
+                    ;; Highlight match strings.
+                    (when (and matches
+                               (equal backend-number 1))
+                      (dolist (match matches)
+                        (let ((match-column
+                               (let (match-start-point
+                                     match-end-point)
+                                 ;; We need use `blink-search-goto-column' to handle mixed string of Chinese and English correctly.
+                                 (with-temp-buffer
+                                   (insert (substring candidate-line candidate-prefix-length))
+                                   (goto-char (point-min))
+                                   (blink-search-goto-column (nth 0 match))
+                                   (backward-char 1)
+                                   (setq match-start-point (+ (point) candidate-prefix-length))
+                                   (goto-char (point-min))
+                                   (blink-search-goto-column (nth 1 match))
+                                   (backward-char 1)
+                                   (setq match-end-point (+ (point) candidate-prefix-length))
+                                   (list match-start-point match-end-point)))))
+                          (add-face-text-property (nth 0 match-column) (nth 1 match-column) 'font-lock-type-face 'append candidate-line)
+                          )))
+
+                    (when (equal candidate-index candidate-select-index)
+                      (add-face-text-property 0 (length candidate-line) 'blink-search-select-face 'append candidate-line))
+
+                    (insert candidate-line)
+
+                    (setq candidate-index (1+ candidate-index))
+                    ))))
 
 
-          (with-current-buffer blink-search-backend-buffer
-            (erase-buffer)
+            (with-current-buffer blink-search-backend-buffer
+              (erase-buffer)
 
-            (when (> backend-number 1)
-              (let ((backend-index 0))
+              (when (> backend-number 1)
+                (let ((backend-index 0))
 
-                (when backend-items
-                  (dolist (candidate-info backend-items)
-                    (let* ((candidate (if (stringp candidate-info) candidate-info (plist-get candidate-info :text)))
-                           (matches (unless (stringp candidate-info) (plist-get candidate-info :matches)))
-                           backend-line)
+                  (when backend-items
+                    (dolist (candidate-info backend-items)
+                      (let* ((candidate (if (stringp candidate-info) candidate-info (plist-get candidate-info :text)))
+                             (matches (unless (stringp candidate-info) (plist-get candidate-info :matches)))
+                             backend-line)
 
-                      (setq backend-line
-                            (concat
-                             (propertize (format " %s " candidate) 'face (if (equal backend-index backend-select-index) 'blink-search-select-face 'font-lock-doc-face))
-                             (propertize " " 'display (blink-search-indent-pixel window-width))
-                             "\n"
-                             ))
+                        (setq backend-line
+                              (concat
+                               (propertize (format " %s " candidate) 'face (if (equal backend-index backend-select-index) 'blink-search-select-face 'font-lock-doc-face))
+                               (propertize " " 'display (blink-search-indent-pixel window-width))
+                               "\n"
+                               ))
 
-                      (when (equal backend-index backend-select-index)
-                        (add-face-text-property 0 (length backend-line) 'blink-search-select-face 'append backend-line))
+                        (when (equal backend-index backend-select-index)
+                          (add-face-text-property 0 (length backend-line) 'blink-search-select-face 'append backend-line))
 
-                      (insert backend-line)
+                        (insert backend-line)
 
-                      (setq backend-index (1+ backend-index))))))))
-          )))))
+                        (setq backend-index (1+ backend-index))))))))
+            ))))))
 
 (defun blink-search-update-items (candidate-items
                                   candidate-select-index
