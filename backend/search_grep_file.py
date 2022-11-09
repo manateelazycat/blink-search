@@ -40,11 +40,22 @@ class SearchGrepFile(Search):
         prefix = prefix.replace("*", "")
         if len(prefix.split()) > 0:
             
-            command_list = ["rg", "-S", "--json", "--max-columns", "300",
+            command_list = ["rg", 
+                            # Output JSON.
+                            "--json",               
+                            # Smart case.
+                            "-S",                   
+                            # Limit column.
+                            "--max-columns", "300", 
+                            # Don't search binary file.
+                            "-a/--text", 
+                            # Ignore unnecessary files.
                             "-g", "!node_modules",  
                             "-g", "!__pycache__",  
                             "-g", "!dist",  
+                            # Keyword.
                             ".*".join(prefix.split()), 
+                            # Search directory.
                             os.path.expanduser(self.search_path)
                             ]
             
