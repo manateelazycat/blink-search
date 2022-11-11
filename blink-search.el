@@ -195,6 +195,13 @@ Setting this to nil or 0 will turn off the indicator."
   :type 'number
   :group 'blink-search)
 
+
+(defcustom blink-search-browser-function #'eaf-open-browser
+  "The function used to open web browser for google suggestion"
+  :type 'function
+  :set (lambda (sym val)
+         (defalias #'blink-search-browser-function val)))
+
 (defface blink-search-select-face
   '()
   "Face used to highlight the currently selected candidate.")
