@@ -74,6 +74,7 @@ blink-search will provide smooth completion experience without compromise to slo
 
 ## Option
 * `blink-search-enable-posframe`: set this option with `t`, blink-search will use `posframe` instead split bottom layout, this feature need you install [posframe](https://github.com/tumashu/posframe) first
+* `blink-search-browser-function`: the default browser used for google suggestion. The default is `eaf-open-browser`, you can set it to `xwidget-webkit-browse-url` if your emacs is built with xwidget module. Or `browse-url-default-macosx-browser/browse-url-xdg-open` to open the browser by your system default browser.
 
 ## Search Backend
 

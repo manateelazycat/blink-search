@@ -65,6 +65,6 @@ class SearchGoogleSuggest(Search):
 
     def do(self, candidate):
         if self.is_valid_url(candidate):
-            eval_in_emacs("eaf-open-browser", candidate)
+            eval_in_emacs("blink-search-browser-function", candidate)
         else:
-            eval_in_emacs("eaf-open-browser", "http://www.google.com/search?q={}".format(candidate.replace(" ", "%20")))
+            eval_in_emacs("blink-search-browser-function", "http://www.google.com/search?q={}".format(candidate.replace(" ", "%20")))
