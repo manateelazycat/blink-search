@@ -37,6 +37,7 @@ from backend.search_grep_file import SearchGrepFile
 from backend.search_current_buffer import SearchCurrentBuffer
 from backend.search_imenu import SearchIMenu
 from backend.search_common_directory import SearchCommonDirectory
+from backend.search_key_value_store import SearchKeyValueStore
 
 class BlinkSearch:
     def __init__(self, args):
@@ -100,12 +101,14 @@ class BlinkSearch:
         self.search_current_buffer = SearchCurrentBuffer("Current Buffer", self.message_queue)
         self.search_imenu = SearchIMenu("IMenu", self.message_queue)
         self.search_common_directory = SearchCommonDirectory("Common Directory", self.message_queue)
+        self.search_key_value_store = SearchKeyValueStore("Key Value", self.message_queue)
         self.search_keyword = ""
         
         self.search_backend_dict = {}
         for backend in [self.search_elisp_symbol, self.search_recent_file, self.search_buffer_list,
                         self.search_eaf_browser_history, self.search_google_suggestion, self.search_common_directory,
-                        self.search_find_file, self.search_grep_file, self.search_current_buffer, self.search_imenu]:
+                        self.search_find_file, self.search_grep_file, self.search_current_buffer, self.search_imenu,
+                        self.search_key_value_store]:
             self.search_backend_dict[backend.backend_name] = backend
             
             # Build backend update API.
@@ -113,7 +116,7 @@ class BlinkSearch:
         self.search_backend_list = []
         self.search_backend_default_list = [
             "Buffer List", "Common Directory", "Find File", "Recent File", "EAF Browser History", 
-            "IMenu", "Elisp Symbol", "Google Suggest"
+            "IMenu", "Elisp Symbol", "Google Suggest", "Key Value"
         ]
         
         # Pass epc port and webengine codec information to Emacs when first start blink-search.

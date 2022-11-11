@@ -163,6 +163,14 @@
   "Common directory to search and open."
   :type 'cons)
 
+(defcustom blink-search-db-path (expand-file-name "blink-search.db" user-emacs-directory)
+  "Key Value store database path."
+  :type 'string)
+
+(defcustom blink-search-db-table "kvstore"
+  "Key Value store table."
+  :type 'string)
+
 (defcustom blink-search-name "*blink-search*"
   "Name of Blink-Search buffer."
   :type 'string)
