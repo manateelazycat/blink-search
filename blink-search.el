@@ -812,32 +812,26 @@ blink-search will search current symbol if you call this function with `C-u' pre
 
     (blink-search-render)))
 
-;;;###autoload
 (defun blink-search-candidate-select-next ()
   (interactive)
   (blink-search-call-async "select_next_candidate_item"))
 
-;;;###autoload
 (defun blink-search-candidate-select-prev ()
   (interactive)
   (blink-search-call-async "select_prev_candidate_item"))
 
-;;;###autoload
 (defun blink-search-backend-select-next ()
   (interactive)
   (blink-search-call-async "select_next_backend_item"))
 
-;;;###autoload
 (defun blink-search-backend-select-prev ()
   (interactive)
   (blink-search-call-async "select_prev_backend_item"))
 
-;;;###autoload
 (defun blink-search-candidate-group-select-next ()
   (interactive)
   (blink-search-call-async "select_next_candidate_group"))
 
-;;;###autoload
 (defun blink-search-candidate-group-select-prev ()
   (interactive)
   (blink-search-call-async "select_prev_candidate_group"))
@@ -907,7 +901,6 @@ Function `move-to-column' can't handle mixed string of Chinese and English corre
       (eaf-open-in-file-manager candidate)
     (find-file candidate)))
 
-;;;###autoload
 (defun blink-search-action (action)
   (interactive)
   (when (and (> (length blink-search-candidate-items) 0)
@@ -918,34 +911,28 @@ Function `move-to-column' can't handle mixed string of Chinese and English corre
 
       (blink-search-call-async action backend-name candidate))))
 
-;;;###autoload
 (defun blink-search-do ()
   (interactive)
   (blink-search-action "search_do"))
 
-;;;###autoload
 (defun blink-search-parent ()
   (interactive)
   (blink-search-action "search_parent"))
 
-;;;###autoload
 (defun blink-search-preview ()
   (interactive)
   (blink-search-call-async "select_candidate_item"))
 
-;;;###autoload
 (defun blink-search-preview-next ()
   (interactive)
   (blink-search-candidate-select-next)
   (blink-search-call-async "select_candidate_item"))
 
-;;;###autoload
 (defun blink-search-preview-prev ()
   (interactive)
   (blink-search-candidate-select-prev)
   (blink-search-call-async "select_candidate_item"))
 
-;;;###autoload
 (defun blink-search-continue ()
   (interactive)
   (when (and (> (length blink-search-candidate-items) 0)
@@ -955,7 +942,6 @@ Function `move-to-column' can't handle mixed string of Chinese and English corre
 
       (blink-search-call-async "search_continue" backend-name candidate))))
 
-;;;###autoload
 (defun blink-search-copy ()
   (interactive)
   (blink-search-action "search_copy"))
