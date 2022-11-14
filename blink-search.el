@@ -299,6 +299,7 @@ influence of C1 on the result."
                 (blink-search-reset-colors)))
   (advice-add #'load-theme :after #'blink-search-reset-colors))
 
+;;;###autoload
 (defun blink-search-restart-process ()
   "Stop and restart Blink-Search process."
   (interactive)
@@ -340,6 +341,7 @@ influence of C1 on the result."
   (and (eq system-type 'gnu/linux)
        (string-match-p ".exe" blink-search-python-command)))
 
+;;;###autoload
 (defun blink-search-kill-process ()
   "Stop Blink-Search process and kill all Blink-Search buffers."
   (interactive)
@@ -436,6 +438,7 @@ you need customize option if some 'M + key' conflict with your command.")
     (evil-set-initial-state 'blink-search-mode 'emacs))
   )
 
+;;;###autoload
 (defun blink-search-quit ()
   (interactive)
   (blink-search-call-async "clean")
@@ -459,6 +462,7 @@ you need customize option if some 'M + key' conflict with your command.")
 
     (setq blink-search-start-buffer nil)))
 
+;;;###autoload
 (defun blink-search-quick-do ()
   (interactive)
   (let* ((event-type (event-basic-type last-command-event))
@@ -474,6 +478,7 @@ you need customize option if some 'M + key' conflict with your command.")
         (blink-search-call-async "search_do" backend-name candidate)
         ))))
 
+;;;###autoload
 (defun blink-search (&optional arg)
   "Start blink-search.
 
@@ -806,26 +811,32 @@ blink-search will search current symbol if you call this function with `C-u' pre
 
     (blink-search-render)))
 
+;;;###autoload
 (defun blink-search-candidate-select-next ()
   (interactive)
   (blink-search-call-async "select_next_candidate_item"))
 
+;;;###autoload
 (defun blink-search-candidate-select-prev ()
   (interactive)
   (blink-search-call-async "select_prev_candidate_item"))
 
+;;;###autoload
 (defun blink-search-backend-select-next ()
   (interactive)
   (blink-search-call-async "select_next_backend_item"))
 
+;;;###autoload
 (defun blink-search-backend-select-prev ()
   (interactive)
   (blink-search-call-async "select_prev_backend_item"))
 
+;;;###autoload
 (defun blink-search-candidate-group-select-next ()
   (interactive)
   (blink-search-call-async "select_next_candidate_group"))
 
+;;;###autoload
 (defun blink-search-candidate-group-select-prev ()
   (interactive)
   (blink-search-call-async "select_prev_candidate_group"))
@@ -895,6 +906,7 @@ Function `move-to-column' can't handle mixed string of Chinese and English corre
       (eaf-open-in-file-manager candidate)
     (find-file candidate)))
 
+;;;###autoload
 (defun blink-search-action (action)
   (interactive)
   (when (and (> (length blink-search-candidate-items) 0)
@@ -905,28 +917,34 @@ Function `move-to-column' can't handle mixed string of Chinese and English corre
 
       (blink-search-call-async action backend-name candidate))))
 
+;;;###autoload
 (defun blink-search-do ()
   (interactive)
   (blink-search-action "search_do"))
 
+;;;###autoload
 (defun blink-search-parent ()
   (interactive)
   (blink-search-action "search_parent"))
 
+;;;###autoload
 (defun blink-search-preview ()
   (interactive)
   (blink-search-call-async "select_candidate_item"))
 
+;;;###autoload
 (defun blink-search-preview-next ()
   (interactive)
   (blink-search-candidate-select-next)
   (blink-search-call-async "select_candidate_item"))
 
+;;;###autoload
 (defun blink-search-preview-prev ()
   (interactive)
   (blink-search-candidate-select-prev)
   (blink-search-call-async "select_candidate_item"))
 
+;;;###autoload
 (defun blink-search-continue ()
   (interactive)
   (when (and (> (length blink-search-candidate-items) 0)
@@ -936,6 +954,7 @@ Function `move-to-column' can't handle mixed string of Chinese and English corre
 
       (blink-search-call-async "search_continue" backend-name candidate))))
 
+;;;###autoload
 (defun blink-search-copy ()
   (interactive)
   (blink-search-action "search_copy"))
