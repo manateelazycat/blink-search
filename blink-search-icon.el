@@ -110,6 +110,7 @@
 (defun blink-search-icon-filepath (collection name)
   (concat (file-name-as-directory blink-search-icon-dir) (format "%s_%s.svg" collection name)))
 
+;;;###autoload
 (defun blink-search-icon-fetch-all ()
   (interactive)
   (dolist (icon blink-search-icon-alist)

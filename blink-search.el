@@ -12,7 +12,7 @@
 ;; URL: https://github.com/manateelazycat/blink-search
 ;; Keywords:
 ;; Compatibility: emacs-version >= 28
-;; Package-Requires: ((emacs "28") (posframe "1.1.7") (markdown-mode "2.6-dev"))
+;; Package-Requires: ((emacs "28") (posframe "1.1.7") (markdown-mode "2.6"))
 ;;
 ;; Features that might be required by this library:
 ;;
@@ -90,7 +90,8 @@
                                                     (if load-file-name
                                                         (file-name-directory load-file-name)
                                                       default-directory)))
-(add-to-list 'load-path blink-search-backend-path t)
+(eval-and-compile
+  (add-to-list 'load-path blink-search-backend-path t))
 
 (defvar blink-search-idle-update-list nil)
 (defvar blink-search-start-update-list nil)
@@ -299,6 +300,7 @@ influence of C1 on the result."
                 (blink-search-reset-colors)))
   (advice-add #'load-theme :after #'blink-search-reset-colors))
 
+;;;###autoload
 (defun blink-search-restart-process ()
   "Stop and restart Blink-Search process."
   (interactive)
@@ -340,6 +342,7 @@ influence of C1 on the result."
   (and (eq system-type 'gnu/linux)
        (string-match-p ".exe" blink-search-python-command)))
 
+;;;###autoload
 (defun blink-search-kill-process ()
   "Stop Blink-Search process and kill all Blink-Search buffers."
   (interactive)
@@ -436,6 +439,7 @@ you need customize option if some 'M + key' conflict with your command.")
     (evil-set-initial-state 'blink-search-mode 'emacs))
   )
 
+;;;###autoload
 (defun blink-search-quit ()
   (interactive)
   (blink-search-call-async "clean")
@@ -459,6 +463,7 @@ you need customize option if some 'M + key' conflict with your command.")
 
     (setq blink-search-start-buffer nil)))
 
+;;;###autoload
 (defun blink-search-quick-do ()
   (interactive)
   (let* ((event-type (event-basic-type last-command-event))
@@ -474,6 +479,7 @@ you need customize option if some 'M + key' conflict with your command.")
         (blink-search-call-async "search_do" backend-name candidate)
         ))))
 
+;;;###autoload
 (defun blink-search (&optional arg)
   "Start blink-search.
 
