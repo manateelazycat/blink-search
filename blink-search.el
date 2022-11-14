@@ -90,7 +90,8 @@
                                                     (if load-file-name
                                                         (file-name-directory load-file-name)
                                                       default-directory)))
-(add-to-list 'load-path blink-search-backend-path t)
+(eval-when-compile
+  (add-to-list 'load-path blink-search-backend-path t))
 
 (defvar blink-search-idle-update-list nil)
 (defvar blink-search-start-update-list nil)
