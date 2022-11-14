@@ -708,6 +708,19 @@ blink-search will search current symbol if you call this function with `C-u' pre
                        candidate-prefix-length
                        candidate-line)
 
+                  ;; keep syntax highlight
+                  (when (and (equal backend "Current Buffer")
+                             (string-match "^\\([[:digit:]]+\\):\\([[:digit:]]+\\): " candidate))
+                    (let ((line (string-to-number  (match-string 1 candidate)))
+                          (char (string-to-number  (match-string 2 candidate))))
+                      (with-current-buffer blink-search-start-buffer
+                        (save-excursion
+                          (goto-line line)
+                          (setq candidate
+                                (format "%s:%s: %s"
+                                        line char
+                                        (buffer-substring (line-beginning-position) (line-end-position))))))))
+
                   (setq candidate-prefix
                         (concat
                          icon-text
@@ -752,7 +765,10 @@ blink-search will search current symbol if you call this function with `C-u' pre
                                  (backward-char 1)
                                  (setq match-end-point (+ (point) candidate-prefix-length))
                                  (list match-start-point match-end-point)))))
-                        (add-face-text-property (nth 0 match-column) (nth 1 match-column) 'font-lock-type-face 'append candidate-line)
+                        (if (equal backend "Current Buffer")
+                            ;; highlight matches for current buffer
+                            (add-face-text-property (nth 0 match-column) (nth 1 match-column) 'blink-search-select-face nil candidate-line)
+                          (add-face-text-property (nth 0 match-column) (nth 1 match-column) 'font-lock-type-face 'append candidate-line))
                         )))
 
                   (when (equal candidate-index candidate-select-index)
