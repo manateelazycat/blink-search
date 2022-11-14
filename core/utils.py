@@ -255,7 +255,8 @@ def parse_rg_line(line, search_path=None):
             lines = info["data"]["lines"]
             text_key = list(lines.keys())[0]
             candidate = "{}{}".format(prefix, info["data"]["lines"][text_key][:-1])
-            matches = list(map(lambda match: [match["start"] + len(prefix), match["end"] + len(prefix)], info["data"]["submatches"]))    
+            prefix_len = len(prefix.encode()) # chinese filenames...
+            matches = list(map(lambda match: [match["start"] + prefix_len, match["end"] + prefix_len], info["data"]["submatches"]))
             return {"text": candidate, "matches": matches}
     except:
         return None
