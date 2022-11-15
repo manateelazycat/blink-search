@@ -6,19 +6,19 @@
 
 <br>
 
-blink-search's goal is to become the fastest search framework in Emacs.
+blink-search is the fastest multi-source search framework for Emacs.
 
-blink-search use python multi-thread technology to search and filter candidates, Emacs only render result and do action.
+It uses Python's threading technology to search candidates and offloads all the computation to external Python process, hence, the Emacs session itself stays always responsive, as it has very few things to do, such as, render candidates of visible area.
 
 blink-search will provide smooth completion experience without compromise to slow down emacs' performance.
 
 <p align="center">
-  <br>blink-search with split window style
+  <br>Show search results in split window
 </p>
 <img src="./images/blink-search.png">
 
 <p align="center">
-  <br>blink-search with popup frame style
+  <br>Show search results in popup window
 </p>
 <img src="./images/blink-search-posframe.png">
 
@@ -26,10 +26,10 @@ blink-search will provide smooth completion experience without compromise to slo
 
 1. Install Emacs 28 and above versions
 2. Install Python dependencies: `pip3 install epc requests`
-3. Install search tools: 
+3. Install external tools: 
 + [fd](https://github.com/sharkdp/fd)
 + [ripgrep](https://github.com/BurntSushi/ripgrep)
-+ [sqlite3](https://www.sqlite.org) (optional)
++ [sqlite3](https://www.sqlite.org) (optional, for sqlite3 backend)
 4. Clone or download this repository (path of the folder is the `<path-to-blink-search>` used below).
 5. Add following code in your ~/.emacs:
 
@@ -40,13 +40,12 @@ blink-search will provide smooth completion experience without compromise to slo
 ```
 
 ## Usage
-1. Start blink-search: M-x blink-search 
-2. Type keyword to search from multiple backend
-3. Type keyword that prefix with `#` to search current buffer
-4. Type keyword that prefix with `!` to grep current directory
-5. Use `Ctrl + m` to select candidate or press `Alt + QuickKey` to select candidate match QuickKey
-6. Search current symbol: C-u M-x blink-search
-7. When you select candidate of common directory, you can press `Ctrl + l` to continue search on new directory with select candidate
+1. Start blink-search: M-x blink-search
+2. C-u M-x `blink-search` to search current symbol
+3. Typed keyword to search from all backends
+4. Search current buffer when keyword starts with `#`
+5. Search current directory when keyword starts with `!`
+6. Press `Ctrl + m` to select candidate or press `Alt + QuickKey` to select candidate match QuickKey
 
 | Grep Buffer                                          | Grep Directory |
 | :--------:                                       | :----:                                                      |
@@ -61,32 +60,34 @@ blink-search will provide smooth completion experience without compromise to slo
 | M + p  | blink-search-backend-select-prev           | Select previous backend item                                                    |
 | M + j    | blink-search-candidate-group-select-next           | Select next candidate group item                                                        |
 | M + k  | blink-search-candidate-group-select-prev           | Select previous candidate group item                                                    |
-| C + j  | blink-search-parent           | Jump parent for select candidate item                                                    |
-| C + l  | blink-search-continue           | Continue search from directory of current candidate item                                                    |
-| C + m  | blink-search-do           | Do action for select candidate item                                                    |
-| C + M + m  | blink-search-preview           | Preview select candidate item                                                    |
+| C + j  | blink-search-parent           | Jump to parent directory of select candidate item                                                    |
+| C + l  | blink-search-continue           | Continue search new directory of current candidate item                                                    |
+| C + m  | blink-search-do           | Execute action for selected candidate item                                                    |
+| C + M + m  | blink-search-preview           | Preview selected candidate item                                                    |
 | C + M + n  | blink-search-preview-next           | Preview next candidate item                                                    |
 | C + M + p  | blink-search-preview-next           | Preview previous candidate item                                                    |
-| M + w  | blink-search-copy           | Copy select candidate item                                                    |
+| M + w  | blink-search-copy           | Copy text of selected candidate item                                                    |
 | C + g  | blink-search-quit           | Quit 
 
 * `blink-search-restart-process`: restart blink-search process (only used for development)
 
 ## Option
-* `blink-search-enable-posframe`: set this option with `t`, blink-search will use `posframe` instead split bottom layout, this feature need you install [posframe](https://github.com/tumashu/posframe) first
+* `blink-search-search-backends`: default backends for blink search, which is a list of backend names, nil for all backends defined in python side.
+* `blink-search-enable-posframe`: set this option with `t`, blink-search render search results by popup window, this feature need you install [posframe](https://github.com/tumashu/posframe) first
 * `blink-search-browser-function`: the default browser used for google suggestion. The default is `eaf-open-browser`, you can set it to `xwidget-webkit-browse-url` if your emacs is built with xwidget module. Or `browse-url-default-macosx-browser/browse-url-xdg-open` to open the browser by your system default browser.
+* `blink-search-common-directory`: Common directory to search and open, default is `'(("HOME" "~/"))`
 
 ## Search Backend
 
-blink-search has completed the following search backend:
+blink-search has completed the following search backends:
 
 * Buffer List: search buffer list
-* Common Directory: search your favorite common directory, you can customize option `blink-search-common-directory`
-* Recent File: search recent file
-* Current Buffer: use `ripgrep` grep current buffer content
-* Grep File: use `ripgrep` grep file under project or current directory
-* IMenu: search imenu of current buffer
-* Find File: use `fd` search file under project or current directory
+* Common Directory: search your favorite common directories, you can customize option `blink-search-common-directory`
+* Recent File: search recent files
+* Current Buffer: use `ripgrep` grep content of current buffer
+* Grep File: use `ripgrep` grep files under git project or current directory
+* IMenu: search variable/function of current buffer that base on imenu
+* Find File: use `fd` search files under git project or current directory
 * EAF Browser History: search history of EAF browser
 * Elisp Symbol: search elisp symbol
 * Google Suggest: search google suggestions and open in browser
