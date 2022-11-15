@@ -103,7 +103,11 @@ class Search:
         
     def kill_sub_process(self):
         if self.sub_process != None:
-            self.sub_process.kill()
+            try:
+                self.sub_process.kill()
+            except:
+                pass
+            
             self.sub_process = None
         
     def clean(self):

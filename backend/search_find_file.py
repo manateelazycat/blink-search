@@ -21,6 +21,7 @@
 
 import os
 import re
+import shutil
 
 from core.utils import eval_in_emacs, message_emacs, get_project_path    # type: ignore
 from core.search import Search    # type: ignore
@@ -37,7 +38,14 @@ class SearchFindFile(Search):
     def search_match(self, prefix):
         prefix = prefix.replace("*", "")
         if len(prefix.split()) > 0:
-            results = self.get_process_result(["fd", "--regex", ".*".join(prefix.split()), "--search-path", self.search_path])
+            if shutil.which("fd"):
+                fd_command = "fd"
+            elif shutil.which("fdfind"):
+                fd_command = "fdfind"
+            else:
+                return []
+            
+            results = self.get_process_result([fd_command, "--regex", ".*".join(prefix.split()), "--search-path", self.search_path])
             
             return list(map(lambda p: os.path.relpath(p, self.search_path), results))
         else:
