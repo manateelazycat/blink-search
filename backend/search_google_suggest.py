@@ -35,18 +35,15 @@ class SearchGoogleSuggest(Search):
         if len(url.split()) > 1:
             return False
         
-        if url.startswith('http://') or url.startswith('ftp://') or url.endswith(".html"):
-            return True
-        
-        import re
         pattern = re.compile(
-            r'^(([a-zA-Z]{1})|([a-zA-Z]{1}[a-zA-Z]{1})|'
-            r'([a-zA-Z]{1}[0-9]{1})|([0-9]{1}[a-zA-Z]{1})|'
-            r'([a-zA-Z0-9][-_.a-zA-Z0-9]{0,61}[a-zA-Z0-9]))\.'
-            r'([a-zA-Z]{2,13}|[a-zA-Z0-9-]{2,30}.[a-zA-Z]{2,3})$'
-        )
+            r'^(?:http|ftp)s?://' # http:// or https://
+            r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|' #domain...
+            r'localhost|' #localhost...
+            r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})' # ...or ip
+            r'(?::\d+)?' # optional port
+            r'(?:/?|[/?]\S+)$', re.IGNORECASE)
         
-        return pattern.match(url)
+        return pattern.match(url) or url.endswith(".html")
         
     def search_match(self, prefix):
         if len(prefix.split()) > 0:
@@ -56,7 +53,7 @@ class SearchGoogleSuggest(Search):
                 "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.102 Safari/537.36 Edge/18.19582"
             })
             
-            if self.is_valid_url(prefix) and (not (prefix.startswith("http://") or prefix.startswith("ftp://"))):
+            if self.is_valid_url(prefix) and (not (any(list(filter(lambda schema: prefix.startswith(schema), ["http://", "https://", "ftp://", "ftps://"]))))):
                 prefix = "http://" + prefix
                 
             return [prefix] + json.loads(response.text)[1]
