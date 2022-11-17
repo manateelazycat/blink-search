@@ -47,8 +47,6 @@ class SearchGrepFile(Search):
                             "-S",                   
                             # Limit column.
                             "--max-columns", "300", 
-                            # Don't search binary file.
-                            "--no-binary", 
                             # Ignore unnecessary files.
                             "-g", "!node_modules",  
                             "-g", "!__pycache__",  
