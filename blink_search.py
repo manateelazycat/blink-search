@@ -152,13 +152,24 @@ class BlinkSearch:
             self.search_candidate_items = []
             self.search_backend_items = []
             
+            # Get counter of all candidate.
+            candidate_counter = sum(list(map(lambda backend_name: 
+                                                 len(self.search_dict[backend_name]) if backend_name in self.search_dict else 0,
+                                                 self.search_backend_list)))
+            
             candidate_items = []
             for backend_name in self.search_backend_list:
                 if backend_name in self.search_dict and self.search_dict[backend_name] != None and len(self.search_dict[backend_name]) > 0:
                     candidates = self.search_dict[backend_name]
                     if len(self.search_backend_list) > 1:
-                        candidate_show_number = 5
+                        if candidate_counter < self.search_row_number:
+                            # Show all candidates if total number is less than row number.
+                            candidate_show_number = len(candidates)
+                        else:
+                            # Show as many candidates as possible.
+                            candidate_show_number = max(5, int(self.search_row_number / candidate_counter))
                     else:
+                        # Show all candidates if only have one backend.
                         candidate_show_number = len(candidates)
                         
                     for candidate in candidates[:min(len(candidates), candidate_show_number)]:
