@@ -145,6 +145,12 @@ class BlinkSearch:
         except:
             logger.error(traceback.format_exc())
             
+    def backend_candidate_number(self, backend_name):
+        try:
+            return len(self.search_dict[backend_name])
+        except:
+            return 0
+            
     def message_handler(self, message):
         if message["name"] == "update_backend_items":
             self.search_dict[message["backend"]] = message["items"]
@@ -153,9 +159,7 @@ class BlinkSearch:
             self.search_backend_items = []
             
             # Get counter of all candidate.
-            candidate_counter = sum(list(map(lambda backend_name: 
-                                                 len(self.search_dict[backend_name]) if backend_name in self.search_dict else 0,
-                                                 self.search_backend_list)))
+            candidate_counter = sum(list(map(lambda backend_name: self.backend_candidate_number(backend_name), self.search_backend_list)))
             
             candidate_items = []
             for backend_name in self.search_backend_list:
