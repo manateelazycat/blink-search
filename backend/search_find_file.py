@@ -39,13 +39,12 @@ class SearchFindFile(Search):
         prefix = prefix.replace("*", "")
         if len(prefix.split()) > 0:
             if shutil.which("fd"):
-                fd_command = "fd"
+                command_list = ["fd", "--regex",".*".join(prefix.split()), "--search-path", self.search_path]
             elif shutil.which("fdfind"):
-                fd_command = "fdfind"
+                command_list = ["fdfind", ".*".join(prefix.split()), "--search-path", self.search_path]
             else:
                 return []
-            
-            results = self.get_process_result([fd_command, "--regex", ".*".join(prefix.split()), "--search-path", self.search_path])
+            results = self.get_process_result(command_list)        
             
             return list(map(lambda p: os.path.relpath(p, self.search_path), results))
         else:
