@@ -38,6 +38,7 @@ from backend.search_current_buffer import SearchCurrentBuffer
 from backend.search_imenu import SearchIMenu
 from backend.search_common_directory import SearchCommonDirectory
 from backend.search_key_value_store import SearchKeyValueStore
+from backend.search_grep_pdf import SearchGrepPDF
 
 class BlinkSearch:
     def __init__(self, args):
@@ -102,13 +103,14 @@ class BlinkSearch:
         self.search_imenu = SearchIMenu("IMenu", self.message_queue)
         self.search_common_directory = SearchCommonDirectory("Common Directory", self.message_queue)
         self.search_key_value_store = SearchKeyValueStore("Key Value", self.message_queue)
+        self.search_grep_pdf = SearchGrepPDF("Grep PDF", self.message_queue)
         self.search_keyword = ""
         
         self.search_backend_dict = {}
         for backend in [self.search_elisp_symbol, self.search_recent_file, self.search_buffer_list,
                         self.search_eaf_browser_history, self.search_google_suggestion, self.search_common_directory,
                         self.search_find_file, self.search_grep_file, self.search_current_buffer, self.search_imenu,
-                        self.search_key_value_store]:
+                        self.search_key_value_store, self.search_grep_pdf]:
             self.search_backend_dict[backend.backend_name] = backend
             
             # Build backend update API.
