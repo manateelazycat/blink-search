@@ -794,12 +794,7 @@ blink-search will search current symbol if you call this function with `C-u' pre
                       (insert backend-line)
 
                       (setq backend-index (1+ backend-index))))))))
-          )))
-    ;; Since posframe uses the preview window, it is possible to enable automatic preview for posframe.
-    (when blink-search-enable-posframe
-      ;; Preview candidate when idle, avoid `find-file' slow down candidate select
-      (run-with-idle-timer 0.1 nil #'(lambda () (blink-search-call-async "select_candidate_item"))))
-    ))
+          )))))
 
 (defun blink-search-update-items (candidate-items
                                   candidate-select-index
