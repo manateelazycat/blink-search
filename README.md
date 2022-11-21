@@ -77,6 +77,8 @@ blink-search will provide smooth completion experience without compromise to slo
 * `blink-search-enable-posframe`: set this option with `t`, blink-search render search results by popup window, this feature need you install [posframe](https://github.com/tumashu/posframe) first
 * `blink-search-browser-function`: the default browser used for google suggestion. The default is `eaf-open-browser`, you can set it to `xwidget-webkit-browse-url` if your emacs is built with xwidget module. Or `browse-url-default-macosx-browser/browse-url-xdg-open` to open the browser by your system default browser.
 * `blink-search-common-directory`: Common directory to search and open, default is `'(("HOME" "~/"))`
+* `blink-search-grep-pdf-search-paths`: Paths to search for pdf files.
+* `blink-search-grep-pdf-backend`: Backend to use for pdf files, default is `'pdf-tools`, set to `'eaf-pdf-viewer` if you prefer to use EAF pdf viewer.
 
 ## Search Backend
 
