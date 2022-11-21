@@ -37,21 +37,21 @@
     (blink-search-call-async "search_init_grep_pdf"
                              blink-search-grep-pdf-search-path)))
 
-(defun blink-search-grep-pdf-pdftool-goto (page submatches)
+(defun blink-search-grep-pdf-pdftool-goto (file page submatches)
+  (find-file file)
   (pdf-view-goto-page page)
   (let ((matches (pdf-isearch-search-page submatches)))
     (pdf-isearch-hl-matches (nth 0 matches) matches t)))
 
 (defun blink-search-grep-pdf-do (file page submatches)
-  (find-file file)
   ;;highlight the matches
   (cond
    ((and (eq blink-search-grep-pdf-backend 'pdf-tools) (featurep 'pdf-tools))
-    (blink-search-grep-pdf-pdftool-goto page submatches))
+    (blink-search-grep-pdf-pdftool-goto file page submatches))
+   ((and (eq blink-search-grep-pdf-backend 'eaf-pdf-viewer) (featurep 'eaf-pdf-viewer))
+    (eaf-pdf-jump-to-page file page))
    ;; TODO support other pdf backends
-   (t (message "Unknown backend %s" blink-search-grep-pdf-backend)))
-  )
-
+   (t (message "Unknown backend %s" blink-search-grep-pdf-backend))))
 
 (defun blink-search-grep-pdf-real-preview (file page submatches)
   (blink-search-select-input-window
