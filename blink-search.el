@@ -102,6 +102,7 @@
 (require 'blink-search-current-buffer)
 (require 'blink-search-recent-file)
 (require 'blink-search-buffer-list)
+(require 'blink-search-grep-pdf)
 
 (defgroup blink-search nil
   "Blink-Search group."
@@ -591,6 +592,8 @@ blink-search will search current symbol if you call this function with `C-u' pre
              (blink-search-call-async "search" (substring input 1) (blink-search-get-row-number) (list "Current Buffer")))
             ((string-prefix-p "!" input)
              (blink-search-call-async "search" (substring input 1) (blink-search-get-row-number) (list "Grep File")))
+            ((string-prefix-p ";" input)
+             (blink-search-call-async "search" (substring input 1) (blink-search-get-row-number) (list "Grep PDF")))
             (t
              (blink-search-call-async "search" input (blink-search-get-row-number) blink-search-search-backends))))))
 
@@ -608,7 +611,7 @@ blink-search will search current symbol if you call this function with `C-u' pre
   (let ((candidate-length (length candidate)))
     (cond ((string-equal backend-name "Recent File")
            (file-name-nondirectory candidate))
-          ((member backend-name '("Current Buffer" "EAF Browser History" "Grep File"))
+          ((member backend-name '("Current Buffer" "EAF Browser History" "Grep File" "Grep PDF"))
            (if (<= candidate-length candidate-max-length)
                candidate
              (concat (substring candidate 0 (- candidate-max-length (length "..."))) "...")))
@@ -681,6 +684,8 @@ blink-search will search current symbol if you call this function with `C-u' pre
                    (propertize " grep buffer " 'face font-lock-keyword-face)
                    (propertize "!" 'face font-lock-type-face)
                    (propertize " grep directory " 'face font-lock-keyword-face)
+                   (propertize ";" 'face font-lock-type-face)
+                   (propertize " grep pdf " 'face font-lock-keyword-face)
                    ))
 
             (insert tooltip-line)
@@ -789,7 +794,12 @@ blink-search will search current symbol if you call this function with `C-u' pre
                       (insert backend-line)
 
                       (setq backend-index (1+ backend-index))))))))
-          )))))
+          )))
+    ;; Since posframe uses the preview window, it is possible to enable automatic preview for posframe.
+    (when blink-search-enable-posframe
+      ;; Preview candidate when idle, avoid `find-file' slow down candidate select
+      (run-with-idle-timer 0.1 nil #'(lambda () (blink-search-call-async "select_candidate_item"))))
+    ))
 
 (defun blink-search-update-items (candidate-items
                                   candidate-select-index
