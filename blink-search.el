@@ -133,6 +133,7 @@
 (defvar blink-search-item-index nil)
 (defvar blink-search-items-number nil)
 (defvar blink-search-backend-number nil)
+(defvar blink-search-auto-select-timer nil)
 
 (defvar blink-search-posframe-preview-window nil)
 (defvar blink-search-posframe-emacs-frame nil)
@@ -798,7 +799,8 @@ blink-search will search current symbol if you call this function with `C-u' pre
     ;; Since posframe uses the preview window, it is possible to enable automatic preview for posframe.
     (when blink-search-enable-posframe
       ;; Preview candidate when idle, avoid `find-file' slow down candidate select
-      (run-with-idle-timer 0.1 nil #'(lambda () (blink-search-call-async "select_candidate_item"))))
+      (if blink-search-auto-select-timer (cancel-timer blink-search-auto-select-timer))
+      (setq blink-search-auto-select-timer (run-with-idle-timer 0.2 nil #'(lambda () (blink-search-call-async "select_candidate_item")))))
     ))
 
 (defun blink-search-update-items (candidate-items
@@ -824,10 +826,12 @@ blink-search will search current symbol if you call this function with `C-u' pre
 
 (defun blink-search-candidate-select-next ()
   (interactive)
+  (if blink-search-auto-select-timer (cancel-timer blink-search-auto-select-timer))
   (blink-search-call-async "select_next_candidate_item"))
 
 (defun blink-search-candidate-select-prev ()
   (interactive)
+  (if blink-search-auto-select-timer (cancel-timer blink-search-auto-select-timer))
   (blink-search-call-async "select_prev_candidate_item"))
 
 (defun blink-search-backend-select-next ()
