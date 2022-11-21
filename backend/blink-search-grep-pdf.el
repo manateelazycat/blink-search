@@ -46,7 +46,7 @@
   (find-file file)
   ;;highlight the matches
   (cond
-   ((eq blink-search-grep-pdf-backend 'pdf-tools)
+   ((and (eq blink-search-grep-pdf-backend 'pdf-tools) (featurep 'pdf-tools))
     (blink-search-grep-pdf-pdftool-goto page submatches))
    ;; TODO support other pdf backends
    (t (message "Unknown backend %s" blink-search-grep-pdf-backend)))
