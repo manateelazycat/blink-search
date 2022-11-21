@@ -21,8 +21,8 @@
 
 (require 'blink-search-grep-file)
 
-(defvar blink-search-grep-pdf-search-path nil
-  "Path to search for pdf files.")
+(defvar blink-search-grep-pdf-search-paths nil
+  "Paths to search for pdf files.")
 
 (defvar blink-search-grep-pdf-backend 'pdf-tools
   "Backend to use for pdf files.")

@@ -15,8 +15,10 @@ class SearchGrepPDF(Search):
         self.match_text = None
 
     def init_dir(self, search_dir):
-        self.search_path = get_emacs_var("blink-search-grep-pdf-search-path")
-        self.search_path = self.search_path if self.search_path else search_dir
+        self.search_paths = get_emacs_var("blink-search-grep-pdf-search-paths")
+        self.search_paths = self.search_paths if self.search_paths else search_dir
+        if type(self.search_paths) is str:
+            self.search_paths = [self.search_paths]
 
     def search_items(self, prefix: str, ticker: int):
         prefix = prefix.replace("*", "")
@@ -32,8 +34,9 @@ class SearchGrepPDF(Search):
                             # Limit column.
                             "--max-columns", "300",
                             # Keyword.
-                            ".*".join(prefix.split()),
-                            os.path.expanduser(self.search_path)]
+                            ".*".join(prefix.split())]
+            for search_path in self.search_paths:
+                command_list.append(os.path.expanduser(search_path))
 
             self.kill_sub_process()
 
@@ -63,15 +66,28 @@ class SearchGrepPDF(Search):
             self.parse_lines(lines, prefix, ticker)
 
     def parse_lines(self, lines, prefix, ticker):
-        pattern = re.compile('None:.*?: Page ')
-
         candidates = []
+        # rga set line_number to None and add Page X: in front of line
+        pattern = re.compile('None:.*?: Page ')
         for line in lines:
-            result = parse_rg_line(line, self.search_path)
+            if len(self.search_paths) > 1:
+                result = parse_rg_line(line, '/')
+            else:
+                result = parse_rg_line(line, self.search_paths[0])
+
             if result is not None:
                 text = pattern.sub('', result['text'])
                 remove_len = len(result['text']) - len(text)
                 result['text'] = text
+
+                if len(self.search_paths) > 1:
+                    for index, path in enumerate(self.search_paths):
+                        if path[1:] in result['text']:
+                            text = result['text'].replace(path[1:], f'$D{index}')
+                            remove_len += len(result['text']) - len(text)
+                            result['text'] = text
+                            break
+
                 for match in result['matches']:
                     match[0] -= remove_len
                     match[1] -= remove_len
@@ -100,10 +116,21 @@ class SearchGrepPDF(Search):
                 "keyword": prefix
             })
 
+    def get_real_path(self, file):
+        if len(self.search_paths) == 1:
+            return os.path.join(self.search_paths[0], file)
+        else:
+            for index, path in enumerate(self.search_paths):
+                path_mark = f'$D{index}'
+                if path_mark in file:
+                    return file.replace(path_mark, path)
+            return file
+
+
     def do(self, candidate):
         candidate_infos = candidate.split(":")
         eval_in_emacs("blink-search-grep-pdf-do",
-                      os.path.join(self.search_path, candidate_infos[0]),
+                      self.get_real_path(candidate_infos[0]),
                       int(candidate_infos[1]),
                       self.match_text)
 
@@ -111,7 +138,7 @@ class SearchGrepPDF(Search):
         candidate_infos = candidate["text"].split(":")
         self.match_text = candidate['match_text']
         eval_in_emacs("blink-search-grep-pdf-preview",
-                      os.path.join(self.search_path, candidate_infos[0]),
+                      self.get_real_path(candidate_infos[0]),
                       int(candidate_infos[1]),
                       candidate['match_text'])
 
