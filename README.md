@@ -30,6 +30,7 @@ blink-search will provide smooth completion experience without compromise to slo
 + [fd](https://github.com/sharkdp/fd)
 + [ripgrep](https://github.com/BurntSushi/ripgrep)
 + [sqlite3](https://www.sqlite.org) (optional, for sqlite3 backend)
++ [rga](https://github.com/phiresky/ripgrep-all) (optional, for searching pdf backend)
 4. Clone or download this repository (path of the folder is the `<path-to-blink-search>` used below).
 5. Add following code in your ~/.emacs:
 
@@ -92,6 +93,7 @@ blink-search has completed the following search backends:
 * Elisp Symbol: search elisp symbol
 * Google Suggest: search google suggestions and open in browser
 * Key Value: read/get/del/update key-value pairs in sqlite3, require `sqlite3` and ensure `pip install sqlite3` at first
+* Grep PDF: use `rga` search pdf files in several directories with `blink-search-grep-pdf-search-paths` 
 
 ## Report bug
 
