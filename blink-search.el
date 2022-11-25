@@ -588,11 +588,14 @@ blink-search will search current symbol if you call this function with `C-u' pre
     (let* ((input (string-trim
                    (with-current-buffer blink-search-input-buffer
                      (buffer-substring-no-properties (point-min) (point-max))))))
-      (cond ((string-prefix-p "#" input)
+      (cond ((or (string-prefix-p "#" input)
+                 (string-prefix-p "#" input))
              (blink-search-call-async "search" (substring input 1) (blink-search-get-row-number) (list "Current Buffer")))
-            ((string-prefix-p "!" input)
+            ((or (string-prefix-p "!" input)
+                 (string-prefix-p "！" input))
              (blink-search-call-async "search" (substring input 1) (blink-search-get-row-number) (list "Grep File")))
-            ((string-prefix-p ";" input)
+            ((or (string-prefix-p ";" input)
+                 (string-prefix-p "；" input))
              (blink-search-call-async "search" (substring input 1) (blink-search-get-row-number) (list "Grep PDF")))
             (t
              (blink-search-call-async "search" input (blink-search-get-row-number) blink-search-search-backends))))))
