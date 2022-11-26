@@ -204,6 +204,12 @@ Setting this to nil or 0 will turn off the indicator."
   :set (lambda (sym val)
          (defalias #'blink-search-browser-function val)))
 
+(defcustom blink-search-file-manager 'eaf-file-manager
+  "File-manager to open file or directory."
+  :type 'symbol
+  :options '(eaf-file-manager dired)
+  :group 'blink-search)
+
 (defface blink-search-select-face
   '()
   "Face used to highlight the currently selected candidate.")
@@ -904,10 +910,14 @@ Function `move-to-column' can't handle mixed string of Chinese and English corre
     candidate))
 
 (defun blink-search-open-file (candidate)
-  (if (and (file-directory-p candidate)
+  (cond ((and (eq blink-search-file-manager 'eaf-file-manager)
+	      (file-directory-p candidate)
            (featurep 'eaf-file-manager))
-      (eaf-open-in-file-manager candidate)
-    (find-file candidate)))
+	 (eaf-open-in-file-manager candidate))
+	((and (eq blink-search-file-manager 'dired)
+	      (file-directory-p candidate))
+	 (dired candidate))
+	(t (find-file candidate))))
 
 (defun blink-search-action (action)
   (interactive)
