@@ -1021,7 +1021,7 @@ Function `move-to-column' can't handle mixed string of Chinese and English corre
   (setq blink-search-posframe-emacs-frame (selected-frame))
   (setq blink-search-posframe-frame (blink-search-posframe-show blink-search-input-buffer))
 
-  ;; Make popup frame's font 
+  ;; Make popup frame's font same as Emacs frame one.
   (with-selected-frame blink-search-posframe-frame
     (set-frame-font (with-selected-frame blink-search-posframe-emacs-frame
                       (face-attribute 'default :font))))
