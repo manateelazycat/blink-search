@@ -87,6 +87,13 @@
 (defvar blink-search-elisp-symbol-timer nil)
 (defvar blink-search-elisp-symbol-size 0)
 
+(defvar blink-search-elisp-parse-depth 100)
+(defvar blink-search-elisp-parse-limit 30)
+(defvar blink-search-elisp-var-binding-regexp
+  "\\_<\\(?:cl-\\)?\\(?:def\\(?:macro\\|subst\\|un\\)\\|l\\(?:ambda\\|e\\(?:\\(?:xical-le\\)?t\\)\\)\\)\\*?\\_>")
+(defvar blink-search-elisp-var-binding-regexp-1
+  "\\_<\\(?:cl-\\)?\\(?:do\\(?:list\\|times\\)\\)\\*?\\_>")
+
 (defcustom blink-search-elisp-symbol-update-idle 5
   "The idle seconds to update elisp symbols."
   :type 'float
@@ -94,7 +101,8 @@
 
 (defun blink-search-elisp-symbol-update ()
   "We need synchronize elisp symbols to Python side when idle."
-  (let* ((symbols (all-completions "" obarray))
+  (let* ((symbols (append (acm-backend-elisp-local-symbols)
+                          (acm-backend-elisp-global-symbols)))
          (symbols-size (length symbols)))
     ;; Only synchronize when new symbol created.
     (unless (equal blink-search-elisp-symbol-size symbols-size)
@@ -126,6 +134,53 @@
            (customize-option symbol))
           (t
            (describe-variable symbol)))))
+
+(defun blink-search-elisp-global-symbols ()
+  (all-completions ""
+                   obarray
+                   (lambda (symbol)
+                     (or (fboundp symbol)
+                         (boundp symbol)
+                         (featurep symbol)
+                         (facep symbol)))))
+
+(defun blink-search-elisp-local-symbols ()
+  (when (or (derived-mode-p 'emacs-lisp-mode)
+            (derived-mode-p 'inferior-emacs-lisp-mode)
+            (derived-mode-p 'lisp-interaction-mode))
+    (let ((regexp "[ \t\n]*\\(\\_<\\(?:\\sw\\|\\s_\\)*\\_>\\)")
+          (pos (point))
+          res)
+      (condition-case nil
+          (save-excursion
+            (dotimes (_ blink-search-elisp-parse-depth)
+              (up-list -1)
+              (save-excursion
+                (when (eq (char-after) ?\()
+                  (forward-char 1)
+                  (when (ignore-errors
+                          (save-excursion (forward-list)
+                                          (<= (point) pos)))
+                    (skip-chars-forward " \t\n")
+                    (cond
+                     ((looking-at blink-search-elisp-var-binding-regexp)
+                      (down-list 1)
+                      (condition-case nil
+                          (dotimes (_ blink-search-elisp-parse-limit)
+                            (save-excursion
+                              (when (looking-at "[ \t\n]*(")
+                                (down-list 1))
+                              (when (looking-at regexp)
+                                (cl-pushnew (match-string-no-properties 1) res)))
+                            (forward-sexp))
+                        (scan-error nil)))
+                     ((looking-at blink-search-elisp-var-binding-regexp-1)
+                      (down-list 1)
+                      (when (looking-at regexp)
+                        (cl-pushnew (match-string-no-properties 1) res)))))))))
+        (scan-error nil))
+
+      res)))
 
 (add-to-list 'blink-search-idle-update-list #'blink-search-start-elisp-symbol-update t)
 
