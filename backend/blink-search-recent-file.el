@@ -97,7 +97,7 @@
   (let* ((files-size (length recentf-list)))
     ;; Only synchronize when new symbol created.
     (unless (equal blink-search-recent-file-size files-size)
-      (blink-search-call-async "search_recent_file_update" recentf-list)
+      (blink-search-call-async "search_recent_file_update" (mapcar #'substring-no-properties recentf-list))
       (setq blink-search-recent-file-size files-size))))
 
 (defun blink-search-start-recent-file-update ()
