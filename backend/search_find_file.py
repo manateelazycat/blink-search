@@ -33,6 +33,7 @@ class SearchFindFile(Search):
         self.sub_process = None
         
     def init_dir(self, search_dir):
+        self.search_dir = search_dir
         self.search_path = get_project_path(search_dir)
         
     def search_match(self, prefix):
@@ -48,7 +49,7 @@ class SearchFindFile(Search):
             
             return list(map(lambda p: os.path.relpath(p, self.search_path), results))
         else:
-            return []
+            return os.listdir(self.search_dir)
 
     def do(self, candidate):
         eval_in_emacs("blink-search-open-file", os.path.join(self.search_path, candidate))
