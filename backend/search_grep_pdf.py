@@ -103,7 +103,7 @@ class SearchGrepPDF(Search):
             if len(candidate["matches"]) > 0:
                 match = candidate["matches"][0]
                 split_text = text.split(':')
-                candidate['match_text'] = text[match[0]:match[1]]
+                candidate['match_text'] = text.encode()[match[0]:match[1]].decode()
                 candidate['text'] = text 
             else:
                 candidate['match_text'] = prefix
