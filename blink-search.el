@@ -585,7 +585,7 @@ blink-search will search current symbol if you call this function with `C-u' pre
   (when (blink-search-epc-live-p blink-search-epc-process)
     (blink-search-call-async "search_init_search_dir"
                              (with-current-buffer blink-search-start-buffer
-                               default-directory))))
+                               (expand-file-name default-directory)))))
 
 (defun blink-search-monitor-input (_begin _end _length)
   "This is input monitor callback to hook `after-change-functions'."
@@ -911,13 +911,13 @@ Function `move-to-column' can't handle mixed string of Chinese and English corre
 
 (defun blink-search-open-file (candidate)
   (cond ((and (eq blink-search-file-manager 'eaf-file-manager)
-	      (file-directory-p candidate)
-           (featurep 'eaf-file-manager))
-	 (eaf-open-in-file-manager candidate))
-	((and (eq blink-search-file-manager 'dired)
-	      (file-directory-p candidate))
-	 (dired candidate))
-	(t (find-file candidate))))
+              (file-directory-p candidate)
+              (featurep 'eaf-file-manager))
+         (eaf-open-in-file-manager candidate))
+        ((and (eq blink-search-file-manager 'dired)
+              (file-directory-p candidate))
+         (dired candidate))
+        (t (find-file candidate))))
 
 (defun blink-search-action (action)
   (interactive)
