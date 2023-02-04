@@ -45,18 +45,43 @@ class SearchGoogleSuggest(Search):
         
         return pattern.match(url) or url.endswith(".html")
         
+    def search_items(self, prefix: str, ticker: int):
+        if self.is_valid_url(prefix):
+            self.message_queue.put({
+                "name": "update_backend_items",
+                "backend": self.backend_name,
+                "items": [prefix],
+                "keyword": prefix
+            })
+
+        candidates = self.search_match(prefix)
+
+        if ticker == self.search_ticker:
+            self.message_queue.put({
+                "name": "update_backend_items",
+                "backend": self.backend_name,
+                "items": candidates,
+                "keyword": prefix
+            })
+
     def search_match(self, prefix):
         if len(prefix.split()) > 0:
             query = prefix.replace(" ", "%20")
-            response = requests.get('http://google.com/complete/search?client=chrome&q={}'.format(query), headers={
-                "User-Agent":
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.102 Safari/537.36 Edge/18.19582"
-            })
-            
-            if self.is_valid_url(prefix) and (not (any(list(filter(lambda schema: prefix.startswith(schema), ["http://", "https://", "ftp://", "ftps://"]))))):
-                prefix = "http://" + prefix
-                
-            return [prefix] + json.loads(response.text)[1]
+            try:
+               response = requests.get('http://google.com/complete/search?client=chrome&q={}'.format(query), headers={
+                   "User-Agent":
+                   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.102 Safari/537.36 Edge/18.19582"
+               })
+
+               if self.is_valid_url(prefix) and (not (any(list(filter(lambda schema: prefix.startswith(schema), ["http://", "https://", "ftp://", "ftps://"]))))):
+                   prefix = "http://" + prefix
+
+               return [prefix] + json.loads(response.text)[1]
+            except:
+                if self.is_valid_url(prefix):
+                    return [prefix]
+                else:
+                    return []
         else:
             return []
 
