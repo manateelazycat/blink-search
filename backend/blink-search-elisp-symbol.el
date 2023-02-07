@@ -101,8 +101,8 @@
 
 (defun blink-search-elisp-symbol-update ()
   "We need synchronize elisp symbols to Python side when idle."
-  (let* ((symbols (append (acm-backend-elisp-local-symbols)
-                          (acm-backend-elisp-global-symbols)))
+  (let* ((symbols (append (blink-search-elisp-local-symbols)
+                          (blink-search-elisp-global-symbols)))
          (symbols-size (length symbols)))
     ;; Only synchronize when new symbol created.
     (unless (equal blink-search-elisp-symbol-size symbols-size)
