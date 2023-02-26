@@ -28,9 +28,6 @@ import json
 import pathlib
 import platform
 import sys
-import subprocess
-import queue
-import traceback
 import os
 
 from epc.client import EPCClient
@@ -242,7 +239,7 @@ def parse_rg_line(line, search_path=None):
         info = json.loads(line)
         if info["type"] == "match":
             
-            if search_path != None:
+            if search_path is not None:
                 prefix = "{}:{}:{}: ".format(
                     os.path.relpath(info["data"]["path"]["text"], search_path),
                     info["data"]["line_number"], 

@@ -20,10 +20,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
-import json
 import subprocess
 
-from core.utils import eval_in_emacs, get_emacs_var, message_emacs, get_project_path, parse_rg_line, get_emacs_func_result    # type: ignore
+from core.utils import eval_in_emacs, message_emacs, get_project_path, parse_rg_line
 from core.search import Search    # type: ignore
 
 class SearchGrepFile(Search):
@@ -64,7 +63,7 @@ class SearchGrepFile(Search):
             lines = []
             try:
                 while True:
-                    if self.sub_process == None:
+                    if self.sub_process is None:
                         break
                     
                     line = self.sub_process.stdout.readline()    # type: ignore
@@ -88,7 +87,7 @@ class SearchGrepFile(Search):
         candidates = []
         for line in lines:
             result = parse_rg_line(line, self.search_path)
-            if result != None:
+            if result is not None:
                 candidates.append(result)
             
         if ticker == self.search_ticker:

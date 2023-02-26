@@ -1,9 +1,8 @@
 import os
 import re
-import json
 import subprocess
 
-from core.utils import eval_in_emacs, get_emacs_var, message_emacs, get_project_path, parse_rg_line, get_emacs_func_result    # type: ignore
+from core.utils import eval_in_emacs, get_emacs_var, parse_rg_line
 from core.search import Search    # type: ignore
 
 class SearchGrepPDF(Search):
@@ -45,7 +44,7 @@ class SearchGrepPDF(Search):
             lines = []
             try:
                 while True:
-                    if self.sub_process == None:
+                    if self.sub_process is None:
                         break
 
                     line = self.sub_process.stdout.readline()    # type: ignore
@@ -92,7 +91,7 @@ class SearchGrepPDF(Search):
                     match[0] -= remove_len
                     match[1] -= remove_len
 
-            if result != None and \
+            if result is not None and \
                '.pdf' in result['text'].split(':')[0]:
                 candidates.append(result)
 
@@ -102,7 +101,6 @@ class SearchGrepPDF(Search):
 
             if len(candidate["matches"]) > 0:
                 match = candidate["matches"][0]
-                split_text = text.split(':')
                 try:
                     candidate['match_text'] = text.encode()[match[0]:match[1]].decode()
                 except UnicodeDecodeError:

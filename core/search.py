@@ -20,14 +20,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import threading
-import os
-import traceback
-import sexpdata
 import re
 import subprocess
-import signal
 
-from core.utils import get_emacs_vars, message_emacs, eval_in_emacs, logger    # type: ignore
+from core.utils import message_emacs, eval_in_emacs
 
 
 class Search:
@@ -102,7 +98,7 @@ class Search:
         self.do(candidate)
         
     def kill_sub_process(self):
-        if self.sub_process != None:
+        if self.sub_process is not None:
             try:
                 self.sub_process.kill()
             except:

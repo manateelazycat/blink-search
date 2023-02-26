@@ -58,9 +58,8 @@ class SearchCurrentBuffer(Search):
             
             results = []
             for line in lines:
-                info = json.loads(line)
                 result = parse_rg_line(line)
-                if result != None:
+                if result is not None:
                     results.append(result)
             
             return results

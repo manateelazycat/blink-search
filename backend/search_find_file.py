@@ -20,7 +20,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
-import re
 import shutil
 
 from core.utils import eval_in_emacs, message_emacs, get_project_path    # type: ignore

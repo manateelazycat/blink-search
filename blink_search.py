@@ -19,7 +19,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import os
 import queue
 import threading
 import traceback
@@ -165,7 +164,7 @@ class BlinkSearch:
             
             candidate_items = []
             for backend_name in self.search_backend_list:
-                if backend_name in self.search_dict and self.search_dict[backend_name] != None and len(self.search_dict[backend_name]) > 0:
+                if backend_name in self.search_dict and self.search_dict[backend_name] is not None and len(self.search_dict[backend_name]) > 0:
                     candidates = self.search_dict[backend_name]
                     if len(self.search_backend_list) > 1:
                         if candidate_counter < self.search_row_number:
