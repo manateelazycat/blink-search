@@ -494,7 +494,11 @@ blink-search will search current symbol if you call this function with `C-u' pre
   (interactive "P")
 
   (setq blink-search-start-buffer (current-buffer))
-  (setq blink-search-start-keyword (if arg (or (thing-at-point 'symbol t) "") ""))
+  (setq blink-search-start-keyword (cond
+         ((region-active-p)
+          (buffer-substring-no-properties (region-beginning) (region-end)))
+         (t
+          (if arg (or (thing-at-point 'symbol t) "") ""))))
 
   ;; Save window configuration.
   (unless blink-search-window-configuration
