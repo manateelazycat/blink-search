@@ -153,6 +153,11 @@
   :type 'number
   :group 'blink-search)
 
+(defcustom blink-search-posframe-standalone nil
+  "If non-nil, standalone display posframe."
+  :type 'number
+  :group 'blink-search)
+
 (defvar blink-search-search-backends nil
   "Default backends for blink search, which is a list of backend names, nil for all backends defined in python side.")
 
@@ -1024,6 +1029,9 @@ Function `move-to-column' can't handle mixed string of Chinese and English corre
 (defun blink-search-init-popup-layout ()
   (setq blink-search-posframe-emacs-frame (selected-frame))
   (setq blink-search-posframe-frame (blink-search-posframe-show blink-search-input-buffer))
+
+  (when blink-search-posframe-standalone
+    (set-frame-parameter blink-search-posframe-frame 'parent-frame nil))
 
   ;; Make popup frame's font same as Emacs frame one.
   (with-selected-frame blink-search-posframe-frame
