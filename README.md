@@ -84,6 +84,7 @@ blink-search will provide smooth completion experience without compromise to slo
 
 blink-search has completed the following search backends:
 
+* History: search history of execute action
 * Buffer List: search buffer list
 * Common Directory: search your favorite common directories, you can customize option `blink-search-common-directory`
 * Recent File: search recent files
