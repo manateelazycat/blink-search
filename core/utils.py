@@ -259,3 +259,13 @@ def parse_rg_line(line, search_path=None):
         return None
     
     return None
+
+def insert_unique_string_to_file(filepath, string):
+    with open(filepath, 'r') as file:
+        content = file.readlines()
+
+    string_exists = any(line == string + '\n' for line in content)
+
+    if not string_exists:
+        with open(filepath, 'a') as file:
+            file.write(string + '\n')

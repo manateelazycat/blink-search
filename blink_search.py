@@ -30,6 +30,7 @@ from backend.search_elisp_symbol import SearchElispSymbol
 from backend.search_recent_file import SearchRecentFile
 from backend.search_buffer_list import SearchBufferList
 from backend.search_eaf_browser_history import SearchEAFBrowserHistory
+from backend.search_history import SearchHistory
 from backend.search_google_suggest import SearchGoogleSuggest
 from backend.search_find_file import SearchFindFile
 from backend.search_grep_file import SearchGrepFile
@@ -95,6 +96,7 @@ class BlinkSearch:
         self.search_recent_file = SearchRecentFile("Recent File", self.message_queue)
         self.search_buffer_list = SearchBufferList("Buffer List", self.message_queue)
         self.search_eaf_browser_history = SearchEAFBrowserHistory("EAF Browser History", self.message_queue)
+        self.search_history = SearchHistory("History", self.message_queue)
         self.search_google_suggestion = SearchGoogleSuggest("Google Suggest", self.message_queue)
         self.search_find_file = SearchFindFile("Find File", self.message_queue)
         self.search_grep_file = SearchGrepFile("Grep File", self.message_queue)
@@ -104,9 +106,13 @@ class BlinkSearch:
         self.search_key_value_store = SearchKeyValueStore("Key Value", self.message_queue)
         self.search_grep_pdf = SearchGrepPDF("Grep PDF", self.message_queue)
         self.search_keyword = ""
+
+        self.search_thread_queue = []
+
+        self.search_history.dispatch_candiate_callback = self.search_do
         
         self.search_backend_dict = {}
-        for backend in [self.search_elisp_symbol, self.search_recent_file, self.search_buffer_list,
+        for backend in [self.search_history, self.search_elisp_symbol, self.search_recent_file, self.search_buffer_list,
                         self.search_eaf_browser_history, self.search_google_suggestion, self.search_common_directory,
                         self.search_find_file, self.search_grep_file, self.search_current_buffer, self.search_imenu,
                         self.search_key_value_store, self.search_grep_pdf]:
@@ -114,9 +120,10 @@ class BlinkSearch:
             
             # Build backend update API.
             self.build_update_interface(str(backend).split(".")[1])
+
         self.search_backend_list = []
         self.search_backend_default_list = [
-            "Buffer List", "Common Directory", "Find File", "Recent File", "EAF Browser History", 
+            "History", "Buffer List", "Common Directory", "Find File", "Recent File", "EAF Browser History",
             "IMenu", "Elisp Symbol", "Google Suggest", "Key Value"
         ]
         
@@ -429,7 +436,20 @@ class BlinkSearch:
         self.search_start_buffer_name = buffer_name
         self.search_current_buffer.init_buffer(buffer_name, buffer_content)
         
+    def search_record_history(self, backend, candidate):
+        if backend != "History":
+            history_path = get_emacs_var("blink-search-history-path")
+            if not os.path.exists(history_path):
+                touch(history_path)
+
+            history_item = f"{candidate}ᛡ{backend}"
+            insert_unique_string_to_file(history_path, history_item)
+
     def search_do(self, backend, candidate):
+        thread = threading.Thread(target=self.search_record_history, args=(backend, candidate))
+        thread.start()
+        self.search_thread_queue.append(thread)
+
         self.search_backend_dict[backend].do(candidate)
         
     def search_copy(self, backend, candidate):

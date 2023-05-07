@@ -94,6 +94,7 @@
   `(("Buffer List" . ("material" "list-box-outline" "#98c807"))
     ("Elisp Symbol" . ("material" "variable" "#da1884"))
     ("Recent File" . ("material" "timer-marker-outline" "#d1de3f"))
+    ("History" . ("material" "history" "#ef5734"))
     ("EAF Browser History" . ("material" "google-chrome" "#0abf53"))
     ("Google Suggest" . ("material" "google" "#7ac143"))
     ("Find File" . ("material" "text-box-search-outline" "#b84592"))

@@ -170,6 +170,10 @@
   "Common directory to search and open."
   :type 'cons)
 
+(defcustom blink-search-history-path (expand-file-name (concat user-emacs-directory (file-name-as-directory "blink-search") "history.txt"))
+  "The path to store search history."
+  :type 'string)
+
 (defcustom blink-search-db-path (expand-file-name "blink-search.db" user-emacs-directory)
   "Key Value store database path."
   :type 'string)
@@ -500,10 +504,10 @@ blink-search will search current symbol if you call this function with `C-u' pre
 
   (setq blink-search-start-buffer (current-buffer))
   (setq blink-search-start-keyword (cond
-         ((region-active-p)
-          (buffer-substring-no-properties (region-beginning) (region-end)))
-         (t
-          (if arg (or (thing-at-point 'symbol t) "") ""))))
+                                    ((region-active-p)
+                                     (buffer-substring-no-properties (region-beginning) (region-end)))
+                                    (t
+                                     (if arg (or (thing-at-point 'symbol t) "") ""))))
 
   ;; Save window configuration.
   (unless blink-search-window-configuration
