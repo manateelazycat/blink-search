@@ -650,7 +650,11 @@ blink-search will search current symbol if you call this function with `C-u' pre
            (file-name-nondirectory candidate))
           ((member backend-name '("Current Buffer" "Grep File" "Grep PDF"))
            (blink-search-truncate-candidate-with-ellipsis candidate candidate-max-length candidate-max-length))
-          ((member backend-name '("EAF Browser History" "PDF"))
+          ((member backend-name '("EAF Browser" "History"))
+           (blink-search-truncate-candidate-with-ellipsis candidate candidate-max-length (/ (* candidate-max-length 1) 2)))
+          ((member backend-name '("Common Directory"))
+           (blink-search-truncate-candidate-with-ellipsis candidate candidate-max-length (/ (* candidate-max-length 3) 4)))
+          ((member backend-name '("PDF"))
            (blink-search-truncate-candidate-with-ellipsis candidate candidate-max-length (/ (* candidate-max-length 3) 4)))
           (t
            (if (<= candidate-length candidate-max-length)

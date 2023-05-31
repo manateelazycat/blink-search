@@ -97,7 +97,7 @@ class BlinkSearch:
         self.search_elisp_symbol = SearchElispSymbol("Elisp Symbol", self.message_queue)
         self.search_recent_file = SearchRecentFile("Recent File", self.message_queue)
         self.search_buffer_list = SearchBufferList("Buffer List", self.message_queue)
-        self.search_eaf_browser_history = SearchEAFBrowserHistory("EAF Browser History", self.message_queue)
+        self.search_eaf_browser_history = SearchEAFBrowserHistory("EAF Browser", self.message_queue)
         self.search_history = SearchHistory("History", self.message_queue)
         self.search_google_suggestion = SearchGoogleSuggest("Google Suggest", self.message_queue)
         self.search_find_file = SearchFindFile("Find File", self.message_queue)
@@ -126,7 +126,7 @@ class BlinkSearch:
 
         self.search_backend_list = []
         self.search_backend_default_list = [
-            "History", "Buffer List", "Common Directory", "Find File", "Recent File", "EAF Browser History",
+            "History", "Buffer List", "Common Directory", "Find File", "Recent File", "EAF Browser",
             "IMenu", "Elisp Symbol", "Google Suggest", "Key Value"
         ]
         

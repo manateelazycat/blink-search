@@ -92,7 +92,7 @@ blink-search has completed the following search backends:
 * Grep File: use `ripgrep` grep files under git project or current directory
 * IMenu: search variable/function of current buffer that base on imenu
 * Find File: use `fd` search files under git project or current directory
-* EAF Browser History: search history of EAF browser
+* EAF Browser: search history of EAF browser
 * Elisp Symbol: search elisp symbol
 * Google Suggest: search google suggestions and open in browser
 * Key Value: read/get/del/update key-value pairs in sqlite3, require `sqlite3` and ensure `pip install sqlite3` at first
