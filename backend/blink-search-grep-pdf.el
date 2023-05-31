@@ -27,15 +27,10 @@
 (defvar blink-search-grep-pdf-backend 'pdf-tools
   "Backend to use for pdf files.")
 
-(defvar blink-search-preview-pdf-idle-time 0.5
+(defvar blink-search-grep-pdf-preview-idle-time 0.5
   "Time to wait before previewing pdf.")
 
-(defvar blink-search-preview-pdf-timer nil)
-
-(defun blink-search-init-grep-pdf ()
-  (when (blink-search-epc-live-p blink-search-epc-process)
-    (blink-search-call-async "search_init_grep_pdf"
-                             blink-search-grep-pdf-search-path)))
+(defvar blink-search-grep-pdf-preview-timer nil)
 
 (defun blink-search-grep-pdf-pdftool-goto (file page submatches)
   (find-file file)
@@ -61,16 +56,16 @@
        (add-to-list 'blink-search-grep-file-temp-buffers (current-buffer))))))
 
 (defun blink-search-grep-pdf-preview (file page submatches)
-  (if blink-search-preview-pdf-timer (cancel-timer blink-search-preview-pdf-timer))
-  (setq blink-search-preview-pdf-timer
-        (run-with-idle-timer blink-search-preview-pdf-idle-time nil
+  (if blink-search-grep-pdf-preview-timer (cancel-timer blink-search-grep-pdf-preview-timer))
+  (setq blink-search-grep-pdf-preview-timer
+        (run-with-idle-timer blink-search-grep-pdf-preview-idle-time nil
                              (lambda ()
                                (blink-search-grep-pdf-real-preview file page submatches)))))
 
 
 (defun blink-search-grep-pdf-clean ()
   (blink-search-grep-file-clean)
-  (if blink-search-preview-pdf-timer (cancel-timer blink-search-preview-pdf-timer)))
+  (if blink-search-grep-pdf-preview-timer (cancel-timer blink-search-grep-pdf-preview-timer)))
 
 (provide 'blink-search-grep-pdf)
 ;;; blink-search-grep-pdf.el ends here
