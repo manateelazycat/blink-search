@@ -934,8 +934,7 @@ Function `move-to-column' can't handle mixed string of Chinese and English corre
 
 (defun blink-search-action (action)
   (interactive)
-  (when (and (> (length blink-search-candidate-items) 0)
-             (> (length blink-search-backend-items) 0))
+  (when (> (length blink-search-candidate-items) 0)
     (let* ((backend-name (blink-search-get-select-backend-name))
            (candidate (blink-search-get-select-candidate)))
       (blink-search-quit)
@@ -966,8 +965,7 @@ Function `move-to-column' can't handle mixed string of Chinese and English corre
 
 (defun blink-search-continue ()
   (interactive)
-  (when (and (> (length blink-search-candidate-items) 0)
-             (> (length blink-search-backend-items) 0))
+  (when (> (length blink-search-candidate-items) 0)
     (let* ((backend-name (blink-search-get-select-backend-name))
            (candidate (blink-search-get-select-candidate)))
 
