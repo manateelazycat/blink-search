@@ -628,6 +628,9 @@ blink-search will search current symbol if you call this function with `C-u' pre
             ((or (string-prefix-p ";" input)
                  (string-prefix-p "；" input))
              (blink-search-call-async "search" (substring input 1) (blink-search-get-row-number) (list "Grep PDF")))
+            ((or (string-prefix-p ":" input)
+                 (string-prefix-p "：" input))
+             (blink-search-call-async "search" (substring input 1) (blink-search-get-row-number) (list "PDF")))
             (t
              (blink-search-call-async "search" input (blink-search-get-row-number) blink-search-search-backends))))))
 
@@ -717,11 +720,13 @@ blink-search will search current symbol if you call this function with `C-u' pre
                                'face font-lock-constant-face)
                    (propertize " search prefix: " 'face font-lock-type-face)
                    (propertize "#" 'face font-lock-type-face)
-                   (propertize " grep buffer " 'face font-lock-keyword-face)
+                   (propertize " buffer " 'face font-lock-keyword-face)
                    (propertize "!" 'face font-lock-type-face)
-                   (propertize " grep directory " 'face font-lock-keyword-face)
+                   (propertize " directory " 'face font-lock-keyword-face)
                    (propertize ";" 'face font-lock-type-face)
-                   (propertize " grep pdf " 'face font-lock-keyword-face)
+                   (propertize " pdfs " 'face font-lock-keyword-face)
+                   (propertize ":" 'face font-lock-type-face)
+                   (propertize " pdf " 'face font-lock-keyword-face)
                    ))
 
             (insert tooltip-line)
