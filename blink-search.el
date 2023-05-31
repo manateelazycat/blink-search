@@ -103,6 +103,7 @@
 (require 'blink-search-recent-file)
 (require 'blink-search-buffer-list)
 (require 'blink-search-grep-pdf)
+(require 'blink-search-pdf)
 
 (defgroup blink-search nil
   "Blink-Search group."
@@ -119,6 +120,10 @@
 (defvar blink-search-stop-process-hook nil)
 (defvar blink-search-window-configuration nil)
 (defvar blink-search-start-buffer nil)
+(defvar blink-search-start-path-name nil)
+(defvar blink-search-start-buffer-name nil)
+(defvar blink-search-start-buffer-directory nil)
+(defvar blink-search-continue-directory nil)
 (defvar blink-search-start-keyword nil)
 (defvar blink-search-input-buffer " *blink search input*")
 (defvar blink-search-tooltip-buffer " *blink search tooltip*")
@@ -477,7 +482,12 @@ you need customize option if some 'M + key' conflict with your command.")
         (set-frame-parameter  blink-search-posframe-emacs-frame
                               'eaf--mac-frame nil)))
 
-    (setq blink-search-start-buffer nil)))
+    (setq blink-search-start-buffer nil)
+    (setq blink-search-start-buffer-name nil)
+    (setq blink-search-start-path-name nil)
+    (setq blink-search-start-buffer-directory nil)
+
+    (setq blink-search-continue-directory nil)))
 
 ;;;###autoload
 (defun blink-search-quick-do ()
@@ -503,6 +513,14 @@ blink-search will search current symbol if you call this function with `C-u' pre
   (interactive "P")
 
   (setq blink-search-start-buffer (current-buffer))
+  (setq blink-search-start-buffer-name (buffer-name (current-buffer)))
+  (setq blink-search-start-path-name
+        (if (derived-mode-p 'eaf-mode)
+            eaf--buffer-url
+          (buffer-file-name (current-buffer))))
+  (setq blink-search-start-buffer-directory (with-current-buffer (current-buffer)
+                                              (expand-file-name default-directory)))
+
   (setq blink-search-start-keyword (cond
                                     ((region-active-p)
                                      (buffer-substring-no-properties (region-beginning) (region-end)))
@@ -594,12 +612,6 @@ blink-search will search current symbol if you call this function with `C-u' pre
 (defun blink-search-get-row-number ()
   (/ (nth 3 (blink-search-get-window-allocation (get-buffer-window blink-search-candidate-buffer))) (line-pixel-height)))
 
-(defun blink-search-init-search-dir ()
-  (when (blink-search-epc-live-p blink-search-epc-process)
-    (blink-search-call-async "search_init_search_dir"
-                             (with-current-buffer blink-search-start-buffer
-                               (expand-file-name default-directory)))))
-
 (defun blink-search-monitor-input (_begin _end _length)
   "This is input monitor callback to hook `after-change-functions'."
   ;; Send new input to all backends when user change input.
@@ -637,6 +649,8 @@ blink-search will search current symbol if you call this function with `C-u' pre
            (if (<= candidate-length candidate-max-length)
                candidate
              (concat (substring candidate 0 (- candidate-max-length (length "..."))) "...")))
+          ((member backend-name '("PDF"))
+           (substring candidate 0 (min (/ candidate-max-length 2) candidate-length)))
           (t
            (if (<= candidate-length candidate-max-length)
                candidate
@@ -975,11 +989,14 @@ Function `move-to-column' can't handle mixed string of Chinese and English corre
   (interactive)
   (blink-search-action "search_copy"))
 
-(defun blink-search-continue-search (dir)
-  (blink-search-call-async "search_init_search_dir" dir)
-  (with-current-buffer blink-search-input-buffer
-    (erase-buffer))
-  (message "[blink-search] continue search at: %s" dir))
+(defun blink-search-continue-search (path)
+  (if (file-directory-p path)
+      (progn
+        (setq blink-search-continue-directory path)
+        (with-current-buffer blink-search-input-buffer
+          (erase-buffer))
+        (message "[blink-search] continue search at: %s" path))
+    (message "[blink-search] '%s' is not directory, can't continue search." path)))
 
 (defun blink-search-posframe-show (buffer)
   (let* ((posframe-height (round (* (frame-height) blink-search-posframe-height-ratio)))
@@ -1061,7 +1078,6 @@ Function `move-to-column' can't handle mixed string of Chinese and English corre
   (set-window-margins (get-buffer-window blink-search-input-buffer) 1 1))
 
 
-(add-to-list 'blink-search-start-update-list #'blink-search-init-search-dir t)
 (add-to-list 'blink-search-start-update-list #'blink-search-start t)
 
 (provide 'blink-search)

@@ -5,20 +5,16 @@ import subprocess
 from core.utils import eval_in_emacs, get_emacs_var, parse_rg_line
 from core.search import Search    # type: ignore
 
-class SearchGrepPDF(Search):
+class SearchPDF(Search):
 
     def __init__(self, backend_name, message_queue) -> None:
         Search.__init__(self, backend_name, message_queue)
         self.sub_process = None
         self.row_number = 100
         self.match_text = None
-        self.search_paths = []
 
     def init_dir(self, search_dir):
-        self.search_paths = get_emacs_var("blink-search-grep-pdf-search-paths")
-        self.search_paths = self.search_paths if self.search_paths else search_dir
-        if type(self.search_paths) is str:
-            self.search_paths = [self.search_paths]
+        self.search_paths = [get_emacs_var("blink-search-start-path-name")]
 
     def search_items(self, prefix: str, ticker: int):
         prefix = prefix.replace("*", "")
@@ -70,30 +66,17 @@ class SearchGrepPDF(Search):
         # rga set line_number to None and add Page X: in front of line
         pattern = re.compile('None:.*?: Page ')
         for line in lines:
-            if len(self.search_paths) > 1:
-                result = parse_rg_line(line, '/')
-            else:
-                result = parse_rg_line(line, self.search_paths[0])
+            result = parse_rg_line(line)
 
             if result is not None:
                 text = pattern.sub('', result['text'])
                 remove_len = len(result['text']) - len(text)
                 result['text'] = text
 
-                if len(self.search_paths) > 1:
-                    for index, path in enumerate(self.search_paths):
-                        if path[1:] in result['text']:
-                            text = result['text'].replace(path[1:], f'$D{index}')
-                            remove_len += len(result['text']) - len(text)
-                            result['text'] = text
-                            break
-
                 for match in result['matches']:
                     match[0] -= remove_len
                     match[1] -= remove_len
 
-            if result is not None and \
-               '.pdf' in result['text'].split(':')[0]:
                 candidates.append(result)
 
         # save match substring for candidate
@@ -119,32 +102,21 @@ class SearchGrepPDF(Search):
                 "keyword": prefix
             })
 
-    def get_real_path(self, file):
-        if len(self.search_paths) == 1:
-            return os.path.join(self.search_paths[0], file)
-        else:
-            for index, path in enumerate(self.search_paths):
-                path_mark = f'$D{index}'
-                if path_mark in file:
-                    return file.replace(path_mark, path)
-            return file
-
-
     def do(self, candidate):
         candidate_infos = candidate.split(":")
-        eval_in_emacs("blink-search-grep-pdf-do",
-                      self.get_real_path(candidate_infos[0]),
-                      int(candidate_infos[1]),
+        eval_in_emacs("blink-search-pdf-do",
+                      self.search_paths[0],
+                      int(candidate_infos[0]),
                       self.match_text)
 
     def select(self, candidate, start_buffer_name):
         candidate_infos = candidate["text"].split(":")
         self.match_text = candidate['match_text']
-        eval_in_emacs("blink-search-grep-pdf-preview",
-                      self.get_real_path(candidate_infos[0]),
-                      int(candidate_infos[1]),
+        eval_in_emacs("blink-search-pdf-preview",
+                      self.search_paths[0],
+                      int(candidate_infos[0]),
                       candidate['match_text'])
 
     def clean(self):
         self.kill_sub_process()
-        eval_in_emacs("blink-search-grep-pdf-clean")
+        eval_in_emacs("blink-search-pdf-clean")

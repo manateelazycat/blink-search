@@ -22,6 +22,7 @@
 import queue
 import threading
 import traceback
+import shutil
 
 from epc.server import ThreadingEPCServer
 from core.utils import *
@@ -39,6 +40,7 @@ from backend.search_imenu import SearchIMenu
 from backend.search_common_directory import SearchCommonDirectory
 from backend.search_key_value_store import SearchKeyValueStore
 from backend.search_grep_pdf import SearchGrepPDF
+from backend.search_pdf import SearchPDF
 
 class BlinkSearch:
     def __init__(self, args):
@@ -105,6 +107,7 @@ class BlinkSearch:
         self.search_common_directory = SearchCommonDirectory("Common Directory", self.message_queue)
         self.search_key_value_store = SearchKeyValueStore("Key Value", self.message_queue)
         self.search_grep_pdf = SearchGrepPDF("Grep PDF", self.message_queue)
+        self.search_pdf = SearchPDF("PDF", self.message_queue)
         self.search_keyword = ""
 
         self.search_thread_queue = []
@@ -115,7 +118,7 @@ class BlinkSearch:
         for backend in [self.search_history, self.search_elisp_symbol, self.search_recent_file, self.search_buffer_list,
                         self.search_eaf_browser_history, self.search_google_suggestion, self.search_common_directory,
                         self.search_find_file, self.search_grep_file, self.search_current_buffer, self.search_imenu,
-                        self.search_key_value_store, self.search_grep_pdf]:
+                        self.search_key_value_store, self.search_grep_pdf, self.search_pdf]:
             self.search_backend_dict[backend.backend_name] = backend
             
             # Build backend update API.
@@ -437,7 +440,7 @@ class BlinkSearch:
         self.search_current_buffer.init_buffer(buffer_name, buffer_content)
         
     def search_record_history(self, backend, candidate):
-        if backend != "History":
+        if backend not in ["History", "PDF"]:
             history_path = get_emacs_var("blink-search-history-path")
             if not os.path.exists(history_path):
                 touch(history_path)
@@ -470,8 +473,25 @@ class BlinkSearch:
         
         if len(backend_list) == 0:
             self.search_backend_list = self.search_backend_default_list
+
+            start_buffer_name = get_emacs_var("blink-search-start-buffer-name")
+            if shutil.which("rga") and start_buffer_name.endswith(".pdf"):
+                if "PDF" not in self.search_backend_list:
+                    self.search_backend_list.insert(2, "PDF")
+            else:
+                if "PDF" in self.search_backend_list:
+                    self.search_backend_list.remove("PDF")
         else:
             self.search_backend_list = backend_list
+
+        (start_directory, continue_directory) = get_emacs_vars([
+            "blink-search-start-buffer-directory",
+            "blink-search-continue-directory"])
+
+        if continue_directory:
+            self.search_init_search_dir(continue_directory)
+        else:
+            self.search_init_search_dir(start_directory)
         
         for backend in self.search_backend_list:
             self.search_backend_dict[backend].search(input)

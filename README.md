@@ -97,6 +97,7 @@ blink-search has completed the following search backends:
 * Google Suggest: search google suggestions and open in browser
 * Key Value: read/get/del/update key-value pairs in sqlite3, require `sqlite3` and ensure `pip install sqlite3` at first
 * Grep PDF: use `rga` search pdf files in several directories with `blink-search-grep-pdf-search-paths` 
+* PDF: use `rga` search current pdf file
 
 ## Report bug
 

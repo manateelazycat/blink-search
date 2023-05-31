@@ -119,7 +119,9 @@ def get_emacs_vars(args):
 
 
 def get_emacs_var(var_name):
-    symbol_value, symbol_is_boolean = epc_client.call_sync("get-emacs-var", [var_name])    # type: ignore
+    value = epc_client.call_sync("get-emacs-var", [var_name])
+    symbol_value = value[0]
+    symbol_is_boolean = value[1]
 
     return convert_emacs_bool(symbol_value, symbol_is_boolean)
 
