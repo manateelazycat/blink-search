@@ -45,7 +45,7 @@ class SearchCommonDirectory(Search):
                 directory = os.path.expanduser(directory_info[1])
                 
                 for path in os.listdir(directory):
-                    if self.is_match(prefix, prefix_regexp, "{} {}".format(alias.lower(), path)):
+                    if self.is_match(prefix, prefix_regexp, "{} {}".format(alias.lower(), path.lower())):
                         results.append("{} {}".format(alias, path))
                             
             return sorted(results)
@@ -67,16 +67,16 @@ class SearchCommonDirectory(Search):
         
     def do(self, candidate):
         candidate_dir = self.get_candiate_dir(candidate)
-        if candidate_dir != None:
+        if candidate_dir is not None:
             eval_in_emacs("blink-search-open-file", candidate_dir)
 
     def parent(self, candidate):
         candidate_dir = self.get_candiate_dir(candidate)
-        if candidate_dir != None:
+        if candidate_dir is not None:
             eval_in_emacs("blink-search-open-file", os.path.dirname(candidate_dir))
 
     def continue_search(self, candidate):
         candidate_dir = self.get_candiate_dir(candidate)
-        if candidate_dir != None:
+        if candidate_dir is not None:
             eval_in_emacs("blink-search-continue-search", candidate_dir)
             
