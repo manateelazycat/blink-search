@@ -263,7 +263,7 @@ def parse_rg_line(line, search_path=None):
     return None
 
 def insert_unique_string_to_file(filepath, string):
-    with open(filepath, 'r') as file:
+    with open(filepath, 'r', encoding="utf-8", errors="ignore") as file:
         content = file.readlines()
 
     string_exists = any(line == string + '\n' for line in content)

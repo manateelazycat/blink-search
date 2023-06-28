@@ -58,7 +58,7 @@ class SearchGrepFile(Search):
             
             self.kill_sub_process()
                 
-            self.sub_process = subprocess.Popen(command_list, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            self.sub_process = subprocess.Popen(command_list, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, encoding="utf-8")
             
             lines = []
             try:
