@@ -71,7 +71,7 @@ class Search:
     def get_process_result(self, command_list, cwd=None):
         self.kill_sub_process()
             
-        self.sub_process = subprocess.Popen(command_list, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        self.sub_process = subprocess.Popen(command_list, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, encoding="utf-8")
         
         results = []
         try:

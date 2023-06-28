@@ -269,5 +269,5 @@ def insert_unique_string_to_file(filepath, string):
     string_exists = any(line == string + '\n' for line in content)
 
     if not string_exists:
-        with open(filepath, 'a') as file:
+        with open(filepath, 'a', encoding="utf-8", errors="ignore") as file:
             file.write(string + '\n')

@@ -39,7 +39,7 @@ class SearchHistory(Search):
         history_path = get_emacs_var("blink-search-history-path")
         if os.path.exists(history_path):
             histories = []
-            with open(history_path, encoding="utf-8") as f:
+            with open(history_path, encoding="utf-8", errors="ignore") as f:
                 histories = f.read().splitlines()
 
             match_histories = []
