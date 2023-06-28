@@ -34,22 +34,27 @@ class SearchHistory(Search):
         self.dispatch_candiate_callback = None
         
     def search_match(self, prefix):
-        prefix = prefix.replace("*", "")
+        try:
+            prefix = prefix.replace("*", "")
 
-        history_path = get_emacs_var("blink-search-history-path")
-        if os.path.exists(history_path):
-            histories = []
-            with open(history_path, encoding="utf-8", errors="ignore") as f:
-                histories = f.read().splitlines()
+            history_path = get_emacs_var("blink-search-history-path")
+            if os.path.exists(history_path):
+                histories = []
+                with open(history_path, encoding="utf-8", errors="ignore") as f:
+                    histories = f.read().splitlines()
 
-            match_histories = []
-            prefix_regexp = re.compile(".*" + ".*".join(prefix.split()))
-            for history in histories:
-                history_infos = history.split("ᛡ")
-                if prefix_regexp.match(history_infos[0].lower()) or prefix_regexp.match(history_infos[1].lower()):
-                    match_histories.append(f"{history_infos[0]} [{history_infos[1]}]")
+                match_histories = []
+                prefix_regexp = re.compile(".*" + ".*".join(prefix.split()))
+                for history in histories:
+                    history_infos = history.split("ᛡ")
+                    if prefix_regexp.match(history_infos[0].lower()) or prefix_regexp.match(history_infos[1].lower()):
+                        match_histories.append(f"{history_infos[0]} [{history_infos[1]}]")
 
-            return match_histories
+                return match_histories
+        except:
+            import traceback
+            traceback.print_exc()
+            return []
 
     def do(self, candidate):
         pattern = r'^(.+)\s+\[([^\[\]]+)\]$'
