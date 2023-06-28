@@ -86,16 +86,17 @@
 
 (defun blink-search-init-imenu ()
   (when (blink-search-epc-live-p blink-search-epc-process)
-    (blink-search-call-async "search_imenu_update"
-                             (with-current-buffer blink-search-start-buffer
-                               (blink-search-imenu-get-candidates)))))
+    (with-current-buffer blink-search-start-buffer
+      (let ((candidates (blink-search-imenu-get-candidates)))
+        (when candidates (blink-search-call-async "search_imenu_update" candidates))))))
 
 (defun blink-search-imenu-get-candidates ()
-  (mapcar (lambda (info) (list (car info) (marker-position (cdr info))))
-          (let* ((index (ignore-errors (imenu--make-index-alist t))))
-            (when index
-              (blink-search-imenu-build-candidates
-               (delete (assoc "*Rescan*" index) index))))))
+  (ignore-errors
+    (mapcar (lambda (info) (list (car info) (marker-position (cdr info))))
+            (let* ((index (ignore-errors (imenu--make-index-alist t))))
+              (when index
+                (blink-search-imenu-build-candidates
+                 (delete (assoc "*Rescan*" index) index)))))))
 
 (defun blink-search-imenu-build-candidates (alist)
   (cl-remove-if
