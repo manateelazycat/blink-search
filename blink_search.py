@@ -48,7 +48,7 @@ class BlinkSearch:
         init_epc_client(int(args[0]))
         
         # Build EPC server.
-        self.server = ThreadingEPCServer(('localhost', 0), log_traceback=True)
+        self.server = ThreadingEPCServer(('127.0.0.1', 0), log_traceback=True)
         # self.server.logger.setLevel(logging.DEBUG)
         self.server.allow_reuse_address = True
 

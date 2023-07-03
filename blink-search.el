@@ -401,7 +401,7 @@ influence of C1 on the result."
                                   :commands (cons blink-search-internal-process-prog blink-search-internal-process-args)
                                   :title (mapconcat 'identity (cons blink-search-internal-process-prog blink-search-internal-process-args) " ")
                                   :port blink-search-epc-port
-                                  :connection (blink-search-epc-connect "localhost" blink-search-epc-port)
+                                  :connection (blink-search-epc-connect "127.0.0.1" blink-search-epc-port)
                                   ))
   (blink-search-epc-init-epc-layer blink-search-epc-process)
   (setq blink-search-is-starting nil)
