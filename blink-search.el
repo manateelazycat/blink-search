@@ -694,11 +694,14 @@ blink-search will search current symbol if you call this function with `C-u' pre
       (blink-search-select-window (get-buffer-window blink-search-input-buffer)))))
 
 (defun blink-search-get-candidate-text (candidate-info)
-  (format
-   "%s"
-   (if (stringp candidate-info)
-       candidate-info
-     (plist-get candidate-info :text))))
+  ;; Remove ^M char at end of line.
+  (replace-regexp-in-string
+   "\r+$" ""
+   (format
+    "%s"
+    (if (stringp candidate-info)
+        candidate-info
+      (plist-get candidate-info :text)))))
 
 (defun blink-search-get-candidate-matches (candidate-info)
   (unless (stringp candidate-info)
