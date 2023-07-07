@@ -440,7 +440,7 @@ class BlinkSearch:
         self.search_current_buffer.init_buffer(buffer_name, buffer_content)
         
     def search_record_history(self, backend, candidate):
-        if backend not in ["History", "PDF", "Current Buffer", "IMenu"]:
+        if backend not in ["History", "PDF", "Current Buffer", "IMenu", "Grep File"]:
             history_path = get_emacs_var("blink-search-history-path")
             if not os.path.exists(history_path):
                 touch(history_path)

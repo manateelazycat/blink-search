@@ -47,8 +47,9 @@ class SearchHistory(Search):
                 prefix_regexp = re.compile(".*" + ".*".join(prefix.split()))
                 for history in histories:
                     history_infos = history.split("ᛡ")
-                    if prefix_regexp.match(history_infos[0].lower()) or prefix_regexp.match(history_infos[1].lower()):
-                        match_histories.append(f"{history_infos[0]} [{history_infos[1]}]")
+                    if len(history_infos) >= 2:
+                        if prefix_regexp.match(history_infos[0].lower()) or prefix_regexp.match(history_infos[1].lower()):
+                            match_histories.append(f"{history_infos[0]} [{history_infos[1]}]")
 
                 return match_histories
         except:
