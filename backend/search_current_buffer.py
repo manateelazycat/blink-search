@@ -22,7 +22,6 @@
 import os
 import tempfile
 import hashlib
-import json
 
 from core.utils import eval_in_emacs, message_emacs, touch, parse_rg_line    # type: ignore
 from core.search import Search    # type: ignore
@@ -60,7 +59,8 @@ class SearchCurrentBuffer(Search):
             for line in lines:
                 result = parse_rg_line(line)
                 if result is not None:
-                    results.append(result)
+                    if len(result["text"]) < 1000:
+                        results.append(result)
             
             return results
         else:

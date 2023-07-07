@@ -88,7 +88,8 @@ class SearchGrepFile(Search):
         for line in lines:
             result = parse_rg_line(line, self.search_path)
             if result is not None:
-                candidates.append(result)
+                if len(result["text"]) < 1000:
+                    candidates.append(result)
             
         if ticker == self.search_ticker:
             self.message_queue.put({
