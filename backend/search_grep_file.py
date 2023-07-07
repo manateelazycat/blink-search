@@ -90,7 +90,9 @@ class SearchGrepFile(Search):
             if result is not None:
                 if len(result["text"]) < 1000:
                     candidates.append(result)
-            
+                else:
+                    candidates.append({"text": result["text"][:1000], "matches": [result["matches"][0]]})
+
         if ticker == self.search_ticker:
             self.message_queue.put({
                 "name": "update_backend_items",
