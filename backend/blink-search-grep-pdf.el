@@ -1,4 +1,4 @@
-;;; blink-search-grep-pdf.el --- Description -*- lexical-binding: t; -*-
+;;; blink-search-grep-pdf.el --- Description -*- lexical-binding: t; no-byte-compile: t; -*-
 ;;
 ;; Copyright (C) 2022 royokong
 ;;

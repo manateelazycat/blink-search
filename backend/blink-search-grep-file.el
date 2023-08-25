@@ -1,4 +1,4 @@
-;;; blink-search-grep-file.el --- rg backend for blink-search   -*- lexical-binding: t; -*-
+;;; blink-search-grep-file.el --- rg backend for blink-search   -*- lexical-binding: t; no-byte-compile: t; -*-
 
 ;; Filename: blink-search-grep-file.el
 ;; Description: rg backend for blink-search
