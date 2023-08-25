@@ -1,4 +1,4 @@
-;;; blink-search-pdf.el --- Search PDF buffer backend   -*- lexical-binding: t; -*-
+;;; blink-search-pdf.el --- Search PDF buffer backend   -*- lexical-binding: t; no-byte-compile: t; -*-
 
 ;; Filename: blink-search-pdf.el
 ;; Description: Search PDF buffer backend

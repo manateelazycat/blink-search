@@ -1,4 +1,4 @@
-;;; blink-search-current-buffer.el --- current buffer backend for blink-search   -*- lexical-binding: t; -*-
+;;; blink-search-current-buffer.el --- current buffer backend for blink-search   -*- lexical-binding: t; no-byte-compile: t; -*-
 
 ;; Filename: blink-search-current-buffer.el
 ;; Description: current buffer backend for blink-search
