@@ -148,8 +148,8 @@ If COLOR-NAME is unknown to Emacs, then return COLOR-NAME as-is."
          (view-height (nth 3 viewbox))
 
          ;; Set icon size (in pixels) to 4x1 characters
-         (svg-width  (* (window-font-width)  blink-search-icon-width))
-         (svg-height (* (window-font-height) 1))
+         (svg-width  (* (frame-char-width)  blink-search-icon-width))
+         (svg-height (* (frame-char-height) 1))
 
          ;; Zoom the icon by using integer factor only
          (zoom (max 1 (truncate (or zoom 1))))

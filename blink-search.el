@@ -648,14 +648,8 @@ blink-search will search current symbol if you call this function with `C-u' pre
   (let ((candidate-length (length candidate)))
     (cond ((string-equal backend-name "Recent File")
            (file-name-nondirectory candidate))
-          ((member backend-name '("Current Buffer" "Grep File" "Grep PDF"))
+          ((member backend-name '("Current Buffer" "Grep File" "Grep PDF" "EAF Browser" "History" "Common Directory" "PDF"))
            (blink-search-truncate-candidate-with-ellipsis candidate candidate-max-length candidate-max-length))
-          ((member backend-name '("EAF Browser" "History"))
-           (blink-search-truncate-candidate-with-ellipsis candidate candidate-max-length (/ (* candidate-max-length 1) 2)))
-          ((member backend-name '("Common Directory"))
-           (blink-search-truncate-candidate-with-ellipsis candidate candidate-max-length (/ (* candidate-max-length 3) 4)))
-          ((member backend-name '("PDF"))
-           (blink-search-truncate-candidate-with-ellipsis candidate candidate-max-length (/ (* candidate-max-length 3) 4)))
           (t
            (if (<= candidate-length candidate-max-length)
                candidate
@@ -744,7 +738,7 @@ blink-search will search current symbol if you call this function with `C-u' pre
             ))
 
         (with-current-buffer blink-search-candidate-buffer
-          (let* ((candidate-max-length (ceiling (* (/ window-width (window-font-width)) 0.45)))
+          (let* ((candidate-max-length (ceiling (* (/ window-width (frame-char-width)) 0.6)))
                  (candidate-index 0))
             (erase-buffer)
 
@@ -784,7 +778,7 @@ blink-search will search current symbol if you call this function with `C-u' pre
                                           (- window-width
                                              (if (fboundp 'string-pixel-width)
                                                  (string-pixel-width (format "%s%s" (make-string 2 ?\s) backend))
-                                               (* (window-font-width) (+ (string-width backend) padding-right)))
+                                               (* (frame-char-width) (+ (string-width backend) padding-right)))
                                              )))
                            (propertize " " 'display (blink-search-indent-pixel window-width)))
                          (when (> backend-number 1)
