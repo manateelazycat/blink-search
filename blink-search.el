@@ -268,8 +268,9 @@ Setting this to nil or 0 will turn off the indicator."
 
 (defun blink-search-call-async (method &rest args)
   "Call Python EPC function METHOD and ARGS asynchronously."
-  (blink-search-deferred-chain
-    (blink-search-epc-call-deferred blink-search-epc-process (read method) args)))
+  (when (blink-search-epc-live-p blink-search-epc-process)
+    (blink-search-deferred-chain
+      (blink-search-epc-call-deferred blink-search-epc-process (read method) args))))
 
 (defun blink-search-get-theme-mode ()
   "Get theme mode, dark or light."
