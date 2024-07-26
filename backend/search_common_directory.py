@@ -70,7 +70,7 @@ class SearchCommonDirectory(Search):
         if candidate_dir is not None:
             eval_in_emacs("blink-search-open-file", candidate_dir)
 
-    def parent(self, candidate):
+    def parent(self, candidate, from_history=False):
         candidate_dir = self.get_candiate_dir(candidate)
         if candidate_dir is not None:
             eval_in_emacs("blink-search-open-file", os.path.dirname(candidate_dir))

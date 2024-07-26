@@ -121,7 +121,7 @@ class SearchGrepFile(Search):
         message_emacs("Copy: {}".format(candidate_text))
         
 
-    def parent(self, candidate):
+    def parent(self, candidate, from_history=False):
         candidate_infos = candidate.split(":")
         eval_in_emacs("blink-search-open-file", os.path.dirname(os.path.join(self.search_path, candidate_infos[0])))
 

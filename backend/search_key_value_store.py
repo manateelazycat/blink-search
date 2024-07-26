@@ -108,5 +108,5 @@ class SearchKeyValueStore(Search):
             value = self.conn.cursor().execute(query).fetchone()[0]
             eval_in_emacs("kill-new", value)
 
-    def parent(self, candidate):
+    def parent(self, candidate, from_history=False):
         self.do(candidate)

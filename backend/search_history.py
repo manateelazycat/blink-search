@@ -31,7 +31,8 @@ class SearchHistory(Search):
     def __init__(self, backend_name, message_queue) -> None:
         Search.__init__(self, backend_name, message_queue)
 
-        self.dispatch_candiate_callback = None
+        self.candiate_do_callback = None
+        self.candiate_parent_callback = None
         
     def search_match(self, prefix):
         try:
@@ -62,8 +63,20 @@ class SearchHistory(Search):
 
         match = re.search(pattern, candidate)
 
-        if self.dispatch_candiate_callback and match:
+        if self.candiate_do_callback and match:
             match_candidate = match.group(1)
             match_backend = match.group(2)
 
-            self.dispatch_candiate_callback(match_backend, match_candidate)
+            self.candiate_do_callback(match_backend, match_candidate)
+
+    def parent(self, candidate, from_history=False):
+        pattern = r'^(.+)\s+\[([^\[\]]+)\]$'
+
+        match = re.search(pattern, candidate)
+
+
+        if self.candiate_parent_callback and match:
+            match_candidate = match.group(1)
+            match_backend = match.group(2)
+
+            self.candiate_parent_callback(match_backend, match_candidate)

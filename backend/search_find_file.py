@@ -53,13 +53,19 @@ class SearchFindFile(Search):
     def do(self, candidate):
         eval_in_emacs("blink-search-open-file", os.path.join(self.search_path, candidate))
 
+    def record_name(self, candidate):
+        return os.path.join(self.search_path, candidate)
+
     def copy(self, candidate):
         path = os.path.join(self.search_path, candidate)
         eval_in_emacs("kill-new", path)
         message_emacs("Copy: {}".format(path))
 
-    def parent(self, candidate):
-        eval_in_emacs("blink-search-open-file", os.path.dirname(os.path.join(self.search_path, candidate)))
+    def parent(self, candidate, from_history=False):
+        if from_history:
+            eval_in_emacs("blink-search-open-file", os.path.dirname(candidate))
+        else:
+            eval_in_emacs("blink-search-open-file", os.path.dirname(os.path.join(self.search_path, candidate)))
 
     def continue_search(self, candidate):
         candidate_path = os.path.join(self.search_path, candidate)

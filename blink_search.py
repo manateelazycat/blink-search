@@ -112,8 +112,9 @@ class BlinkSearch:
 
         self.search_thread_queue = []
 
-        self.search_history.dispatch_candiate_callback = self.search_do
-        
+        self.search_history.candiate_do_callback = self.search_do
+        self.search_history.candiate_parent_callback = self.search_history_parent
+
         self.search_backend_dict = {}
         for backend in [self.search_history, self.search_elisp_symbol, self.search_recent_file, self.search_buffer_list,
                         self.search_eaf_browser_history, self.search_google_suggestion, self.search_common_directory,
@@ -445,6 +446,9 @@ class BlinkSearch:
             if not os.path.exists(history_path):
                 touch(history_path)
 
+            if hasattr(self.search_backend_dict[backend], "record_name"):
+                candidate = self.search_backend_dict[backend].record_name(candidate)
+
             history_item = f"{candidate}ᛡ{backend}"
             insert_unique_string_to_file(history_path, history_item)
 
@@ -460,6 +464,9 @@ class BlinkSearch:
         
     def search_parent(self, backend, candidate):
         self.search_backend_dict[backend].parent(candidate)
+
+    def search_history_parent(self, backend, candidate):
+        self.search_backend_dict[backend].parent(candidate, True)
 
     def search_continue(self, backend, candidate):
         backend = self.search_backend_dict[backend]

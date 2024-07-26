@@ -54,7 +54,7 @@ class SearchEAFBrowserHistory(Search):
     def do(self, candidate):
         eval_in_emacs("eaf-open-browser", candidate.split()[-1])
 
-    def parent(self, candidate):
+    def parent(self, candidate, from_history=False):
         url = candidate.split()[-1]
         host = urlparse(url).hostname
         if host == "github.com":

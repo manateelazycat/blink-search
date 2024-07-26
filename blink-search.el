@@ -649,7 +649,7 @@ blink-search will search current symbol if you call this function with `C-u' pre
   (let ((candidate-length (length candidate)))
     (cond ((string-equal backend-name "Recent File")
            (file-name-nondirectory candidate))
-          ((member backend-name '("Current Buffer" "Grep File" "Grep PDF" "EAF Browser" "History" "Common Directory" "PDF"))
+          ((member backend-name '("Current Buffer" "Grep File" "Grep PDF" "EAF Browser" "Common Directory" "PDF"))
            (blink-search-truncate-candidate-with-ellipsis candidate candidate-max-length candidate-max-length))
           (t
            (if (<= candidate-length candidate-max-length)
