@@ -299,6 +299,11 @@ influence of C1 on the result."
   (let* ((is-dark-mode (string-equal (blink-search-get-theme-mode) "dark"))
          (blend-background (if is-dark-mode "#000000" "#AAAAAA"))
          (default-background (face-attribute 'default :background)))
+    ;; Fallback to background of `default' face if `blink-search-color-blend' test failed.
+    (unless (ignore-errors
+              (blink-search-color-blend default-background blend-background 0.6))
+      (setq default-background (if is-dark-mode "#000000" "#AAAAAA")))
+
     ;; Make sure menu follow the theme of Emacs.
     (when (or force (equal (face-attribute 'blink-search-select-face :background) 'unspecified))
       (set-face-background 'blink-search-select-face (blink-search-color-blend default-background blend-background 0.6)))
